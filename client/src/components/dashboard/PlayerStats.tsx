@@ -114,32 +114,61 @@ export default function PlayerStats() {
             </div>
             
             <div className="flex mb-3">
-              {playerStats.profile_image ? (
-                <img 
-                  src={playerStats.profile_image} 
-                  alt={playerStats.name}
-                  className="w-14 h-14 rounded-lg mr-3 object-cover"
-                />
-              ) : (
-                <div className="w-14 h-14 rounded-lg mr-3 bg-primary bg-opacity-20 flex items-center justify-center text-2xl font-bold text-primary">
-                  {playerStats.name ? playerStats.name.charAt(0) : "?"}
-                </div>
-              )}
+              {/* Use actual image URL from Torn API */}
+              <img 
+                src={`https://www.torn.com/images/v2/portraits/${playerStats.player_id}.jpg`}
+                alt={playerStats.name || "Player"}
+                className="w-14 h-14 rounded-lg mr-3 object-cover bg-primary bg-opacity-20"
+                onError={(e) => {
+                  // Fallback to initial if the image fails to load
+                  const target = e.target as HTMLImageElement;
+                  target.onerror = null;
+                  target.style.display = 'flex';
+                  target.style.alignItems = 'center';
+                  target.style.justifyContent = 'center';
+                  target.style.fontSize = '1.5rem';
+                  target.style.fontWeight = 'bold';
+                  target.style.color = 'var(--primary)';
+                  target.src = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E";
+                  target.parentElement?.insertAdjacentHTML('beforeend', 
+                    `<div class="absolute inset-0 flex items-center justify-center text-2xl font-bold text-primary">
+                      ${playerStats.name ? playerStats.name.charAt(0) : "?"}
+                    </div>`
+                  );
+                }}
+              />
               <div>
                 <h4 className="font-rajdhani font-semibold">{playerStats.name}</h4>
                 <div className="text-xs text-gray-400 mt-1">Player #{playerStats.player_id}</div>
-                <div className="text-xs font-medium text-secondary mt-1">{playerStats.position || "Civilian"}</div>
+                <div className="text-xs font-medium text-secondary mt-1">
+                  {playerStats.faction?.position || playerStats.company?.position || "Civilian"}
+                </div>
               </div>
             </div>
             
             <div className="mt-auto grid grid-cols-2 gap-2 text-sm">
               <div className="bg-game-black bg-opacity-50 rounded p-2">
                 <div className="text-xs text-gray-400">RANK</div>
-                <div className="font-medium">{playerStats.rank}</div>
+                <div className="font-medium">
+                  {/* Determine rank based on player level */}
+                  {playerStats.level ? 
+                    (playerStats.level < 10 ? "Noob" : 
+                     playerStats.level < 25 ? "Experienced" : 
+                     playerStats.level < 50 ? "Advanced" : 
+                     "Elite") 
+                    : "Unknown"}
+                </div>
               </div>
               <div className="bg-game-black bg-opacity-50 rounded p-2">
                 <div className="text-xs text-gray-400">STATUS</div>
-                <div className="font-medium text-accent">{playerStats.status.state}</div>
+                <div className={`font-medium ${
+                  playerStats.status === "Online" ? "text-green-400" :
+                  playerStats.status === "Idle" ? "text-yellow-400" :
+                  playerStats.status === "Hospital" ? "text-red-400" :
+                  "text-gray-400"
+                }`}>
+                  {playerStats.status || "Unknown"}
+                </div>
               </div>
             </div>
           </div>
