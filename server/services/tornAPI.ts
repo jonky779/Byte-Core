@@ -240,76 +240,108 @@ export class TornAPI {
   }
   
   public async getPlayerStats(apiKey: string): Promise<PlayerStats> {
-    // In a real implementation, this would make an actual API call
-    // For now, we'll return mock data for demonstration
-    return {
-      player_id: 1234567,
-      name: "PlayerName",
-      level: 50,
-      status: "Online",
-      last_action: "1 minute ago",
-      energy: {
-        current: 100,
-        maximum: 150
-      },
-      nerve: {
-        current: 25,
-        maximum: 50
-      },
-      happy: {
-        current: 800,
-        maximum: 1000
-      },
-      life: {
-        current: 1000,
-        maximum: 1000
-      },
-      stats: {
-        strength: 10000,
-        defense: 9500,
-        speed: 9000,
-        dexterity: 8500,
-        total: 37000
-      },
-      money: {
-        current: 1000000,
-        bank: 10000000,
-        points: 500
-      },
-      faction: {
-        id: 12345,
-        name: "FactionName",
-        position: "Member",
-        days_in_faction: 365
-      },
-      company: {
-        id: 54321,
-        name: "CompanyName",
-        position: "Director",
-        days_in_company: 180
-      },
-      travel: {
-        status: "In Torn"
-      },
-      last_updated: new Date().toISOString()
-    };
+    try {
+      const data = await this.makeRequest("user/?selections=basic,profile,battlestats,bars,money,travel", apiKey);
+      
+      // Format the data into PlayerStats object
+      return {
+        player_id: data.player_id || 0,
+        name: data.name || "Unknown",
+        level: data.level || 1,
+        status: data.status?.state || "Offline",
+        last_action: data.last_action?.relative || "Unknown",
+        energy: {
+          current: data.energy?.current || 0,
+          maximum: data.energy?.maximum || 0
+        },
+        nerve: {
+          current: data.nerve?.current || 0,
+          maximum: data.nerve?.maximum || 0
+        },
+        happy: {
+          current: data.happy?.current || 0,
+          maximum: data.happy?.maximum || 0
+        },
+        life: {
+          current: data.life?.current || 0,
+          maximum: data.life?.maximum || 0
+        },
+        stats: {
+          strength: data.strength || 0,
+          defense: data.defense || 0,
+          speed: data.speed || 0,
+          dexterity: data.dexterity || 0,
+          total: (data.strength || 0) + (data.defense || 0) + (data.speed || 0) + (data.dexterity || 0)
+        },
+        money: {
+          current: data.money_onhand || 0,
+          bank: data.money_inbank || 0,
+          points: data.points || 0
+        },
+        faction: data.faction ? {
+          id: data.faction.faction_id || 0,
+          name: data.faction.faction_name || "Unknown",
+          position: data.faction.position || "Member",
+          days_in_faction: data.faction.days_in_faction || 0
+        } : null,
+        company: data.job ? {
+          id: data.job.company_id || 0,
+          name: data.job.company_name || "Unknown",
+          position: data.job.position || "Employee",
+          days_in_company: data.job.days_in_company || 0
+        } : null,
+        travel: {
+          status: data.travel?.status || "In Torn",
+          destination: data.travel?.destination,
+          return_time: data.travel?.time_left
+        },
+        last_updated: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error("Error fetching player stats:", error);
+      throw error;
+    }
   }
   
   public async getCompanyData(apiKey: string): Promise<CompanyData> {
-    // Mock data for demonstration
-    return {
-      id: 54321,
-      name: "CompanyName",
-      type: "Logistics",
-      rating: 8,
-      days_old: 730,
-      weekly_profit: 50000000,
-      employees: {
-        current: 8,
-        max: 10
-      },
-      last_updated: new Date().toISOString()
-    };
+    try {
+      const data = await this.makeRequest("company/?selections=profile", apiKey);
+      
+      return {
+        id: data.ID || 0,
+        name: data.name || "No Company",
+        type: data.company_type || "Unknown",
+        rating: data.rating || 0,
+        days_old: data.days_old || 0,
+        weekly_profit: data.weekly_profit || 0,
+        employees: {
+          current: data.employees_hired || 0,
+          max: data.employees_max || 0
+        },
+        last_updated: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error("Error fetching company data:", error);
+      
+      // The user might not be in a company
+      if (error instanceof Error && error.message.includes("not in a company")) {
+        return {
+          id: 0,
+          name: "Not in a company",
+          type: "N/A",
+          rating: 0,
+          days_old: 0,
+          weekly_profit: 0,
+          employees: {
+            current: 0,
+            max: 0
+          },
+          last_updated: new Date().toISOString()
+        };
+      }
+      
+      throw error;
+    }
   }
   
   public async getCompanyDetailedData(apiKey: string): Promise<any> {
@@ -377,20 +409,44 @@ export class TornAPI {
   }
   
   public async getFactionData(apiKey: string): Promise<FactionData> {
-    // Mock data for demonstration
-    return {
-      id: 12345,
-      name: "FactionName",
-      tag: "FCTN",
-      leader: {
-        id: 9876543,
-        name: "LeaderName"
-      },
-      members_count: 25,
-      respect: 500000,
-      territories: 5,
-      last_updated: new Date().toISOString()
-    };
+    try {
+      const data = await this.makeRequest("faction/?selections=basic", apiKey);
+      
+      return {
+        id: data.ID || 0,
+        name: data.name || "No Faction",
+        tag: data.tag || "",
+        leader: {
+          id: data.leader || 0,
+          name: data.leader_name || "Unknown"
+        },
+        members_count: data.members ? Object.keys(data.members).length : 0,
+        respect: data.respect || 0,
+        territories: data.territory ? Object.keys(data.territory).length : 0,
+        last_updated: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error("Error fetching faction data:", error);
+      
+      // The user might not be in a faction
+      if (error instanceof Error && error.message.includes("not in a faction")) {
+        return {
+          id: 0,
+          name: "Not in a faction",
+          tag: "N/A",
+          leader: {
+            id: 0,
+            name: "N/A"
+          },
+          members_count: 0,
+          respect: 0,
+          territories: 0,
+          last_updated: new Date().toISOString()
+        };
+      }
+      
+      throw error;
+    }
   }
   
   public async getFactionDetailedData(apiKey: string): Promise<any> {
