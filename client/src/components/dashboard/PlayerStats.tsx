@@ -152,7 +152,7 @@ export default function PlayerStats() {
               <div className="bg-game-black bg-opacity-50 rounded p-2">
                 <div className="text-xs text-gray-400">RANK</div>
                 <div className="font-medium">
-                  {/* Use actual rank from API */}
+                  {/* Directly use the rank value from the API response */}
                   {playerStats.rank || "Unknown"}
                 </div>
               </div>
@@ -162,10 +162,10 @@ export default function PlayerStats() {
                   playerStats.status === "Online" ? "text-green-400" :
                   playerStats.status === "Idle" ? "text-yellow-400" :
                   playerStats.status === "Hospital" ? "text-red-400" :
-                  playerStats.status === "Okay" ? "text-blue-400" :
                   "text-gray-400"
                 }`}>
-                  {playerStats.status === "Okay" ? "Online" : (playerStats.status || "Unknown")}
+                  {/* Directly use the status value from the API response */}
+                  {playerStats.status || "Unknown"}
                 </div>
               </div>
             </div>
