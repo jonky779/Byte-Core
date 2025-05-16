@@ -188,7 +188,11 @@ export class TornAPI {
   }
   
   private async makeRequest(endpoint: string, apiKey: string): Promise<any> {
-    const url = `${this.baseUrl}/${endpoint}&key=${apiKey}`;
+    // Check if the endpoint already contains a query parameter
+    const separator = endpoint.includes('?') ? '&' : '?';
+    const url = `${this.baseUrl}/${endpoint}${separator}key=${apiKey}`;
+    
+    console.log(`Making API request to: ${this.baseUrl}/${endpoint}${separator}key=***`);
     
     return this.enqueueRequest(async () => {
       const response = await fetch(url);
