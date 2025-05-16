@@ -114,29 +114,31 @@ export default function PlayerStats() {
             </div>
             
             <div className="flex mb-3">
-              {/* Use actual image URL from Torn API */}
-              <img 
-                src={`https://www.torn.com/images/v2/portraits/${playerStats.player_id}.jpg`}
-                alt={playerStats.name || "Player"}
-                className="w-14 h-14 rounded-lg mr-3 object-cover bg-primary bg-opacity-20"
-                onError={(e) => {
-                  // Fallback to initial if the image fails to load
-                  const target = e.target as HTMLImageElement;
-                  target.onerror = null;
-                  target.style.display = 'flex';
-                  target.style.alignItems = 'center';
-                  target.style.justifyContent = 'center';
-                  target.style.fontSize = '1.5rem';
-                  target.style.fontWeight = 'bold';
-                  target.style.color = 'var(--primary)';
-                  target.src = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E";
-                  target.parentElement?.insertAdjacentHTML('beforeend', 
-                    `<div class="absolute inset-0 flex items-center justify-center text-2xl font-bold text-primary">
-                      ${playerStats.name ? playerStats.name.charAt(0) : "?"}
-                    </div>`
-                  );
-                }}
-              />
+              {/* Try different Torn API image formats */}
+              <div className="relative w-14 h-14 mr-3">
+                <img 
+                  src={playerStats.profile_image || 
+                      `https://profileimages.torn.com/${playerStats.player_id}.jpg`}
+                  alt={playerStats.name || "Player"}
+                  className="w-14 h-14 rounded-lg object-cover bg-primary bg-opacity-20"
+                  onError={(e) => {
+                    // Try alternate URL format
+                    const target = e.target as HTMLImageElement;
+                    target.onerror = null;
+                    target.src = `https://www.torn.com/images/v2/profiles/${playerStats.player_id}/profile.jpg`;
+                    target.onError = (e2) => {
+                      // If all image sources fail, fallback to initial
+                      const target2 = e2.target as HTMLImageElement;
+                      target2.onerror = null;
+                      target2.style.display = 'none';
+                      document.getElementById('profileFallback')?.classList.remove('hidden');
+                    };
+                  }}
+                />
+                <div id="profileFallback" className="hidden absolute inset-0 w-14 h-14 rounded-lg bg-primary bg-opacity-20 flex items-center justify-center text-2xl font-bold text-primary">
+                  {playerStats.name ? playerStats.name.charAt(0) : "?"}
+                </div>
+              </div>
               <div>
                 <h4 className="font-rajdhani font-semibold">{playerStats.name}</h4>
                 <div className="text-xs text-gray-400 mt-1">Player #{playerStats.player_id}</div>
@@ -150,13 +152,8 @@ export default function PlayerStats() {
               <div className="bg-game-black bg-opacity-50 rounded p-2">
                 <div className="text-xs text-gray-400">RANK</div>
                 <div className="font-medium">
-                  {/* Determine rank based on player level */}
-                  {playerStats.level ? 
-                    (playerStats.level < 10 ? "Noob" : 
-                     playerStats.level < 25 ? "Experienced" : 
-                     playerStats.level < 50 ? "Advanced" : 
-                     "Elite") 
-                    : "Unknown"}
+                  {/* Use actual rank from API */}
+                  {playerStats.rank || "Unknown"}
                 </div>
               </div>
               <div className="bg-game-black bg-opacity-50 rounded p-2">
