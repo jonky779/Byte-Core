@@ -146,6 +146,18 @@ export function setupAuth(app: Express) {
         return res.status(400).json({ message: "API key is required" });
       }
       
+      // Force session reset to clear any previous user data
+      await new Promise<void>((resolve, reject) => {
+        req.session.regenerate((err) => {
+          if (err) {
+            console.error("Error regenerating session:", err);
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+      });
+      
       // Verify the API key with Torn API
       const tornAPI = new TornAPI();
       const apiKeyData = await tornAPI.checkApiKey(apiKey);
@@ -161,6 +173,15 @@ export function setupAuth(app: Express) {
         return res.status(401).json({ message: "Could not retrieve player name from Torn API" });
       }
       
+      // Get player stats from the API to ensure we have the right data
+      try {
+        // This ensures we load the right data for this API key
+        await tornAPI.getPlayerStats(apiKey);
+        console.log(`Pre-fetched data for player ${playerName} using their API key`);
+      } catch (e) {
+        console.error("Error pre-fetching player data:", e);
+      }
+      
       // Look for existing user with this API key or create a new one
       let user = await storage.getUserByApiKey(apiKey);
       
@@ -168,9 +189,8 @@ export function setupAuth(app: Express) {
         // Update the username in case it changed
         if (user.username !== playerName) {
           console.log(`Updating username from ${user.username} to ${playerName} for user ID ${user.id}`);
-          user.username = playerName;
-          // Update username in storage
           await storage.updateUsername(user.id, playerName);
+          user.username = playerName;
         }
       } else {
         // Create a new user with this API key
