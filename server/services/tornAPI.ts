@@ -479,11 +479,19 @@ export class TornAPI {
         
         try {
           // Use the company endpoint with the company ID
-          const companyData = await this.makeRequest(`company/${companyId}?selections=profile,detailed`, apiKey);
+          const response = await this.makeRequest(`company/${companyId}?selections=profile,detailed`, apiKey);
           
-          if (!companyData) {
+          if (!response) {
             throw new Error("Failed to fetch company data");
           }
+          
+          // The Torn API returns data in a nested structure
+          // Extract the main company data and detailed data
+          const companyData = response.company || {};
+          const companyDetailedData = response.company_detailed || {};
+          
+          console.log("Company data structure:", Object.keys(companyData).join(', '));
+          console.log("Company detailed data structure:", Object.keys(companyDetailedData).join(', '));
           
           // Process employees data if available
           const employees = [];
@@ -494,44 +502,11 @@ export class TornAPI {
                 id: parseInt(id, 10),
                 name: employee.name || "Unknown",
                 position: employee.position || "Employee",
-                status: employee.status || "Unknown",
-                last_action: employee.last_action || "Unknown",
+                status: employee.status?.state || "Unknown",
+                last_action: employee.last_action?.relative || "Unknown",
                 days_in_company: employee.days_in_company || 0,
-                effectiveness: employee.effectiveness || 0,
-                wage: employee.wage || 0
-              });
-            }
-          }
-          
-          // Build the positions data
-          const positions = [];
-          if (companyData.positions) {
-            for (const [id, data] of Object.entries(companyData.positions)) {
-              const position = data as any;
-              positions.push({
-                id: parseInt(id, 10),
-                name: position.name || "Unknown",
-                description: position.description || "",
-                required_stats: {
-                  intelligence: position.int_required || 0,
-                  endurance: position.end_required || 0,
-                  manual_labor: position.man_required || 0
-                },
-                employees_count: position.employees_count || 0,
-                max_employees: position.max_employees || 0
-              });
-            }
-          }
-          
-          // Process stock data if available
-          const stockItems = [];
-          if (companyData.stock) {
-            for (const [name, data] of Object.entries(companyData.stock)) {
-              const stock = data as any;
-              stockItems.push({
-                name: name,
-                in_stock: stock.in_stock || 0,
-                daily_usage: stock.daily_usage || 0
+                effectiveness: 100, // Not directly available
+                wage: 0 // Not directly available
               });
             }
           }
@@ -540,24 +515,27 @@ export class TornAPI {
           return {
             id: companyData.ID || companyId,
             name: companyData.name || userData.job.company_name,
-            type: companyData.company_type || this.getCompanyTypeName(userData.job.company_type),
+            type: this.getCompanyTypeName(companyData.company_type || userData.job.company_type),
             rating: companyData.rating || 0,
             employees: {
-              current: companyData.employees_hired || employees.length,
-              max: companyData.employees_max || 0,
+              current: companyData.employees_hired || 0,
+              max: companyData.employees_capacity || 0,
               list: employees
             },
-            positions: positions,
+            positions: [], // Not directly available in API response
             stats: {
-              popularity: companyData.popularity || 0,
-              efficiency: companyData.efficiency || 0,
-              environment: companyData.environment || 0,
-              profitability: companyData.profitability || 0,
+              popularity: companyData.popularity || companyDetailedData.popularity || 0,
+              efficiency: companyDetailedData.efficiency || 0,
+              environment: companyDetailedData.environment || 0,
+              profitability: 0, // Not directly available
               days_old: companyData.days_old || 0,
-              daily_revenue: companyData.daily_customers || 0,
-              weekly_profit: companyData.weekly_profit || 0
+              daily_revenue: companyData.daily_income || 0,
+              weekly_profit: companyData.weekly_income || 0
             },
-            stock: stockItems,
+            stock: [], // Not shown in basic view
+            funds: companyDetailedData.company_funds || 0,
+            bank: companyDetailedData.company_bank || 0,
+            advertising_budget: companyDetailedData.advertising_budget || 0,
             last_updated: new Date().toISOString()
           };
         } catch (companyError) {
