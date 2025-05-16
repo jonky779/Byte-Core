@@ -114,13 +114,9 @@ export default function PlayerStats() {
             </div>
             
             <div className="flex mb-3">
-              {/* Simple player avatar with direct image */}
-              <div className="w-14 h-14 mr-3">
-                <img 
-                  src={playerStats.profile_image}
-                  alt={playerStats.name || "Player"}
-                  className="w-14 h-14 rounded-lg object-cover bg-primary bg-opacity-20"
-                />
+              {/* User avatar - simplified */}
+              <div className="w-14 h-14 mr-3 rounded-lg bg-blue-500 flex items-center justify-center text-white font-bold">
+                {playerStats.name?.charAt(0).toUpperCase() || "?"}
               </div>
               <div>
                 <h4 className="font-rajdhani font-semibold">{playerStats.name}</h4>
