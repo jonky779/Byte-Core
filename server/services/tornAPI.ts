@@ -239,15 +239,25 @@ export class TornAPI {
     }
   }
   
+  // Cache to store player data by apiKey to prevent data leakage between users
+  private playerCache: Map<string, any> = new Map();
+  
   public async getPlayerStats(apiKey: string): Promise<PlayerStats> {
     try {
+      // Clear cache for this API key to ensure fresh data
+      this.playerCache.delete(apiKey);
+      
       const data = await this.makeRequest("user/?selections=basic,profile,battlestats,bars,money,travel", apiKey);
+      
+      // Store this user's data in the cache
+      this.playerCache.set(apiKey, data);
       
       // Format the data into PlayerStats object
       return {
         player_id: data.player_id || 0,
         name: data.name || "Unknown",
         level: data.level || 1,
+        rank: data.rank || "Unknown", // Add rank directly from API response
         status: data.status?.state || "Offline",
         last_action: data.last_action?.relative || "Unknown",
         energy: {
