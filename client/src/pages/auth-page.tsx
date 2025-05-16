@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -7,8 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Helmet } from "react-helmet";
 
@@ -17,18 +16,11 @@ const loginSchema = z.object({
   rememberMe: z.boolean().optional().default(false),
 });
 
-const registerSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  apiKey: z.string().min(16, "Torn API Key should be 16 characters"),
-});
-
 type LoginFormValues = z.infer<typeof loginSchema>;
-type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function AuthPage() {
-  const [activeTab, setActiveTab] = useState<string>("login");
   const [location, navigate] = useLocation();
-  const { user, loginMutation, registerMutation } = useAuth();
+  const { user, loginMutation } = useAuth();
 
   // Redirect to home if already logged in
   useEffect(() => {
@@ -44,21 +36,25 @@ export default function AuthPage() {
       rememberMe: true,
     },
   });
-
-  const registerForm = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: {
-      username: "",
-      apiKey: "",
-    },
-  });
+  
+  // Check local storage for saved API key to prevent duplicate registrations
+  useEffect(() => {
+    const savedApiKey = localStorage.getItem('byte_core_api_key');
+    if (savedApiKey) {
+      loginForm.setValue('apiKey', savedApiKey);
+      loginForm.setValue('rememberMe', true);
+    }
+  }, []);
 
   const onLoginSubmit = (values: LoginFormValues) => {
     loginMutation.mutate(values);
   };
 
-  const onRegisterSubmit = (values: RegisterFormValues) => {
-    registerMutation.mutate(values);
+  // Toggle theme function
+  const toggleTheme = () => {
+    const theme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+    document.documentElement.classList.toggle('dark');
+    localStorage.setItem('theme', theme);
   };
 
   if (user) {
@@ -69,13 +65,13 @@ export default function AuthPage() {
   return (
     <>
       <Helmet>
-        <title>Login | Byte-Core Vault</title>
-        <meta name="description" content="Login to Byte-Core Vault to access comprehensive Torn RPG information and tracking tools." />
+        <title>Sign In | Byte-Core Vault</title>
+        <meta name="description" content="Access comprehensive Torn RPG information and tracking tools with Byte-Core Vault." />
       </Helmet>
       
-      <div className="min-h-screen flex flex-col md:flex-row bg-game-black">
+      <div className="min-h-screen flex flex-col md:flex-row bg-game-black dark:bg-gray-950">
         {/* Hero Section */}
-        <div className="hidden md:flex md:w-1/2 bg-game-dark flex-col justify-center items-center px-8 border-r border-gray-700">
+        <div className="hidden md:flex md:w-1/2 bg-game-dark dark:bg-gray-900 flex-col justify-center items-center px-8 border-r border-gray-700">
           <div className="max-w-md text-center">
             <div className="mb-6 inline-block">
               <div className="w-20 h-20 flex items-center justify-center rounded-lg bg-primary bg-opacity-30 mx-auto">
@@ -84,7 +80,7 @@ export default function AuthPage() {
                 </svg>
               </div>
             </div>
-            <h1 className="font-rajdhani font-bold text-4xl mb-2 tracking-wide">BYTE-CORE VAULT</h1>
+            <h1 className="font-bold text-4xl mb-2 tracking-wide bg-gradient-to-r from-primary-light to-primary text-transparent bg-clip-text">BYTE-CORE VAULT</h1>
             <h2 className="text-lg text-gray-300 mb-6">Your Ultimate Torn RPG Dashboard</h2>
             <div className="space-y-4 mb-8 text-left text-gray-300">
               <div className="flex items-start">
@@ -112,166 +108,108 @@ export default function AuthPage() {
                 <span>Comprehensive crawler for gathering player data</span>
               </div>
             </div>
-            <div className="text-sm text-gray-400">
-              Sign in or create an account to access all these features and more.
-            </div>
           </div>
         </div>
       
-        {/* Auth Forms Section */}
-        <div className="flex-1 flex flex-col justify-center items-center p-4 md:p-8">
+        {/* Auth Form Section */}
+        <div className="flex-1 flex flex-col justify-center items-center p-4 md:p-8 bg-game-dark dark:bg-gray-900">
           <div className="w-full max-w-md">
-            {/* Logo for mobile view */}
-            <div className="md:hidden text-center mb-8">
-              <div className="w-16 h-16 flex items-center justify-center rounded-lg bg-primary bg-opacity-30 mx-auto mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="text-primary-light">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
-                </svg>
+            <div className="flex justify-between items-center mb-8">
+              {/* Mobile Logo */}
+              <div className="md:hidden">
+                <h1 className="font-bold text-2xl tracking-wide bg-gradient-to-r from-primary-light to-primary text-transparent bg-clip-text">BYTE-CORE VAULT</h1>
+                <p className="text-sm text-gray-400">Your Ultimate Torn RPG Dashboard</p>
               </div>
-              <h1 className="font-rajdhani font-bold text-2xl tracking-wide">BYTE-CORE VAULT</h1>
-              <p className="text-sm text-gray-400">Your Ultimate Torn RPG Dashboard</p>
+              
+              {/* Theme Toggle Button */}
+              <Button 
+                variant="outline" 
+                size="icon"
+                onClick={toggleTheme}
+                className="ml-auto rounded-full"
+              >
+                {/* Sun icon for dark mode (shows in dark mode) */}
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="hidden dark:block">
+                  <circle cx="12" cy="12" r="5"></circle>
+                  <line x1="12" y1="1" x2="12" y2="3"></line>
+                  <line x1="12" y1="21" x2="12" y2="23"></line>
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                  <line x1="1" y1="12" x2="3" y2="12"></line>
+                  <line x1="21" y1="12" x2="23" y2="12"></line>
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+                {/* Moon icon for light mode (shows in light mode) */}
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="block dark:hidden">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+              </Button>
             </div>
-            
-            <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid grid-cols-2 mb-4">
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="register">Register</TabsTrigger>
-              </TabsList>
               
-              {/* Login Form */}
-              <TabsContent value="login">
-                <Card className="border-gray-700 bg-game-dark">
-                  <CardHeader>
-                    <CardTitle>Login</CardTitle>
-                    <CardDescription>Enter your credentials to access your dashboard</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Form {...loginForm}>
-                      <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
-                        <FormField
-                          control={loginForm.control}
-                          name="apiKey"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Torn API Key</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  placeholder="Paste your Torn API key here" 
-                                  {...field} 
-                                  className="bg-game-panel border-gray-700"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                              <p className="text-xs text-gray-400 mt-1">
-                                <a href="https://www.torn.com/preferences.php#tab=api&step=addNewKey&title=Byte-Core%20Vault&type=3" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Generate a Torn API key here</a>
-                              </p>
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={loginForm.control}
-                          name="rememberMe"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-center space-x-2 space-y-0 mt-2">
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                  id="rememberMe"
-                                  className="data-[state=checked]:bg-primary"
-                                />
-                              </FormControl>
-                              <div className="leading-none">
-                                <FormLabel className="text-sm">Remember me</FormLabel>
-                              </div>
-                            </FormItem>
-                          )}
-                        />
-                        <Button 
-                          type="submit" 
-                          className="w-full bg-primary hover:bg-primary-dark mt-4"
-                          disabled={loginMutation.isPending}
-                        >
-                          {loginMutation.isPending ? "Logging in..." : "Login"}
-                        </Button>
-                      </form>
-                    </Form>
-                  </CardContent>
-                  <CardFooter className="flex flex-col space-y-2 text-sm text-center text-gray-400">
-                    <div>Don't have an account?</div>
-                    <Button variant="link" onClick={() => setActiveTab("register")}>
-                      Create an account
+            <Card className="border-gray-700 bg-gray-900 bg-opacity-50 backdrop-blur-sm dark:bg-gray-800">
+              <CardHeader>
+                <CardTitle className="text-xl text-gray-100">Sign in to Byte-Core Vault</CardTitle>
+                <CardDescription className="text-gray-400">Enter your Torn API key to access your dashboard</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...loginForm}>
+                  <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
+                    <FormField
+                      control={loginForm.control}
+                      name="apiKey"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Torn API Key</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Enter your Torn API key" 
+                              {...field} 
+                              type="password"
+                              autoComplete="current-password" 
+                              className="bg-gray-800 dark:bg-gray-700 border-gray-700"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                          <p className="text-xs text-gray-400 mt-1">
+                            <a href="https://www.torn.com/preferences.php#tab=api&step=addNewKey&title=Byte-Core%20Vault&type=3" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Generate a Torn API key here</a>
+                          </p>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={loginForm.control}
+                      name="rememberMe"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center space-x-2 space-y-0 mt-2">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              id="rememberMe"
+                              className="data-[state=checked]:bg-primary"
+                            />
+                          </FormControl>
+                          <div className="leading-none">
+                            <FormLabel className="text-sm">Remember me</FormLabel>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-primary hover:bg-primary-dark mt-4"
+                      disabled={loginMutation.isPending}
+                    >
+                      {loginMutation.isPending ? "Signing in..." : "Sign in"}
                     </Button>
-                  </CardFooter>
-                </Card>
-              </TabsContent>
-              
-              {/* Register Form */}
-              <TabsContent value="register">
-                <Card className="border-gray-700 bg-game-dark">
-                  <CardHeader>
-                    <CardTitle>Create Account</CardTitle>
-                    <CardDescription>Register to access Byte-Core Vault</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Form {...registerForm}>
-                      <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
-                        <FormField
-                          control={registerForm.control}
-                          name="username"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Username</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  placeholder="Choose a username" 
-                                  {...field} 
-                                  className="bg-game-panel border-gray-700"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={registerForm.control}
-                          name="apiKey"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Torn API Key</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  placeholder="Paste your Torn API key here" 
-                                  {...field} 
-                                  className="bg-game-panel border-gray-700"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                              <p className="text-xs text-gray-400 mt-1">
-                                <a href="https://www.torn.com/preferences.php#tab=api&step=addNewKey&title=Byte-Core%20Vault&type=3" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Generate a Torn API key here</a>
-                              </p>
-                            </FormItem>
-                          )}
-                        />
-                        <Button 
-                          type="submit" 
-                          className="w-full bg-primary hover:bg-primary-dark"
-                          disabled={registerMutation.isPending}
-                        >
-                          {registerMutation.isPending ? "Creating account..." : "Create Account"}
-                        </Button>
-                      </form>
-                    </Form>
-                  </CardContent>
-                  <CardFooter className="flex flex-col space-y-2 text-sm text-center text-gray-400">
-                    <div>Already have an account?</div>
-                    <Button variant="link" onClick={() => setActiveTab("login")}>
-                      Login instead
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </TabsContent>
-            </Tabs>
+                  </form>
+                </Form>
+                <div className="mt-6 text-center text-sm text-gray-400">
+                  <p>New users will be automatically registered with your Torn API key</p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

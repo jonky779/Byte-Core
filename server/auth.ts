@@ -140,7 +140,7 @@ export function setupAuth(app: Express) {
   // API key login
   app.post("/api/login", async (req, res) => {
     try {
-      const { apiKey } = req.body;
+      const { apiKey, rememberMe = false } = req.body;
       
       if (!apiKey) {
         return res.status(400).json({ message: "API key is required" });
@@ -166,6 +166,15 @@ export function setupAuth(app: Express) {
         });
       }
       
+      // Set session cookie expiration based on Remember Me option
+      if (rememberMe) {
+        // Extended session (30 days)
+        req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000;
+      } else {
+        // Default session (expires when browser closes)
+        req.session.cookie.maxAge = null;
+      }
+      
       req.login(user, (err) => {
         if (err) {
           return res.status(500).json({ message: "Error during login" });
@@ -175,7 +184,8 @@ export function setupAuth(app: Express) {
           username: user.username,
           email: user.email,
           apiKey: true,
-          role: user.role || "user"
+          role: user.role || "user",
+          rememberMe: rememberMe
         });
       });
     } catch (error) {

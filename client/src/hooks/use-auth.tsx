@@ -37,7 +37,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
       const res = await apiRequest("POST", "/api/login", credentials);
-      return await res.json();
+      const userData = await res.json();
+      
+      // If rememberMe is true, save API key to localStorage
+      if (credentials.rememberMe) {
+        localStorage.setItem('byte_core_api_key', credentials.apiKey);
+      } else {
+        localStorage.removeItem('byte_core_api_key');
+      }
+      
+      return userData;
     },
     onSuccess: (user: SelectUser) => {
       queryClient.setQueryData(["/api/user"], user);
@@ -74,6 +83,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: () => {
       queryClient.setQueryData(["/api/user"], null);
+      // Remove stored API key on logout
+      localStorage.removeItem('byte_core_api_key');
     },
     onError: (error: Error) => {
       toast({
