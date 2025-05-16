@@ -314,14 +314,14 @@ export class Crawler {
         throw new Error("No API key available for crawler");
       }
       
-      // Get player data from the API
-      const playerData = await this.tornAPI.getPlayerStats(apiKey);
+      // Get player data from the API, passing the player ID to fetch a specific player
+      const playerData = await this.tornAPI.getPlayerStats(apiKey, playerId);
       
-      // In a real implementation, you would store the results
-      // await this.storage.storePlayerData(playerData);
+      // Store the player data for future use
+      await this.storage.storePlayerData(playerId, playerData);
       
       // Log the action
-      this.addLog("Process", `Processed player ID ${playerId}`, true);
+      this.addLog("Process", `Processed player ID ${playerId}: ${playerData.name} (Level ${playerData.level})`, true);
       
       return Promise.resolve();
     } catch (error) {

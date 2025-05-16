@@ -11,33 +11,6 @@ export default function PlayerStats() {
     queryKey: ['/api/player/stats'],
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
-  
-  // Create a default object to avoid TypeScript errors with undefined properties
-  const stats = playerStats || {
-    player_id: 0,
-    name: '',
-    level: 0,
-    rank: '',
-    position: '',
-    status: { state: '', description: '', until: 0 },
-    life: { current: 0, maximum: 0 },
-    energy: { current: 0, maximum: 0 },
-    nerve: { current: 0, maximum: 0 },
-    happy: { current: 0, maximum: 0 },
-    strength: 0,
-    strength_percentage: 0,
-    defense: 0,
-    defense_percentage: 0,
-    speed: 0,
-    speed_percentage: 0,
-    dexterity: 0,
-    dexterity_percentage: 0,
-    money_onhand: 0,
-    points: 0,
-    networth: 0,
-    vault: 0,
-    last_action: { status: '', timestamp: 0, relative: '' }
-  };
   if (isLoading) {
     return (
       <Card className="shadow-md col-span-1 h-full">

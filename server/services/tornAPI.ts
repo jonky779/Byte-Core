@@ -242,16 +242,23 @@ export class TornAPI {
   // This instance variable holds the last used API key to detect misuse patterns
   private _currentRequestApiKey: string | null = null;
   
-  public async getPlayerStats(apiKey: string): Promise<PlayerStats> {
+  public async getPlayerStats(apiKey: string, playerId?: number): Promise<PlayerStats> {
     try {
       // Safety check: Reset key between requests to prevent key reuse
       this._currentRequestApiKey = apiKey;
       
       // Always make a fresh request without caching
-      const data = await this.makeRequest("user/?selections=basic,profile,battlestats,bars,money,travel", apiKey);
+      let endpoint = "user/?selections=basic,profile,battlestats,bars,money,travel";
       
-      // Verify this response matches the API key that made the request
-      if (this._currentRequestApiKey !== apiKey) {
+      // If a playerId is provided (for crawler), use it to fetch specific player data
+      if (playerId) {
+        endpoint = `user/${playerId}?selections=basic,profile,battlestats,bars,money,travel`;
+      }
+      
+      const data = await this.makeRequest(endpoint, apiKey);
+      
+      // For regular user requests (not crawler), verify this response matches the API key that made the request
+      if (!playerId && this._currentRequestApiKey !== apiKey) {
         console.error("API key mismatch detected - potential data leak!");
         throw new Error("Security check failed");
       }

@@ -99,6 +99,7 @@ export interface IStorage {
   getLastCrawlTime(): Promise<number | null>;
   updateLastCrawlTime(timestamp: number): Promise<void>;
   getIndexedPlayerCount(): Promise<number>;
+  storePlayerData(playerId: number, playerData: any): Promise<void>;
   
   // Player search
   searchEmployeeCandidates(params: EmployeeSearchParams): Promise<any>;
@@ -368,6 +369,16 @@ export class MemStorage implements IStorage {
   
   async getIndexedPlayerCount(): Promise<number> {
     return this.playerData.size;
+  }
+  
+  async storePlayerData(playerId: number, playerData: any): Promise<void> {
+    // Store player data with the playerId as the key
+    this.playerData.set(playerId, {
+      ...playerData,
+      indexed_at: new Date().toISOString()
+    });
+    
+    return Promise.resolve();
   }
   
   async searchEmployeeCandidates(params: EmployeeSearchParams): Promise<any> {
