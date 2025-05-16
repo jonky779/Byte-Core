@@ -16,12 +16,23 @@ export interface PlayerStats {
   player_id: number;
   name: string;
   level: number;
-  rank: string;
-  position: string;
-  status: {
-    state: string;
-    description: string;
-    until: number;
+  status: string;
+  job?: {
+    position: string;
+    company_id: number;
+    company_name: string;
+  };
+  faction?: {
+    position: string;
+    faction_id: number;
+    faction_name: string;
+    days_in_faction: number;
+  };
+  profile_image?: string;
+  last_action: {
+    status: string;
+    timestamp: number;
+    relative: string;
   };
   life: {
     current: number;
@@ -39,22 +50,23 @@ export interface PlayerStats {
     current: number;
     maximum: number;
   };
-  strength: number;
-  strength_percentage: number;
-  defense: number;
-  defense_percentage: number;
-  speed: number;
-  speed_percentage: number;
-  dexterity: number;
-  dexterity_percentage: number;
-  money_onhand: number;
-  points: number;
-  networth: number;
-  vault: number;
-  last_action: {
+  stats: {
+    strength: number;
+    defense: number;
+    speed: number;
+    dexterity: number;
+    total: number;
+  };
+  rank: string;
+  money: {
+    current: number;
+    bank: number;
+    points: number;
+  };
+  travel: {
     status: string;
-    timestamp: number;
-    relative: string;
+    destination?: string;
+    return_time?: string;
   };
 }
 
