@@ -146,7 +146,42 @@ export function setupAuth(app: Express) {
         return res.status(400).json({ message: "API key is required" });
       }
       
-      // Force session reset to clear any previous user data
+      // FIRST: Make a direct request to the Torn API to verify the API key and get user data
+      // This ensures we're operating with fresh data directly from the source
+      const response = await fetch(`https://api.torn.com/user/?selections=basic&key=${apiKey}`);
+      const userData = await response.json() as any;
+      
+      // API returned an error
+      if (userData.error) {
+        return res.status(401).json({ 
+          message: "Invalid API key", 
+          details: userData.error.error || "The API key could not be validated" 
+        });
+      }
+      
+      // Get the player name directly from the API response
+      const playerName = userData.name;
+      const playerId = userData.player_id;
+      
+      if (!playerName || !playerId) {
+        return res.status(401).json({ message: "Could not retrieve player details from Torn API" });
+      }
+      
+      console.log(`Verified Torn API key belongs to: ${playerName} (ID: ${playerId})`);
+      
+      // Clear any existing session completely
+      await new Promise<void>((resolve) => {
+        if (req.session) {
+          req.session.destroy((err) => {
+            if (err) console.error("Error destroying session:", err);
+            resolve();
+          });
+        } else {
+          resolve();
+        }
+      });
+      
+      // Create a completely new session
       await new Promise<void>((resolve, reject) => {
         req.session.regenerate((err) => {
           if (err) {
@@ -158,35 +193,11 @@ export function setupAuth(app: Express) {
         });
       });
       
-      // Verify the API key with Torn API
-      const tornAPI = new TornAPI();
-      const apiKeyData = await tornAPI.checkApiKey(apiKey);
-      
-      if (apiKeyData.status === "invalid") {
-        return res.status(401).json({ message: "Invalid Torn API key" });
-      }
-      
-      // Always verify the API key owner from the Torn API
-      const playerName = apiKeyData.name;
-      
-      if (!playerName) {
-        return res.status(401).json({ message: "Could not retrieve player name from Torn API" });
-      }
-      
-      // Get player stats from the API to ensure we have the right data
-      try {
-        // This ensures we load the right data for this API key
-        await tornAPI.getPlayerStats(apiKey);
-        console.log(`Pre-fetched data for player ${playerName} using their API key`);
-      } catch (e) {
-        console.error("Error pre-fetching player data:", e);
-      }
-      
       // Look for existing user with this API key or create a new one
       let user = await storage.getUserByApiKey(apiKey);
       
       if (user) {
-        // Update the username in case it changed
+        // Update the username to match latest from API
         if (user.username !== playerName) {
           console.log(`Updating username from ${user.username} to ${playerName} for user ID ${user.id}`);
           await storage.updateUsername(user.id, playerName);
@@ -194,7 +205,7 @@ export function setupAuth(app: Express) {
         }
       } else {
         // Create a new user with this API key
-        console.log(`Creating new user for ${playerName} with API key`);
+        console.log(`Creating new user for ${playerName} with API key ${apiKey.substring(0, 8)}...`);
         user = await storage.createUser({
           username: playerName,
           password: randomBytes(16).toString('hex'), // Generate random password 
@@ -211,10 +222,20 @@ export function setupAuth(app: Express) {
         req.session.cookie.maxAge = null;
       }
       
+      // Complete the login process
       req.login(user, (err) => {
         if (err) {
           return res.status(500).json({ message: "Error during login" });
         }
+        
+        return res.json({
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          apiKey: true, // Don't send the actual API key
+          role: user.role || "user"
+        });
+      });
         return res.json({
           id: user.id,
           username: user.username,
