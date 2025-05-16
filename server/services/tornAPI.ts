@@ -11,6 +11,7 @@ interface PlayerStats {
   player_id: number;
   name: string;
   level: number;
+  rank: string; // Added rank property to match the API response
   status: "Online" | "Offline" | "Idle" | "Hospital";
   last_action: string;
   energy: {
