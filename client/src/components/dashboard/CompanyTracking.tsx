@@ -114,7 +114,7 @@ export default function CompanyTracking() {
   }
   
   // If the user isn't in a company (id is 0), show a nicer message
-  if (companyData.id === 0 || companyData.name === "No Company") {
+  if (companyData.id === 0 || companyData.name.includes("No Company")) {
     return (
       <Card className="bg-game-dark border-gray-700 shadow-game h-full">
         <div className="p-4 border-b border-gray-700">
