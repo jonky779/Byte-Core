@@ -465,7 +465,7 @@ export default function SettingsPage() {
                         </Button>
                       </div>
                       <p className="text-xs text-gray-400 mt-1">
-                        You can find your API key on the <a href="https://www.torn.com/preferences.php#tab=api" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Torn API settings page</a>
+                        Create an API key: <a href="https://www.torn.com/preferences.php#tab=api?step=addNewKey&title=Byte-Core%20Vault&type=3" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Click here to generate a Byte-Core Vault API key</a>
                       </p>
                     </div>
                     
