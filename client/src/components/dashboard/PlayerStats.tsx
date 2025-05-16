@@ -117,7 +117,7 @@ export default function PlayerStats() {
               {/* Try different Torn API image formats */}
               <div className="relative w-14 h-14 mr-3">
                 <img 
-                  src={`https://profileimages.torn.com/p${playerStats.player_id}.png`}
+                  src={playerStats.profile_image || `https://profileimages.torn.com/p${playerStats.player_id}.png`}
                   alt={playerStats.name || "Player"}
                   className="w-14 h-14 rounded-lg object-cover bg-primary bg-opacity-20"
                   onError={(e) => {
