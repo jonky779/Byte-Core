@@ -49,9 +49,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userAPI = new TornAPI();
       const playerStats = await userAPI.getPlayerStats(user.apiKey);
       
-      // Ensure we're not sending someone else's data
-      if (playerStats.name !== user.username && user.username !== "admin") {
-        console.log(`WARNING: Username mismatch! API shows ${playerStats.name}, user logged in as ${user.username}`);
+      // If the username from API doesn't match our stored username, update it
+      if (playerStats.name !== user.username) {
+        console.log(`Username mismatch detected: API shows ${playerStats.name}, user logged in as ${user.username}`);
+        
+        try {
+          // Update the username in storage
+          await storage.updateUsername(user.id, playerStats.name);
+          
+          // Update the session user object with the new username
+          user.username = playerStats.name;
+          
+          // Force update session
+          req.login(user, (err) => {
+            if (err) {
+              console.error("Error updating session after username change:", err);
+            }
+          });
+        } catch (err) {
+          console.error("Failed to update username:", err);
+        }
       }
       
       res.json(playerStats);
