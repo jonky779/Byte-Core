@@ -464,17 +464,34 @@ export default function SettingsPage() {
                           {isTestingKey ? <Loader2 className="h-4 w-4 animate-spin" /> : "Test"}
                         </Button>
                       </div>
-                      <p className="text-xs text-gray-400 mt-1">
-                        <a 
-                          href="https://www.torn.com/preferences.php#tab=api&step=addNewKey&title=Byte-Core%20Vault&type=limited&circulation=personal&expiry=never&key_usage=basic,battlestats,bars,profile,company,faction,market"
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="text-primary hover:underline flex items-center gap-1"
-                        >
-                          <Shield className="h-3 w-3" />
-                          Click here to automatically create a limited API key for Byte-Core Vault
-                        </a>
-                      </p>
+                      <div className="space-y-2 text-xs text-gray-400 mt-1 bg-game-panel p-3 rounded-md border border-gray-700">
+                        <p className="font-medium mb-1">How to create your API key:</p>
+                        <ol className="list-decimal list-inside space-y-1">
+                          <li>Go to <a 
+                            href="https://www.torn.com/preferences.php#tab=api" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-primary hover:underline"
+                          >
+                            Torn API Settings
+                          </a></li>
+                          <li>Click on "Create New" button</li>
+                          <li>Name: <span className="font-mono bg-gray-800 px-1 rounded">Byte-Core Vault</span></li>
+                          <li>Type: <span className="font-mono bg-gray-800 px-1 rounded">Limited</span></li>
+                          <li>Check the following permissions:
+                            <ul className="list-disc list-inside ml-4 mt-1">
+                              <li>Basic information</li>
+                              <li>Battlestats</li>
+                              <li>Personal stats</li>
+                              <li>Basic profile info</li>
+                              <li>Company details</li>
+                              <li>Faction information</li>
+                              <li>Market data</li>
+                            </ul>
+                          </li>
+                          <li>Click "Create Key" and copy the generated key</li>
+                        </ol>
+                      </div>
                     </div>
                     
                     {testKeyResult && (
