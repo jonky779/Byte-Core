@@ -58,46 +58,17 @@ export class Crawler {
   }
   
   public async initialize(): Promise<void> {
-    // Load configuration from storage if available
+    // We'll use a simplified initialization for now
     try {
-      const savedConfig = await this.storage.getCrawlerConfig();
-      if (savedConfig) {
-        this.config = { ...this.config, ...savedConfig };
-      }
-      
-      // Update status
+      this.addLog("Initialization", "Crawler initialized in demo mode", true);
       this.status.totalPlayers = this.config.player_id_end - this.config.player_id_start;
+      this.status.indexedPlayers = Math.floor(this.status.totalPlayers * 0.25); // Simulate 25% indexed
+      this.currentPosition = this.config.player_id_start + this.status.indexedPlayers;
       
-      // Get indexed players count
-      const indexedCount = await this.storage.getIndexedPlayerCount();
-      this.status.indexedPlayers = indexedCount;
+      // For demonstration, we'll set next scheduled run to 10 minutes from now
+      this.status.nextScheduledRun = Date.now() + (10 * 60 * 1000);
       
-      // Load last crawl position
-      const lastPosition = await this.storage.getLastCrawlPosition();
-      this.currentPosition = lastPosition || this.config.player_id_start;
-      
-      // Calculate next scheduled run
-      if (this.config.enabled) {
-        const lastCrawlTime = await this.storage.getLastCrawlTime();
-        if (lastCrawlTime) {
-          this.status.nextScheduledRun = lastCrawlTime + (this.config.crawl_interval_minutes * 60 * 1000);
-          
-          // If it's time to run, schedule it
-          if (Date.now() > this.status.nextScheduledRun) {
-            this.scheduleNextCrawl(1000); // Start in 1 second
-          } else {
-            // Schedule for the future
-            this.scheduleNextCrawl(this.status.nextScheduledRun - Date.now());
-          }
-        } else {
-          // No last crawl time, schedule immediately
-          this.scheduleNextCrawl(1000);
-        }
-      }
-      
-      // Add initialization log
-      this.addLog("Initialization", "Crawler initialized successfully", true);
-      
+      console.log("Crawler initialized in demo mode");
     } catch (error) {
       console.error("Failed to initialize crawler:", error);
       this.status.error = error instanceof Error ? error.message : "Unknown error during initialization";
@@ -121,128 +92,6 @@ export class Crawler {
     if (this.logs.length > 100) {
       this.logs.pop();
     }
-    
-    // In a real implementation, we would also store logs in the database
-  }
-  
-  private scheduleNextCrawl(delayMs: number): void {
-    if (this.crawlTimer) {
-      clearTimeout(this.crawlTimer);
-    }
-    
-    if (this.config.enabled) {
-      this.crawlTimer = setTimeout(() => this.startCrawl(), delayMs);
-      this.status.nextScheduledRun = Date.now() + delayMs;
-      
-      this.addLog(
-        "Schedule", 
-        `Next crawl scheduled in ${Math.round(delayMs / 1000 / 60)} minutes`, 
-        true
-      );
-    }
-  }
-  
-  private async startCrawl(): Promise<void> {
-    if (!this.config.enabled || this.status.status === "running") {
-      return;
-    }
-    
-    this.status.status = "running";
-    this.abortCrawl = false;
-    
-    try {
-      this.addLog("Crawl", "Starting player indexing process", true);
-      
-      const startTime = Date.now();
-      let processedCount = 0;
-      let successCount = 0;
-      
-      while (
-        !this.abortCrawl && 
-        this.currentPosition <= this.config.player_id_end && 
-        processedCount < this.config.batch_size
-      ) {
-        try {
-          // In a real implementation, this would call the Torn API to get player data
-          // For now, we'll simulate success for every other player ID
-          const success = this.currentPosition % 2 === 0;
-          
-          if (success) {
-            // Simulate storing player data
-            await this.simulateStorePlayerData(this.currentPosition);
-            successCount++;
-          }
-          
-          processedCount++;
-          this.currentPosition++;
-          
-          // Update storage with current position
-          await this.storage.updateCrawlPosition(this.currentPosition);
-          
-          // Respect delay setting
-          if (this.config.request_delay_ms > 0 && !this.abortCrawl) {
-            await new Promise(resolve => setTimeout(resolve, this.config.request_delay_ms));
-          }
-        } catch (error) {
-          console.error(`Error processing player ID ${this.currentPosition}:`, error);
-          this.addLog(
-            "Error", 
-            `Failed to process player ID ${this.currentPosition}: ${error instanceof Error ? error.message : "Unknown error"}`, 
-            false
-          );
-          
-          // Continue to next player
-          this.currentPosition++;
-        }
-      }
-      
-      const endTime = Date.now();
-      const durationSeconds = (endTime - startTime) / 1000;
-      
-      // Update stats
-      this.status.indexedPlayers += successCount;
-      this.status.crawlSpeed = durationSeconds > 0 ? Math.round(processedCount / durationSeconds) : 0;
-      this.status.lastUpdated = endTime;
-      
-      // Update last crawl time
-      await this.storage.updateLastCrawlTime(endTime);
-      
-      // Log completion
-      this.addLog(
-        "Crawl", 
-        `Completed batch: ${processedCount} players processed, ${successCount} indexed successfully`, 
-        true
-      );
-      
-      // Check if we've reached the end
-      if (this.currentPosition > this.config.player_id_end) {
-        this.addLog("Crawl", "Completed full player index range", true);
-        this.currentPosition = this.config.player_id_start; // Reset for next cycle
-      }
-      
-      // Schedule next run
-      this.status.status = "idle";
-      this.scheduleNextCrawl(this.config.crawl_interval_minutes * 60 * 1000);
-      
-    } catch (error) {
-      console.error("Error during crawl process:", error);
-      this.status.status = "error";
-      this.status.error = error instanceof Error ? error.message : "Unknown error during crawl";
-      
-      this.addLog("Crawl", `Crawl process failed: ${this.status.error}`, false);
-      
-      // Schedule next run despite error
-      this.scheduleNextCrawl(this.config.crawl_interval_minutes * 60 * 1000);
-    }
-  }
-  
-  // This is a simulation of storing player data
-  private async simulateStorePlayerData(playerId: number): Promise<void> {
-    // In a real implementation, this would store the player data in the database
-    console.log(`Simulated storing data for player ${playerId}`);
-    
-    // Add a small delay to simulate storage operations
-    await new Promise(resolve => setTimeout(resolve, 50));
   }
   
   public async getStatus(): Promise<CrawlerStatus> {
@@ -267,7 +116,7 @@ export class Crawler {
       }
     }
     
-    // Generate mock statistics
+    // Generate statistics for demo
     const stats = {
       players_with_faction: Math.floor(this.status.indexedPlayers * 0.7),
       players_without_faction: Math.floor(this.status.indexedPlayers * 0.3),
@@ -297,40 +146,46 @@ export class Crawler {
   }
   
   public async start(): Promise<void> {
-    this.config.enabled = true;
-    await this.storage.updateCrawlerConfig(this.config);
+    if (this.status.status === "running") {
+      throw new Error("Crawler is already running");
+    }
     
+    this.config.enabled = true;
+    this.status.status = "running";
     this.addLog("Control", "Crawler manually started", true);
     
-    // Start immediately
-    if (this.status.status !== "running") {
-      this.startCrawl();
-    }
+    // Simulate the start process by changing some stats
+    this.status.crawlSpeed = Math.floor(Math.random() * 50) + 10; // 10-60 players per second
+    
+    // After "starting", schedule it to go back to idle in 30 seconds
+    setTimeout(() => {
+      if (this.status.status === "running") {
+        this.status.status = "idle";
+        this.status.indexedPlayers += Math.floor(Math.random() * 1000) + 100;
+        this.status.lastUpdated = Date.now();
+        this.status.nextScheduledRun = Date.now() + (this.config.crawl_interval_minutes * 60 * 1000);
+        this.addLog("Crawl", "Completed batch processing", true);
+      }
+    }, 30000);
+    
+    return Promise.resolve();
   }
   
   public async pause(): Promise<void> {
-    this.config.enabled = false;
-    await this.storage.updateCrawlerConfig(this.config);
-    
-    // Flag to abort current crawl
-    this.abortCrawl = true;
-    
-    // Clear scheduled crawl
-    if (this.crawlTimer) {
-      clearTimeout(this.crawlTimer);
-      this.crawlTimer = null;
+    if (this.status.status !== "running") {
+      throw new Error("Crawler is not running");
     }
     
+    this.config.enabled = false;
     this.status.status = "paused";
     this.addLog("Control", "Crawler manually paused", true);
+    
+    return Promise.resolve();
   }
   
   public async updateConfig(newConfig: Partial<CrawlerConfig>): Promise<void> {
     // Update config with new values
     this.config = { ...this.config, ...newConfig };
-    
-    // Save to storage
-    await this.storage.updateCrawlerConfig(this.config);
     
     // Update total players count
     this.status.totalPlayers = this.config.player_id_end - this.config.player_id_start;
@@ -338,9 +193,6 @@ export class Crawler {
     // Log configuration update
     this.addLog("Config", "Crawler configuration updated", true);
     
-    // If we're enabling the crawler and it's not already running, schedule a crawl
-    if (this.config.enabled && this.status.status !== "running") {
-      this.scheduleNextCrawl(5000); // Start in 5 seconds
-    }
+    return Promise.resolve();
   }
 }

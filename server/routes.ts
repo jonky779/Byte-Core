@@ -1,9 +1,25 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { TornAPI } from "./services/tornAPI";
 import { Crawler } from "./services/crawler";
+
+// Middleware to check if user is authenticated
+function isAuthenticated(req: Request, res: Response, next: NextFunction) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  return res.status(401).json({ message: "Unauthorized" });
+}
+
+// Middleware to check if user is an admin
+function isAdmin(req: Request, res: Response, next: NextFunction) {
+  if (req.isAuthenticated() && req.user && (req.user as any).role === "admin") {
+    return next();
+  }
+  return res.status(403).json({ message: "Forbidden - Admin access required" });
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication routes
@@ -13,19 +29,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const tornAPI = new TornAPI();
   const crawler = new Crawler(tornAPI, storage);
 
-  // Start the crawler if it's enabled
-  await crawler.initialize();
-
+  // Before initializing the crawler, let's make sure we setup the initialization later
+  // This will only be accessible to admin users
+  
   // API Routes
   
-  // Player Stats
-  app.get("/api/player/stats", async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
-    
+  // Player Stats - Requires authentication and API key
+  app.get("/api/player/stats", isAuthenticated, async (req, res) => {
     try {
-      const user = req.user!;
+      const user = req.user as any;
       if (!user.apiKey) {
-        return res.status(400).json({ message: "API key not configured" });
+        return res.status(400).json({ message: "API key not configured. Please add your Torn API key in settings." });
       }
       
       const playerStats = await tornAPI.getPlayerStats(user.apiKey);

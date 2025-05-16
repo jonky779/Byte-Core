@@ -4,13 +4,6 @@ import { promisify } from "util";
 import createMemoryStore from "memorystore";
 import session from "express-session";
 
-// Extending User type to include apiKey that's not in the database schema
-declare module "@shared/schema" {
-  interface User {
-    apiKey?: string;
-  }
-}
-
 const scryptAsync = promisify(scrypt);
 
 // User settings interface
@@ -117,7 +110,7 @@ export interface IStorage {
   getSystemStats(): Promise<SystemStats>;
   
   // Session store for authentication
-  sessionStore: any; // Using any for session store type
+  sessionStore: any;
 }
 
 export class MemStorage implements IStorage {
