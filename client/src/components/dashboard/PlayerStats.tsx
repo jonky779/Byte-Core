@@ -114,13 +114,21 @@ export default function PlayerStats() {
             </div>
             
             <div className="flex mb-3">
-              <div className="w-14 h-14 rounded-lg mr-3 bg-primary bg-opacity-20 flex items-center justify-center text-2xl font-bold text-primary">
-                {playerStats.name.charAt(0)}
-              </div>
+              {playerStats.profile_image ? (
+                <img 
+                  src={playerStats.profile_image} 
+                  alt={playerStats.name}
+                  className="w-14 h-14 rounded-lg mr-3 object-cover"
+                />
+              ) : (
+                <div className="w-14 h-14 rounded-lg mr-3 bg-primary bg-opacity-20 flex items-center justify-center text-2xl font-bold text-primary">
+                  {playerStats.name ? playerStats.name.charAt(0) : "?"}
+                </div>
+              )}
               <div>
                 <h4 className="font-rajdhani font-semibold">{playerStats.name}</h4>
                 <div className="text-xs text-gray-400 mt-1">Player #{playerStats.player_id}</div>
-                <div className="text-xs font-medium text-secondary mt-1">{playerStats.position}</div>
+                <div className="text-xs font-medium text-secondary mt-1">{playerStats.position || "Civilian"}</div>
               </div>
             </div>
             
@@ -151,33 +159,73 @@ export default function PlayerStats() {
               <div>
                 <div className="flex justify-between text-xs mb-1">
                   <span>Strength</span>
-                  <span className="font-mono">{formatNumber(playerStats.strength)}</span>
+                  <span className="font-mono">
+                    {playerStats.stats?.strength 
+                      ? formatNumber(playerStats.stats.strength) 
+                      : 'Hidden'}
+                  </span>
                 </div>
-                <Progress value={playerStats.strength_percentage} className="h-2 bg-gray-700" indicatorClassName="bg-primary" />
+                <Progress 
+                  value={playerStats.stats?.strength 
+                    ? ((playerStats.stats.strength / (playerStats.stats.total || 1)) * 100) 
+                    : 0} 
+                  className="h-2 bg-gray-700" 
+                  indicatorClassName="bg-primary" 
+                />
               </div>
               
               <div>
                 <div className="flex justify-between text-xs mb-1">
                   <span>Defense</span>
-                  <span className="font-mono">{formatNumber(playerStats.defense)}</span>
+                  <span className="font-mono">
+                    {playerStats.stats?.defense 
+                      ? formatNumber(playerStats.stats.defense) 
+                      : 'Hidden'}
+                  </span>
                 </div>
-                <Progress value={playerStats.defense_percentage} className="h-2 bg-gray-700" indicatorClassName="bg-secondary" />
+                <Progress 
+                  value={playerStats.stats?.defense 
+                    ? ((playerStats.stats.defense / (playerStats.stats.total || 1)) * 100) 
+                    : 0} 
+                  className="h-2 bg-gray-700" 
+                  indicatorClassName="bg-secondary" 
+                />
               </div>
               
               <div>
                 <div className="flex justify-between text-xs mb-1">
                   <span>Speed</span>
-                  <span className="font-mono">{formatNumber(playerStats.speed)}</span>
+                  <span className="font-mono">
+                    {playerStats.stats?.speed 
+                      ? formatNumber(playerStats.stats.speed) 
+                      : 'Hidden'}
+                  </span>
                 </div>
-                <Progress value={playerStats.speed_percentage} className="h-2 bg-gray-700" indicatorClassName="bg-accent" />
+                <Progress 
+                  value={playerStats.stats?.speed 
+                    ? ((playerStats.stats.speed / (playerStats.stats.total || 1)) * 100) 
+                    : 0} 
+                  className="h-2 bg-gray-700" 
+                  indicatorClassName="bg-accent" 
+                />
               </div>
               
               <div>
                 <div className="flex justify-between text-xs mb-1">
                   <span>Dexterity</span>
-                  <span className="font-mono">{formatNumber(playerStats.dexterity)}</span>
+                  <span className="font-mono">
+                    {playerStats.stats?.dexterity 
+                      ? formatNumber(playerStats.stats.dexterity) 
+                      : 'Hidden'}
+                  </span>
                 </div>
-                <Progress value={playerStats.dexterity_percentage} className="h-2 bg-gray-700" indicatorClassName="bg-blue-500" />
+                <Progress 
+                  value={playerStats.stats?.dexterity 
+                    ? ((playerStats.stats.dexterity / (playerStats.stats.total || 1)) * 100) 
+                    : 0} 
+                  className="h-2 bg-gray-700" 
+                  indicatorClassName="bg-blue-500" 
+                />
               </div>
             </div>
           </div>
