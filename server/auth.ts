@@ -162,14 +162,10 @@ export function setupAuth(app: Express) {
       // Important: Get the EXACT user with this API key or create a new one
       let user = await storage.getUserByApiKey(apiKey);
       
-      // Reset the session before login to prevent any data leakage
+      // Don't destroy the session as it's needed for login
+      // Instead, just reset any existing user data
       if (req.session) {
-        await new Promise<void>((resolve) => {
-          req.session.destroy((err) => {
-            if (err) console.error("Session destruction error:", err);
-            resolve();
-          });
-        });
+        req.session.passport = undefined;
       }
       
       if (!user) {
@@ -219,7 +215,7 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/logout", (req, res) => {
-    req.logout((err) => {
+    req.logout(function(err) {
       if (err) {
         return res.status(500).json({ message: "Error during logout" });
       }
