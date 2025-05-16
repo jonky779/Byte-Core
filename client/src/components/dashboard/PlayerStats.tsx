@@ -114,23 +114,13 @@ export default function PlayerStats() {
             </div>
             
             <div className="flex mb-3">
-              {/* Player avatar */}
-              <div className="relative w-14 h-14 mr-3 rounded-lg overflow-hidden bg-primary bg-opacity-20">
+              {/* Simple player avatar with direct image */}
+              <div className="w-14 h-14 mr-3">
                 <img 
                   src={playerStats.profile_image}
                   alt={playerStats.name || "Player"}
-                  className="w-full h-full object-cover"
-                  style={{ objectFit: 'cover', objectPosition: 'center' }}
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.onerror = null;
-                    target.style.display = 'none';
-                    document.getElementById('profileFallback')?.classList.remove('hidden');
-                  }}
+                  className="w-14 h-14 rounded-lg object-cover bg-primary bg-opacity-20"
                 />
-                <div id="profileFallback" className="hidden absolute inset-0 w-14 h-14 rounded-lg bg-primary bg-opacity-20 flex items-center justify-center text-2xl font-bold text-primary">
-                  {playerStats.name ? playerStats.name.charAt(0).toUpperCase() : "?"}
-                </div>
               </div>
               <div>
                 <h4 className="font-rajdhani font-semibold">{playerStats.name}</h4>
