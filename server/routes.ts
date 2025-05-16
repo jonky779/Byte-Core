@@ -28,6 +28,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize services
   const tornAPI = new TornAPI();
   const crawler = new Crawler(tornAPI, storage);
+  
+  // Initialize the crawler with demo mode - we'll activate real mode for administrators
+  await crawler.initialize();
 
   // Before initializing the crawler, let's make sure we setup the initialization later
   // This will only be accessible to admin users
