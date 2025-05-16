@@ -1,130 +1,59 @@
+import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
-import { AlertCircle, Loader2 } from "lucide-react";
-import { useAuth } from "@/hooks/use-auth";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { formatNumber } from "@/lib/utils";
 
-export default function PlayerStats() {
-  const { user } = useAuth();
-  
-  const { data: playerStats, error, isLoading, isError } = useQuery({
-    queryKey: ["/api/player/stats"],
-    enabled: !!user?.apiKey
-  });
+interface PlayerStatsProps {
+  playerStats: any;
+}
 
-  const [lastUpdated, setLastUpdated] = useState("Now");
-
-  useEffect(() => {
-    if (playerStats) {
-      setLastUpdated("Just now");
-      
-      const interval = setInterval(() => {
-        setLastUpdated("Just now");
-      }, 60000); // Update every minute
-      
-      return () => clearInterval(interval);
-    }
-  }, [playerStats]);
-
-  if (isLoading) {
-    return (
-      <Card className="col-span-1 md:col-span-2 lg:col-span-3 bg-game-dark border-gray-700 shadow-game">
-        <div className="p-4 border-b border-gray-700">
-          <div className="flex items-center justify-between">
-            <h3 className="font-rajdhani font-bold text-lg">Player Stats</h3>
-            <Skeleton className="w-16 h-6 rounded" />
-          </div>
-        </div>
-        
-        <CardContent className="p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="rounded-lg p-4 border border-gray-700 bg-game-panel">
-                <div className="flex justify-between items-center mb-3">
-                  <Skeleton className="w-24 h-4" />
-                  <Skeleton className="w-6 h-6 rounded-full" />
-                </div>
-                <div className="space-y-4">
-                  <Skeleton className="w-full h-16" />
-                  <Skeleton className="w-full h-8" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (isError || !playerStats) {
-    const errorMessage = user?.apiKey 
-      ? "Failed to load player stats. Please check your API key or try again later."
-      : "Please add your Torn API key in settings to view your player stats.";
-    
-    return (
-      <Card className="col-span-1 md:col-span-2 lg:col-span-3 bg-game-dark border-gray-700 shadow-game">
-        <div className="p-4 border-b border-gray-700">
-          <div className="flex items-center justify-between">
-            <h3 className="font-rajdhani font-bold text-lg">Player Stats</h3>
-          </div>
-        </div>
-        
-        <CardContent className="p-6 flex flex-col items-center justify-center text-center">
-          <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
-          <h3 className="text-xl font-semibold mb-2">Data Unavailable</h3>
-          <p className="text-gray-400 max-w-md">
-            {errorMessage}
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
+export default function PlayerStats({ playerStats = {} }: PlayerStatsProps) {
   return (
-    <Card className="col-span-1 md:col-span-2 lg:col-span-3 bg-game-dark border-gray-700 shadow-game">
-      <div className="p-4 border-b border-gray-700">
-        <div className="flex items-center justify-between">
-          <h3 className="font-rajdhani font-bold text-lg">Player Stats</h3>
-          <Badge variant="secondary">Level {playerStats.level}</Badge>
+    <Card className="shadow-md col-span-1 h-full">
+      <CardContent className="p-0">
+        <div className="p-4 pb-2 flex items-center justify-between">
+          <h3 className="font-semibold font-game-title text-xl">Player Stats</h3>
+          <div className="text-xs font-medium bg-game-black bg-opacity-50 px-2 py-1 rounded-full">
+            Level {playerStats.level || 0}
+          </div>
         </div>
-      </div>
-      
-      <CardContent className="p-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Basic Info */}
-          <div className="bg-game-panel rounded-lg p-4 border border-gray-700 flex flex-col">
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-xs text-gray-400">IDENTITY</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent-light">
-                <rect x="3" y="4" width="18" height="16" rx="2"></rect>
-                <path d="M16 2v4"></path>
-                <path d="M8 2v4"></path>
-                <path d="M3 10h18"></path>
-                <path d="M8 14h.01"></path>
-                <path d="M12 14h.01"></path>
-                <path d="M16 14h.01"></path>
-                <path d="M8 18h.01"></path>
-                <path d="M12 18h.01"></path>
-                <path d="M16 18h.01"></path>
+        
+        <div className="px-4 py-2">
+          <div className="bg-white bg-opacity-5 rounded-lg p-4 pb-3">
+            <div className="flex justify-between items-center text-sm mb-1">
+              <div className="font-medium uppercase text-gray-400">IDENTITY</div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="4" y="5" width="16" height="16" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+                <path d="M16 3V7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M8 3V7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M4 11H20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M11 15H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M12 15V18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
             </div>
             
             <div className="flex mb-3">
               {/* Player avatar with fallback */}
               <div className="w-14 h-14 mr-3">
-                <img 
-                  src={playerStats.profile_image || '/torn_default_avatar.jpg'}
-                  alt={playerStats.name || "Player"}
-                  className="w-14 h-14 rounded-lg object-cover"
-                  style={{ objectFit: 'cover' }}
-                  onError={(e) => {
-                    e.currentTarget.src = '/torn_default_avatar.jpg';
-                  }}
-                />
+                {playerStats.profile_image ? (
+                  <img 
+                    src={playerStats.profile_image}
+                    alt={playerStats.name || "Player"}
+                    className="w-14 h-14 rounded-lg object-cover"
+                    onError={(e) => {
+                      // If image fails to load, use a letter avatar
+                      const div = document.createElement('div');
+                      div.className = "w-14 h-14 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl";
+                      div.innerHTML = `<span>${playerStats.name?.[0]?.toUpperCase() || '?'}</span>`;
+                      e.currentTarget.parentElement?.appendChild(div);
+                      e.currentTarget.remove();
+                    }}
+                  />
+                ) : (
+                  // Default avatar - colored initial
+                  <div className="w-14 h-14 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
+                    <span>{playerStats.name?.[0]?.toUpperCase() || '?'}</span>
+                  </div>
+                )}
               </div>
               <div>
                 <h4 className="font-rajdhani font-semibold">{playerStats.name}</h4>
@@ -138,203 +67,209 @@ export default function PlayerStats() {
             <div className="mt-auto grid grid-cols-2 gap-2 text-sm">
               <div className="bg-game-black bg-opacity-50 rounded p-2">
                 <div className="text-xs text-gray-400">RANK</div>
-                <div className="font-medium">
-                  {/* Directly use the rank value from the API response */}
-                  {playerStats.rank || "Unknown"}
-                </div>
+                <div className="font-medium">{playerStats.rank || "Unknown"}</div>
               </div>
+              
               <div className="bg-game-black bg-opacity-50 rounded p-2">
                 <div className="text-xs text-gray-400">STATUS</div>
-                <div className={`font-medium ${
-                  playerStats.status === "Online" ? "text-green-400" :
-                  playerStats.status === "Idle" ? "text-yellow-400" :
-                  playerStats.status === "Hospital" ? "text-red-400" :
-                  "text-gray-400"
-                }`}>
-                  {/* Directly use the status value from the API response */}
+                <div 
+                  className={`font-medium ${
+                    playerStats.status === "Okay" ? "text-green-400" :
+                    playerStats.status === "Hospital" ? "text-red-400" :
+                    playerStats.status === "Traveling" ? "text-blue-400" :
+                    "text-yellow-400"
+                  }`}
+                >
                   {playerStats.status || "Unknown"}
                 </div>
               </div>
             </div>
           </div>
           
-          {/* Stats */}
-          <div className="bg-game-panel rounded-lg p-4 border border-gray-700">
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-xs text-gray-400">ATTRIBUTES</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent-light">
-                <path d="M18 20V10"></path>
-                <path d="M12 20V4"></path>
-                <path d="M6 20v-6"></path>
+          <div className="mt-4 bg-white bg-opacity-5 rounded-lg p-4 pb-3">
+            <div className="flex justify-between items-center text-sm mb-3">
+              <div className="font-medium uppercase text-gray-400">ATTRIBUTES</div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 6L4 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M20 12L4 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M20 18L4 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="17" cy="6" r="2" fill="currentColor" fillOpacity="0.3"/>
+                <circle cx="7" cy="12" r="2" fill="currentColor" fillOpacity="0.3"/>
+                <circle cx="17" cy="18" r="2" fill="currentColor" fillOpacity="0.3"/>
               </svg>
             </div>
             
-            <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-6">
               <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span>Strength</span>
-                  <span className="font-mono">
-                    {playerStats.stats?.strength 
-                      ? formatNumber(playerStats.stats.strength) 
-                      : 'Hidden'}
-                  </span>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="font-medium">Strength</span>
+                  <span className="font-mono">{formatNumber(playerStats.stats?.strength || 0)}</span>
                 </div>
-                <Progress 
-                  value={playerStats.stats?.strength 
-                    ? ((playerStats.stats.strength / (playerStats.stats.total || 1)) * 100) 
-                    : 0} 
-                  className="h-2 bg-gray-700" 
-                  indicatorClassName="bg-primary" 
-                />
-              </div>
-              
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span>Defense</span>
-                  <span className="font-mono">
-                    {playerStats.stats?.defense 
-                      ? formatNumber(playerStats.stats.defense) 
-                      : 'Hidden'}
-                  </span>
-                </div>
-                <Progress 
-                  value={playerStats.stats?.defense 
-                    ? ((playerStats.stats.defense / (playerStats.stats.total || 1)) * 100) 
-                    : 0} 
-                  className="h-2 bg-gray-700" 
-                  indicatorClassName="bg-secondary" 
-                />
-              </div>
-              
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span>Speed</span>
-                  <span className="font-mono">
-                    {playerStats.stats?.speed 
-                      ? formatNumber(playerStats.stats.speed) 
-                      : 'Hidden'}
-                  </span>
-                </div>
-                <Progress 
-                  value={playerStats.stats?.speed 
-                    ? ((playerStats.stats.speed / (playerStats.stats.total || 1)) * 100) 
-                    : 0} 
-                  className="h-2 bg-gray-700" 
-                  indicatorClassName="bg-accent" 
-                />
-              </div>
-              
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span>Dexterity</span>
-                  <span className="font-mono">
-                    {playerStats.stats?.dexterity 
-                      ? formatNumber(playerStats.stats.dexterity) 
-                      : 'Hidden'}
-                  </span>
-                </div>
-                <Progress 
-                  value={playerStats.stats?.dexterity 
-                    ? ((playerStats.stats.dexterity / (playerStats.stats.total || 1)) * 100) 
-                    : 0} 
-                  className="h-2 bg-gray-700" 
-                  indicatorClassName="bg-blue-500" 
-                />
-              </div>
-            </div>
-          </div>
-          
-          {/* Status */}
-          <div className="bg-game-panel rounded-lg p-4 border border-gray-700">
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-xs text-gray-400">STATUS</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent-light">
-                <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
-              </svg>
-            </div>
-            
-            <div className="space-y-3">
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span>Health</span>
-                  <span>{formatNumber(playerStats.life.current)} / {formatNumber(playerStats.life.maximum)}</span>
-                </div>
-                <div className="h-3 bg-gray-700 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-green-600 to-green-400" 
-                    style={{ width: `${(playerStats.life.current / playerStats.life.maximum) * 100}%` }}
-                  ></div>
+                <div className="relative">
+                  <div className="h-1 w-full bg-gray-700 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-blue-500 rounded-full"
+                      style={{ 
+                        width: `${Math.min(100, (playerStats.stats?.strength || 0) / (playerStats.stats?.total || 1) * 100)}%` 
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
               
               <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span>Energy</span>
-                  <span>{playerStats.energy.current} / {playerStats.energy.maximum}</span>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="font-medium">Defense</span>
+                  <span className="font-mono">{formatNumber(playerStats.stats?.defense || 0)}</span>
                 </div>
-                <div className="h-3 bg-gray-700 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-blue-600 to-blue-400" 
-                    style={{ width: `${(playerStats.energy.current / playerStats.energy.maximum) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-              
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span>Nerve</span>
-                  <span>{playerStats.nerve.current} / {playerStats.nerve.maximum}</span>
-                </div>
-                <div className="h-3 bg-gray-700 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-red-600 to-red-400" 
-                    style={{ width: `${(playerStats.nerve.current / playerStats.nerve.maximum) * 100}%` }}
-                  ></div>
+                <div className="relative">
+                  <div className="h-1 w-full bg-gray-700 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gray-300 rounded-full"
+                      style={{ 
+                        width: `${Math.min(100, (playerStats.stats?.defense || 0) / (playerStats.stats?.total || 1) * 100)}%` 
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
               
               <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span>Happy</span>
-                  <span>{formatNumber(playerStats.happy.current)} / {formatNumber(playerStats.happy.maximum)}</span>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="font-medium">Speed</span>
+                  <span className="font-mono">{formatNumber(playerStats.stats?.speed || 0)}</span>
                 </div>
-                <div className="h-3 bg-gray-700 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-yellow-600 to-yellow-400" 
-                    style={{ width: `${(playerStats.happy.current / playerStats.happy.maximum) * 100}%` }}
-                  ></div>
+                <div className="relative">
+                  <div className="h-1 w-full bg-gray-700 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-yellow-500 rounded-full"
+                      style={{ 
+                        width: `${Math.min(100, (playerStats.stats?.speed || 0) / (playerStats.stats?.total || 1) * 100)}%` 
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="font-medium">Dexterity</span>
+                  <span className="font-mono">{formatNumber(playerStats.stats?.dexterity || 0)}</span>
+                </div>
+                <div className="relative">
+                  <div className="h-1 w-full bg-gray-700 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-red-500 rounded-full"
+                      style={{ 
+                        width: `${Math.min(100, (playerStats.stats?.dexterity || 0) / (playerStats.stats?.total || 1) * 100)}%` 
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
           
-          {/* Finances */}
-          <div className="bg-game-panel rounded-lg p-4 border border-gray-700">
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-xs text-gray-400">FINANCES</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent-light">
-                <path d="M12 1v22"></path>
-                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          <div className="mt-4 bg-white bg-opacity-5 rounded-lg p-4 pb-3">
+            <div className="flex justify-between items-center text-sm mb-3">
+              <div className="font-medium uppercase text-gray-400">STATUS</div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 12H3M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12M21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12M12 17C9.23858 17 7 14.7614 7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12C17 14.7614 14.7614 17 12 17Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
             
-            <div className="space-y-2">
-              <div className="flex justify-between items-center py-1.5 border-b border-gray-700">
-                <span className="text-sm">Money</span>
-                <span className="font-mono font-medium text-green-400">${formatNumber(playerStats.money_onhand)}</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="flex items-center">
+                <div className="w-full">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="font-medium">Health</span>
+                    <span>{playerStats.life?.current} / {playerStats.life?.maximum}</span>
+                  </div>
+                  <div className="h-2 w-full bg-gray-700 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-green-500 rounded-full" 
+                      style={{ width: `${(playerStats.life?.current || 0) / (playerStats.life?.maximum || 1) * 100}%` }}
+                    />
+                  </div>
+                </div>
               </div>
               
-              <div className="flex justify-between items-center py-1.5 border-b border-gray-700">
+              <div className="flex items-center">
+                <div className="w-full">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="font-medium">Energy</span>
+                    <span>{playerStats.energy?.current} / {playerStats.energy?.maximum}</span>
+                  </div>
+                  <div className="h-2 w-full bg-gray-700 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-blue-500 rounded-full" 
+                      style={{ width: `${(playerStats.energy?.current || 0) / (playerStats.energy?.maximum || 1) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center">
+                <div className="w-full">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="font-medium">Nerve</span>
+                    <span>{playerStats.nerve?.current} / {playerStats.nerve?.maximum}</span>
+                  </div>
+                  <div className="h-2 w-full bg-gray-700 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-orange-500 rounded-full" 
+                      style={{ width: `${(playerStats.nerve?.current || 0) / (playerStats.nerve?.maximum || 1) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center">
+                <div className="w-full">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="font-medium">Happiness</span>
+                    <span>{playerStats.happy?.current} / {playerStats.happy?.maximum}</span>
+                  </div>
+                  <div className="h-2 w-full bg-gray-700 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-yellow-400 rounded-full" 
+                      style={{ width: `${Math.min(100, (playerStats.happy?.current || 0) / (playerStats.happy?.maximum || 1) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-4 mb-1 bg-white bg-opacity-5 rounded-lg p-4 pb-3">
+            <div className="flex justify-between items-center text-sm mb-1">
+              <div className="font-medium uppercase text-gray-400">FINANCES</div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 14C6.10457 14 7 13.1046 7 12C7 10.8954 6.10457 10 5 10C3.89543 10 3 10.8954 3 12C3 13.1046 3.89543 14 5 14Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+                <path d="M12 7C13.1046 7 14 6.10457 14 5C14 3.89543 13.1046 3 12 3C10.8954 3 10 3.89543 10 5C10 6.10457 10.8954 7 12 7Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+                <path d="M19 14C20.1046 14 21 13.1046 21 12C21 10.8954 20.1046 10 19 10C17.8954 10 17 10.8954 17 12C17 13.1046 17.8954 14 19 14Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+                <path d="M5 14V17.5C5 18.8807 8.13401 20 12 20C15.866 20 19 18.8807 19 17.5V14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M12 7V20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="flex items-center justify-between py-2 border-b border-gray-700">
+                <span className="text-sm">Cash</span>
+                <span className="font-mono font-medium text-green-400">${formatNumber(playerStats.money_onhand || 0)}</span>
+              </div>
+              
+              <div className="flex items-center justify-between py-2 border-b border-gray-700">
                 <span className="text-sm">Points</span>
-                <span className="font-mono font-medium text-purple-400">{formatNumber(playerStats.points)}</span>
+                <span className="font-mono font-medium text-yellow-400">{formatNumber(playerStats.points || 0)}</span>
               </div>
               
-              <div className="flex justify-between items-center py-1.5 border-b border-gray-700">
-                <span className="text-sm">Networth</span>
-                <span className="font-mono font-medium text-blue-400">${formatNumber(playerStats.networth)}</span>
+              <div className="flex items-center justify-between py-2 border-b border-gray-700">
+                <span className="text-sm">Net Worth</span>
+                <span className="font-mono font-medium text-green-400">${formatNumber(playerStats.networth || 0)}</span>
               </div>
               
-              <div className="flex justify-between items-center py-1.5">
+              <div className="flex items-center justify-between py-2 border-b border-gray-700">
                 <span className="text-sm">Vault</span>
                 <span className="font-mono font-medium text-yellow-400">${formatNumber(playerStats.vault || 0)}</span>
               </div>
