@@ -176,12 +176,12 @@ export default function CompanyTracking() {
         <div className="grid grid-cols-2 gap-2 mb-4">
           <div className="bg-game-panel rounded p-2 text-center">
             <div className="text-2xl font-rajdhani font-bold">
-              {companyData.employees.current}<span className="text-xs text-gray-400">/{companyData.employees.max}</span>
+              {companyData.employees.list ? companyData.employees.list.length : 0}<span className="text-xs text-gray-400">/{companyData.employees.max}</span>
             </div>
             <div className="text-xs text-gray-400">EMPLOYEES</div>
           </div>
           <div className="bg-game-panel rounded p-2 text-center">
-            <div className="text-2xl font-rajdhani font-bold">{companyData.rating}</div>
+            <div className="text-2xl font-rajdhani font-bold">{companyData.rating || 0}</div>
             <div className="text-xs text-gray-400">STARS</div>
           </div>
         </div>
@@ -190,7 +190,11 @@ export default function CompanyTracking() {
         <div className="mb-3">
           <div className="text-xs text-gray-400 uppercase font-semibold mb-2">Top Employees</div>
           <div className="space-y-2">
-            {companyData.employees.list.slice(0, 3).map((employee) => (
+            {/* Sort by effectiveness and take top 3 */}
+            {[...companyData.employees.list]
+              .sort((a, b) => (b.effectiveness || 0) - (a.effectiveness || 0))
+              .slice(0, 3)
+              .map((employee) => (
               <div key={employee.id} className="bg-game-panel rounded p-2 flex items-center">
                 <div className="w-8 h-8 rounded-full bg-primary bg-opacity-30 flex items-center justify-center mr-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary-light">
@@ -208,7 +212,7 @@ export default function CompanyTracking() {
                 </div>
                 <div className="text-right">
                   <div className={`text-xs font-medium ${getStatusColor(employee.status)}`}>{employee.status}</div>
-                  <div className="text-xs text-gray-400">{employee.last_action}</div>
+                  <div className="text-xs text-gray-400">{employee.last_action || 'N/A'}</div>
                 </div>
               </div>
             ))}
