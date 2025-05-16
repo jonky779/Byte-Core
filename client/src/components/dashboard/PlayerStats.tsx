@@ -1,12 +1,45 @@
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { formatNumber } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
+import { AlertCircle } from "lucide-react";
 
-interface PlayerStatsProps {
-  playerStats: any;
-}
+export default function PlayerStats() {
+  const { data: playerStats = {}, isLoading, error } = useQuery({
+    queryKey: ['/api/player/stats'],
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+  if (isLoading) {
+    return (
+      <Card className="shadow-md col-span-1 h-full">
+        <CardContent className="p-4">
+          <h3 className="font-semibold font-game-title text-xl mb-4">Player Stats</h3>
+          <div className="space-y-4">
+            <Skeleton className="h-[200px] w-full rounded-md" />
+            <Skeleton className="h-[200px] w-full rounded-md" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
-export default function PlayerStats({ playerStats = {} }: PlayerStatsProps) {
+  if (error) {
+    return (
+      <Card className="shadow-md col-span-1 h-full">
+        <CardContent className="p-4">
+          <div className="flex items-center space-x-2 text-red-500">
+            <AlertCircle size={18} />
+            <h3 className="font-semibold">Error Loading Player Stats</h3>
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {error instanceof Error ? error.message : "Failed to load player data"}
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="shadow-md col-span-1 h-full">
       <CardContent className="p-0">
