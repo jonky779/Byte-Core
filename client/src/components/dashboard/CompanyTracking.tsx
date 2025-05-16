@@ -12,8 +12,10 @@ interface Employee {
   id: number;
   name: string;
   position: string;
-  status: EmployeeStatus;
+  status: string;
   last_action: string;
+  days_in_company?: number;
+  effectiveness?: number;
 }
 
 interface CompanyData {
@@ -37,13 +39,23 @@ export default function CompanyTracking() {
   });
   
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Online": 
-      case "Okay": return "text-green-400";
-      case "Idle": return "text-yellow-400";
-      case "Offline": return "text-red-400";
-      case "Hospital": return "text-red-400";
-      default: return "text-gray-400";
+    switch (status?.toLowerCase()) {
+      case "online": 
+      case "okay": 
+        return "text-green-400";
+      case "idle": 
+        return "text-yellow-400";
+      case "offline": 
+        return "text-gray-400";
+      case "hospital": 
+        return "text-red-400";
+      case "traveling": 
+        return "text-blue-400";
+      case "federal": 
+      case "jail": 
+        return "text-orange-400";
+      default: 
+        return "text-gray-400";
     }
   };
 

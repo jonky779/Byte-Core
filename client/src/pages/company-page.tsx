@@ -101,16 +101,21 @@ export default function CompanyPage() {
   };
   
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "Online": 
-      case "Okay": 
-        return <Badge className="bg-green-500/20 text-green-500 hover:bg-green-500/30">Online</Badge>;
-      case "Idle": 
+    switch (status?.toLowerCase()) {
+      case "online": 
+      case "okay": 
+        return <Badge className="bg-green-500/20 text-green-500 hover:bg-green-500/30">Okay</Badge>;
+      case "idle": 
         return <Badge className="bg-yellow-500/20 text-yellow-500 hover:bg-yellow-500/30">Idle</Badge>;
-      case "Offline": 
-        return <Badge className="bg-red-500/20 text-red-500 hover:bg-red-500/30">Offline</Badge>;
-      case "Hospital": 
-        return <Badge className="bg-gray-500/20 text-gray-400 hover:bg-gray-500/30">Hospital</Badge>;
+      case "offline": 
+        return <Badge className="bg-gray-500/20 text-gray-400 hover:bg-gray-500/30">Offline</Badge>;
+      case "hospital": 
+        return <Badge className="bg-red-500/20 text-red-500 hover:bg-red-500/30">Hospital</Badge>;
+      case "traveling": 
+        return <Badge className="bg-blue-500/20 text-blue-500 hover:bg-blue-500/30">Traveling</Badge>;
+      case "jail":
+      case "federal": 
+        return <Badge className="bg-orange-500/20 text-orange-500 hover:bg-orange-500/30">Jail</Badge>;
       default: 
         return <Badge variant="outline">{status}</Badge>;
     }
