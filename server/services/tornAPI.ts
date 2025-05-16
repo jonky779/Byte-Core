@@ -327,18 +327,53 @@ export class TornAPI {
   
   public async getCompanyData(apiKey: string): Promise<CompanyData> {
     try {
-      const data = await this.makeRequest("company/?selections=profile", apiKey);
+      // First check if the user is in a company by fetching user data
+      const userData = await this.makeRequest("user/?selections=job", apiKey);
+      
+      // If the user doesn't have a job or company, return a "Not in a company" response
+      if (!userData.job || !userData.job.company_id) {
+        return {
+          id: 0,
+          name: "No Company",
+          type: "N/A",
+          rating: 0,
+          days_old: 0,
+          weekly_profit: 0,
+          employees: {
+            current: 0,
+            max: 0,
+            list: []
+          },
+          last_updated: new Date().toISOString()
+        };
+      }
+      
+      // User is in a company, fetch company data
+      const data = await this.makeRequest("company/?selections=profile,employees", apiKey);
+      
+      // Map employee data if available
+      const employeesList = Array.isArray(data.employees) 
+        ? data.employees.map((emp: any) => ({
+            id: emp.id || 0,
+            name: emp.name || "Unknown",
+            position: emp.position || "None",
+            status: emp.status || "Offline",
+            last_action: emp.last_action || "Unknown",
+            days_in_company: emp.days_in_company || 0
+          }))
+        : [];
       
       return {
         id: data.ID || 0,
-        name: data.name || "No Company",
+        name: data.name || "Unknown Company",
         type: data.company_type || "Unknown",
         rating: data.rating || 0,
         days_old: data.days_old || 0,
         weekly_profit: data.weekly_profit || 0,
         employees: {
           current: data.employees_hired || 0,
-          max: data.employees_max || 0
+          max: data.employees_max || 0,
+          list: employeesList
         },
         last_updated: new Date().toISOString()
       };
@@ -346,17 +381,21 @@ export class TornAPI {
       console.error("Error fetching company data:", error);
       
       // The user might not be in a company
-      if (error instanceof Error && error.message.includes("not in a company")) {
+      if (error instanceof Error && (
+          error.message.includes("not in a company") || 
+          error.message.includes("Incorrect ID")
+        )) {
         return {
           id: 0,
-          name: "Not in a company",
+          name: "No Company",
           type: "N/A",
           rating: 0,
           days_old: 0,
           weekly_profit: 0,
           employees: {
             current: 0,
-            max: 0
+            max: 0,
+            list: []
           },
           last_updated: new Date().toISOString()
         };
@@ -432,11 +471,32 @@ export class TornAPI {
   
   public async getFactionData(apiKey: string): Promise<FactionData> {
     try {
+      // First check if the user is in a faction by fetching user data
+      const userData = await this.makeRequest("user/?selections=basic,faction", apiKey);
+      
+      // If the user doesn't have a faction, return a "Not in a faction" response
+      if (!userData.faction || !userData.faction.faction_id) {
+        return {
+          id: 0,
+          name: "Not in a Faction",
+          tag: "N/A",
+          leader: {
+            id: 0,
+            name: "N/A"
+          },
+          members_count: 0,
+          respect: 0,
+          territories: 0,
+          last_updated: new Date().toISOString()
+        };
+      }
+      
+      // User is in a faction, fetch faction data
       const data = await this.makeRequest("faction/?selections=basic", apiKey);
       
       return {
         id: data.ID || 0,
-        name: data.name || "No Faction",
+        name: data.name || "Unknown Faction",
         tag: data.tag || "",
         leader: {
           id: data.leader || 0,
@@ -451,10 +511,13 @@ export class TornAPI {
       console.error("Error fetching faction data:", error);
       
       // The user might not be in a faction
-      if (error instanceof Error && error.message.includes("not in a faction")) {
+      if (error instanceof Error && (
+          error.message.includes("not in a faction") || 
+          error.message.includes("Incorrect ID")
+        )) {
         return {
           id: 0,
-          name: "Not in a faction",
+          name: "Not in a Faction",
           tag: "N/A",
           leader: {
             id: 0,

@@ -221,7 +221,7 @@ export default function PlayerStats() {
                   </div>
                   <div className="h-2 w-full bg-gray-700 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-green-500 rounded-full" 
+                      className="h-full bg-blue-500 rounded-full" 
                       style={{ width: `${(playerStats.life?.current || 0) / (playerStats.life?.maximum || 1) * 100}%` }}
                     />
                   </div>
