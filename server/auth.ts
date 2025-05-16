@@ -86,20 +86,38 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req, res) => {
     try {
-      const { username, password, email } = req.body;
+      const { username, apiKey } = req.body;
       
-      // Check if user already exists
+      // Validate input
+      if (!username || !apiKey) {
+        return res.status(400).json({ message: "Username and API key are required" });
+      }
+      
+      // Check if username already exists
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {
         return res.status(400).json({ message: "Username already exists" });
       }
       
-      // Create user
-      const hashedPassword = await hashPassword(password);
+      // Verify the API key with Torn API
+      const tornAPI = new TornAPI();
+      try {
+        const apiKeyData = await tornAPI.checkApiKey(apiKey);
+        
+        if (apiKeyData.status === "invalid") {
+          return res.status(401).json({ message: "Invalid Torn API key" });
+        }
+      } catch (error) {
+        return res.status(401).json({ message: "Invalid Torn API key or API service unavailable" });
+      }
+      
+      // Create user with random password (as we're using API key auth)
+      const randomPassword = await hashPassword(randomBytes(16).toString('hex'));
+      
       const user = await storage.createUser({
         username,
-        password: hashedPassword,
-        email,
+        password: randomPassword,
+        apiKey,
       });
       
       // Log user in
@@ -110,7 +128,7 @@ export function setupAuth(app: Express) {
         return res.status(201).json({
           id: user.id,
           username: user.username,
-          email: user.email,
+          apiKey: true,
         });
       });
     } catch (error) {
