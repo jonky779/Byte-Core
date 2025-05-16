@@ -146,39 +146,63 @@ export function setupAuth(app: Express) {
         return res.status(400).json({ message: "API key is required" });
       }
       
+      console.log(`Login attempt with API key: ${apiKey.substring(0, 4)}...`);
+      
       // Verify the API key with Torn API
       const tornAPI = new TornAPI();
       const apiKeyData = await tornAPI.checkApiKey(apiKey);
       
       if (apiKeyData.status === "invalid") {
+        console.log(`Invalid API key rejected: ${apiKey.substring(0, 4)}...`);
         return res.status(401).json({ message: "Invalid Torn API key" });
       }
       
-      // Get or create a user with this API key
+      console.log(`API key validated for player: ${apiKeyData.name} [${apiKey.substring(0, 4)}...]`);
+      
+      // Important: Get the EXACT user with this API key or create a new one
       let user = await storage.getUserByApiKey(apiKey);
       
+      // Reset the session before login to prevent any data leakage
+      if (req.session) {
+        await new Promise<void>((resolve) => {
+          req.session.destroy((err) => {
+            if (err) console.error("Session destruction error:", err);
+            resolve();
+          });
+        });
+      }
+      
       if (!user) {
+        console.log(`Creating new user for API key: ${apiKey.substring(0, 4)}...`);
         // Create a new user with the Torn API key
         user = await storage.createUser({
           username: apiKeyData.name || "Torn User",
           password: randomBytes(16).toString('hex'), // Generate random password 
           apiKey: apiKey
         });
+      } else {
+        console.log(`Found existing user: ${user.id} (${user.username}) for API key: ${apiKey.substring(0, 4)}...`);
       }
       
       // Set session cookie expiration based on Remember Me option
-      if (rememberMe) {
-        // Extended session (30 days)
-        req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000;
-      } else {
-        // Default session (expires when browser closes)
-        req.session.cookie.maxAge = null;
+      if (req.session) {
+        if (rememberMe) {
+          // Extended session (30 days)
+          req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000;
+        } else {
+          // Default session (24 hours)
+          req.session.cookie.maxAge = 24 * 60 * 60 * 1000;
+        }
       }
       
       req.login(user, (err) => {
         if (err) {
+          console.error(`Login error for user ${user.id}:`, err);
           return res.status(500).json({ message: "Error during login" });
         }
+        
+        console.log(`User logged in successfully: ${user.id} (${user.username})`);
+        
         return res.json({
           id: user.id,
           username: user.username,

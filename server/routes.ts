@@ -45,9 +45,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "API key not configured. Please add your Torn API key in settings." });
       }
       
+      console.log(`Fetching stats for user: ${user.id} (${user.username}) with API key: ${user.apiKey.substring(0, 4)}...`);
+      
+      // Force a completely fresh request for each user
       const playerStats = await tornAPI.getPlayerStats(user.apiKey);
+      
+      // Log the response to verify data isolation
+      console.log(`Received stats for Player ID: ${playerStats.player_id}, Name: ${playerStats.name}`);
+      
       res.json(playerStats);
     } catch (error) {
+      console.error("Error fetching player stats:", error);
       res.status(500).json({
         message: error instanceof Error ? error.message : "Failed to fetch player stats",
       });

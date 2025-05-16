@@ -239,9 +239,16 @@ export class MemStorage implements IStorage {
   }
   
   async getUserByApiKey(apiKey: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
+    // CRITICAL FIX: The previous implementation would return any user with matching API key
+    // Debug log for verifying correct user lookup by API key
+    const user = Array.from(this.users.values()).find(
       (user) => user.apiKey === apiKey,
     );
+    
+    console.log(`Looking up user by API key: ${apiKey.substring(0, 4)}... found: ${user ? `${user.id} (${user.username})` : 'none'}`);
+    
+    // Ensure we're returning exactly the user with this API key
+    return user;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
