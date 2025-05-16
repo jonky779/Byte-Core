@@ -515,33 +515,43 @@ export class TornAPI {
   }
   
   public async getBazaarItems(apiKey: string, category: string = 'all'): Promise<BazaarItems> {
-    // Mock data for demonstration
-    return {
-      items: [
-        {
-          id: 1,
-          name: "Item1",
-          type: "Weapon",
-          category: "Primary",
-          price: 950000,
-          market_price: 1000000,
-          quantity: 5,
-          percentage_below_market: 5
-        },
-        {
-          id: 2,
-          name: "Item2",
-          type: "Medical",
-          category: "Drug",
-          price: 475000,
-          market_price: 500000,
-          quantity: 10,
-          percentage_below_market: 5
-        }
-      ],
-      categories: ["Primary", "Drug"],
-      last_updated: new Date().toISOString()
-    };
+    try {
+      const data = await this.makeRequest("market/?selections=bazaar", apiKey);
+      
+      // Format bazaar items
+      const items = Object.entries(data.bazaar || {})
+        .filter(([_, item]: [string, any]) => category === 'all' || item.category === category)
+        .map(([id, item]: [string, any]) => ({
+          id: parseInt(id),
+          name: item.name,
+          type: item.type,
+          category: item.category,
+          price: item.price,
+          market_price: item.market_price || 0,
+          quantity: item.quantity,
+          percentage_below_market: item.market_price > 0 
+            ? ((item.market_price - item.price) / item.market_price) * 100 
+            : 0
+        }));
+      
+      // Extract unique categories
+      const categories = [...new Set(items.map(item => item.category))];
+      
+      return {
+        items,
+        categories,
+        last_updated: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error("Error fetching bazaar data:", error);
+      
+      // Return empty data if there's an error
+      return {
+        items: [],
+        categories: [],
+        last_updated: new Date().toISOString()
+      };
+    }
   }
   
   public async checkApiStatus(apiKey: string): Promise<ApiStatus> {
