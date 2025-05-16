@@ -264,6 +264,7 @@ export class TornAPI {
         rank: data.rank || "Unknown", // Add rank directly from API response
         status: data.status?.state || "Offline",
         last_action: data.last_action?.relative || "Unknown",
+        profile_image: data.profile?.image || null, // Include the profile image from API
         energy: {
           current: data.energy?.current || 0,
           maximum: data.energy?.maximum || 0
