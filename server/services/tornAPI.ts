@@ -11,7 +11,6 @@ interface PlayerStats {
   player_id: number;
   name: string;
   level: number;
-  rank: string; // Added rank property to match the API response
   status: "Online" | "Offline" | "Idle" | "Hospital";
   last_action: string;
   energy: {
@@ -189,30 +188,18 @@ export class TornAPI {
   }
   
   private async makeRequest(endpoint: string, apiKey: string): Promise<any> {
-    // Direct API call with no shared state - bypass the queue entirely
     const url = `${this.baseUrl}/${endpoint}&key=${apiKey}`;
     
-    console.log(`[DIRECT REQUEST] Making isolated API call with key ${apiKey}`);
-    
-    // Make a completely isolated request with no shared state
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      cache: 'no-store' // Ensure we never use cached data
+    return this.enqueueRequest(async () => {
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      if ((data as ApiResponse).error) {
+        throw new Error((data as ApiResponse).error?.error || "API request failed");
+      }
+      
+      return data;
     });
-    
-    const data = await response.json();
-    
-    if ((data as ApiResponse).error) {
-      throw new Error((data as ApiResponse).error?.error || "API request failed");
-    }
-    
-    // Log who this data belongs to for debugging
-    if (data.name) {
-      console.log(`[DIRECT REQUEST] Received data for user: ${data.name}`);
-    }
-    
-    return data;
   }
   
   public async checkApiKey(apiKey: string): Promise<ApiKeyData> {
@@ -252,35 +239,18 @@ export class TornAPI {
     }
   }
   
-  // Bypass all class shared state to get data directly for a specific API key
+  // Cache to store player data by apiKey to prevent data leakage between users
+  private playerCache: Map<string, any> = new Map();
+  
   public async getPlayerStats(apiKey: string): Promise<PlayerStats> {
     try {
-      // Make a direct API request with this specific key, avoiding all internal state
-      // This ensures complete isolation between different users' data
-      console.log(`DIRECT API CALL FOR KEY: ${apiKey.substring(0, 5)}...`);
+      // Clear cache for this API key to ensure fresh data
+      this.playerCache.delete(apiKey);
       
-      // Use direct fetch to avoid any shared state or cached data
-      const url = `https://api.torn.com/user/?selections=basic,profile,battlestats,bars,money,travel&key=${apiKey}`;
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        cache: 'no-store' // Never use cached data
-      });
+      const data = await this.makeRequest("user/?selections=basic,profile,battlestats,bars,money,travel", apiKey);
       
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status} ${response.statusText}`);
-      }
-      
-      const data = await response.json() as any; // Cast to any for handling
-      
-      // Check for API errors
-      if (data.error) {
-        throw new Error(`Torn API Error: ${data.error.code || 0} - ${data.error.error || 'Unknown error'}`);
-      }
-      
-      // Debug log to verify correct data isolation
-      console.log(`API KEY ${apiKey.substring(0, 5)}... RETURNED DATA FOR: ${data.name} (ID: ${data.player_id})`);
-      
+      // Store this user's data in the cache
+      this.playerCache.set(apiKey, data);
       
       // Format the data into PlayerStats object
       return {

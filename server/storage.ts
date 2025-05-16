@@ -86,7 +86,6 @@ export interface IStorage {
   validateUserPassword(userId: number, password: string): Promise<boolean>;
   updateUserPassword(userId: number, newPassword: string): Promise<void>;
   updateUserApiKey(userId: number, apiKey: string): Promise<void>;
-  updateUsername(userId: number, username: string): Promise<void>;
   
   // Settings management
   getUserSettings(userId: number): Promise<UserSettings>;
@@ -298,15 +297,6 @@ export class MemStorage implements IStorage {
     
     // In a real implementation, we would store this securely
     user.apiKey = apiKey;
-    this.users.set(userId, user);
-  }
-  
-  async updateUsername(userId: number, username: string): Promise<void> {
-    const user = await this.getUser(userId);
-    if (!user) throw new Error("User not found");
-    
-    console.log(`Updating username for user ${userId} from "${user.username}" to "${username}"`);
-    user.username = username;
     this.users.set(userId, user);
   }
   
