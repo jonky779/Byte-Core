@@ -117,22 +117,21 @@ export default function PlayerStats() {
               {/* Try different Torn API image formats */}
               <div className="relative w-14 h-14 mr-3">
                 <img 
-                  src={playerStats.profile_image || 
-                      `https://profileimages.torn.com/${playerStats.player_id}.jpg`}
+                  src={`https://profileimages.torn.com/p${playerStats.player_id}.png`}
                   alt={playerStats.name || "Player"}
                   className="w-14 h-14 rounded-lg object-cover bg-primary bg-opacity-20"
                   onError={(e) => {
-                    // Try alternate URL format
+                    // Try alternate URL format with jpg
                     const target = e.target as HTMLImageElement;
                     target.onerror = null;
-                    target.src = `https://www.torn.com/images/v2/profiles/${playerStats.player_id}/profile.jpg`;
-                    target.onError = (e2) => {
+                    target.src = `https://profileimages.torn.com/p${playerStats.player_id}.jpg`;
+                    const handleFinalError = () => {
                       // If all image sources fail, fallback to initial
-                      const target2 = e2.target as HTMLImageElement;
-                      target2.onerror = null;
-                      target2.style.display = 'none';
+                      target.onerror = null;
+                      target.style.display = 'none';
                       document.getElementById('profileFallback')?.classList.remove('hidden');
                     };
+                    target.onerror = handleFinalError;
                   }}
                 />
                 <div id="profileFallback" className="hidden absolute inset-0 w-14 h-14 rounded-lg bg-primary bg-opacity-20 flex items-center justify-center text-2xl font-bold text-primary">
@@ -142,7 +141,7 @@ export default function PlayerStats() {
               <div>
                 <h4 className="font-rajdhani font-semibold">{playerStats.name}</h4>
                 <div className="text-xs text-gray-400 mt-1">Player #{playerStats.player_id}</div>
-                <div className="text-xs font-medium text-secondary mt-1">
+                <div className="text-xs font-medium bg-gray-800 bg-opacity-70 px-2 py-0.5 rounded text-white mt-1">
                   {playerStats.job?.position || playerStats.faction?.position || "Civilian"}
                 </div>
               </div>

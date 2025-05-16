@@ -103,10 +103,10 @@ export default function FactionTracking() {
         </div>
         
         <CardContent className="p-6 flex flex-col items-center justify-center text-center h-full">
-          <AlertCircle className="h-10 w-10 text-red-500 mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No Faction Data</h3>
+          <Users className="h-10 w-10 text-gray-500 mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Not in a Faction</h3>
           <p className="text-gray-400 text-sm mb-4">
-            {errorMessage}
+            You are currently not a member of any faction.
           </p>
           <Link href="/settings">
             <Button size="sm" variant="outline">
