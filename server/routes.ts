@@ -421,9 +421,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
           details: keyData.error || "The API key could not be validated"
         });
       }
+
+      const playerName = keyData.name;
+      
+      // Update user's username to match their Torn account name
+      if (playerName && playerName !== user.username) {
+        console.log(`User login mismatch - updating from ${user.username} to ${playerName}`);
+        try {
+          await storage.updateUsername(user.id, playerName);
+          user.username = playerName; // Update the session object
+        } catch (err) {
+          console.error("Failed to update username:", err);
+        }
+      }
       
       // Update user's API key
       await storage.updateUserApiKey(user.id, key);
+      
+      // Force update session to ensure it has correct data
+      req.login(user, (err) => {
+        if (err) {
+          console.error("Error refreshing session:", err);
+        }
+      });
       
       res.json({ success: true, message: "API key saved successfully" });
     } catch (error) {

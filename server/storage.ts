@@ -301,6 +301,15 @@ export class MemStorage implements IStorage {
     this.users.set(userId, user);
   }
   
+  async updateUsername(userId: number, username: string): Promise<void> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error("User not found");
+    
+    console.log(`Updating username for user ${userId} from "${user.username}" to "${username}"`);
+    user.username = username;
+    this.users.set(userId, user);
+  }
+  
   private getDefaultSettings(): UserSettings {
     return {
       theme: "dark",
