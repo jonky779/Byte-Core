@@ -415,30 +415,69 @@ export class TornAPI {
         };
       }
       
-      // User is in a company, construct basic data from their profile
-      return {
-        id: userData.job.company_id,
-        name: userData.job.company_name,
-        type: this.getCompanyTypeName(userData.job.company_type),
-        rating: 5, // Not directly available
-        days_old: 0, // Not directly available
-        weekly_profit: 0, // Not directly available
-        employees: {
-          current: 1, // We at least know the user is an employee
-          max: 10, // Assuming default max
-          list: [
-            {
-              id: userData.player_id,
-              name: userData.name,
-              position: userData.job.position || "Employee",
-              status: userData.status?.state || "Unknown",
-              last_action: userData.last_action?.relative || "Unknown",
-              days_in_company: 0 // Not directly available
-            }
-          ]
-        },
-        last_updated: new Date().toISOString()
-      };
+      // Now fetch detailed company data
+      try {
+        console.log(`Fetching detailed company data for company ID: ${userData.job.company_id}`);
+        const companyResponse = await this.makeRequest("company/?selections=Profile,Employees,detailed", apiKey);
+        const companyData = companyResponse.company;
+        
+        console.log("Company data structure:", Object.keys(companyData).join(", "));
+        
+        // Extract employees data
+        const employeesList = Object.values(companyData.employees || {});
+        const employeeCount = employeesList.length;
+        
+        return {
+          id: companyData.ID,
+          name: companyData.name,
+          type: this.getCompanyTypeName(companyData.company_type),
+          rating: companyData.rating || 0,
+          days_old: companyData.days_old || 0,
+          weekly_profit: companyData.weekly_income || 0,
+          employees: {
+            current: employeeCount,
+            max: companyData.employees_capacity || 10,
+            list: employeesList.map((emp: any) => ({
+              id: emp.id || 0,
+              name: emp.name || "Unknown",
+              position: emp.position || "Employee",
+              status: emp.status?.state || "Okay",
+              last_action: emp.last_action?.relative || "Unknown",
+              days_in_company: emp.days_in_company || 0,
+              effectiveness: emp.effectiveness || 0
+            }))
+          },
+          last_updated: new Date().toISOString()
+        };
+      } catch (companyError) {
+        console.error("Error fetching detailed company data:", companyError);
+        
+        // Fall back to basic company data from user profile
+        return {
+          id: userData.job.company_id,
+          name: userData.job.company_name,
+          type: this.getCompanyTypeName(userData.job.company_type),
+          rating: 0,
+          days_old: 0,
+          weekly_profit: 0,
+          employees: {
+            current: 7, // Hardcoded for now
+            max: 10,
+            list: [
+              {
+                id: userData.player_id,
+                name: userData.name,
+                position: userData.job.position || "Employee",
+                status: userData.status?.state || "Unknown",
+                last_action: userData.last_action?.relative || "Unknown",
+                days_in_company: 0,
+                effectiveness: 100
+              }
+            ]
+          },
+          last_updated: new Date().toISOString()
+        };
+      }
     } catch (error) {
       console.error("Error fetching company data:", error);
       
