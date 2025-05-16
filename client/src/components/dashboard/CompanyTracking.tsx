@@ -204,9 +204,19 @@ export default function CompanyTracking() {
         <div className="mb-3">
           <div className="text-xs text-gray-400 uppercase font-semibold mb-2">Top Employees</div>
           <div className="space-y-2">
-            {/* Sort by effectiveness, exclude director, and take top 3 */}
+            {/* Component JSX should return ReactNode, not void */}
+            <div style={{display: 'none'}}>
+              {companyData.employees.list
+                .filter(emp => !emp.position.toLowerCase().includes("director"))
+                .map(emp => {
+                  console.log(`${emp.name}: ${emp.effectiveness}%`);
+                  return null;
+                })
+              }
+            </div>
+            {/* Sort by effectiveness, exclude director, only show high effectiveness (>120%) employees, up to 3 */}
             {[...companyData.employees.list]
-              .filter(emp => !emp.position.toLowerCase().includes("director"))
+              .filter(emp => !emp.position.toLowerCase().includes("director") && (emp.effectiveness || 0) >= 120)
               .sort((a, b) => (b.effectiveness || 0) - (a.effectiveness || 0))
               .slice(0, 3)
               .map((employee) => (
@@ -223,7 +233,16 @@ export default function CompanyTracking() {
                 </div>
                 <div className="flex-grow min-w-0">
                   <div className="text-sm font-medium truncate">{employee.name}</div>
-                  <div className="text-xs text-gray-400">{employee.position}</div>
+                  <div className="text-xs">
+                    <span className="text-gray-400">{employee.position}</span>
+                    <span className={`ml-2 ${
+                      (employee.effectiveness || 0) > 120 ? "text-green-400" : 
+                      (employee.effectiveness || 0) > 90 ? "text-blue-400" : 
+                      (employee.effectiveness || 0) > 70 ? "text-yellow-400" : "text-red-400"
+                    }`}>
+                      {employee.effectiveness || 0}%
+                    </span>
+                  </div>
                 </div>
                 <div className="text-right">
                   <div className={`text-xs font-medium ${getStatusColor(employee.status)}`}>{employee.status}</div>
