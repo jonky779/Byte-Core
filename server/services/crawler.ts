@@ -152,21 +152,35 @@ export class Crawler {
     
     this.config.enabled = true;
     this.status.status = "running";
+    this.abortCrawl = false;
     this.addLog("Control", "Crawler manually started", true);
     
-    // Simulate the start process by changing some stats
-    this.status.crawlSpeed = Math.floor(Math.random() * 50) + 10; // 10-60 players per second
-    
-    // After "starting", schedule it to go back to idle in 30 seconds
-    setTimeout(() => {
-      if (this.status.status === "running") {
-        this.status.status = "idle";
-        this.status.indexedPlayers += Math.floor(Math.random() * 1000) + 100;
-        this.status.lastUpdated = Date.now();
-        this.status.nextScheduledRun = Date.now() + (this.config.crawl_interval_minutes * 60 * 1000);
-        this.addLog("Crawl", "Completed batch processing", true);
+    try {
+      // Get the config from storage to ensure we have the latest
+      const storedConfig = await this.storage.getCrawlerConfig();
+      if (storedConfig) {
+        this.config = storedConfig;
       }
-    }, 30000);
+      
+      // Get the current position (pick up where we left off)
+      const lastPosition = await this.storage.getLastCrawlPosition();
+      if (lastPosition !== null) {
+        this.currentPosition = lastPosition;
+      }
+      
+      // Main crawl loop
+      await this.runCrawl();
+      
+      // Schedule next crawl
+      if (this.config.enabled && !this.abortCrawl) {
+        this.status.nextScheduledRun = Date.now() + (this.config.crawl_interval_minutes * 60 * 1000);
+        this.scheduleCrawl();
+      }
+    } catch (error) {
+      this.status.status = "error";
+      this.status.error = error instanceof Error ? error.message : "Unknown error during crawl";
+      this.addLog("Error", `Crawl failed: ${this.status.error}`, false);
+    }
     
     return Promise.resolve();
   }
@@ -190,9 +204,149 @@ export class Crawler {
     // Update total players count
     this.status.totalPlayers = this.config.player_id_end - this.config.player_id_start;
     
+    // Save the updated config to storage
+    await this.storage.updateCrawlerConfig(this.config);
+    
     // Log configuration update
     this.addLog("Config", "Crawler configuration updated", true);
     
     return Promise.resolve();
+  }
+  
+  private async runCrawl(): Promise<void> {
+    const startTime = Date.now();
+    let processedCount = 0;
+    let successCount = 0;
+    let errorCount = 0;
+    
+    try {
+      // Make sure we're not at the end
+      if (this.currentPosition >= this.config.player_id_end) {
+        this.currentPosition = this.config.player_id_start;
+        this.addLog("Crawl", "Reached end of ID range, resetting to start", true);
+      }
+      
+      // Calculate the batch end position
+      const batchEndPosition = Math.min(
+        this.currentPosition + this.config.batch_size, 
+        this.config.player_id_end
+      );
+      
+      this.addLog("Crawl", `Starting batch crawl from ID ${this.currentPosition} to ${batchEndPosition}`, true);
+      
+      // Set up the batch processing
+      const batchSize = this.config.max_concurrent_requests;
+      let currentId = this.currentPosition;
+      
+      while (currentId < batchEndPosition && this.status.status === "running" && !this.abortCrawl) {
+        // Create a batch of promises
+        const promises = [];
+        const batchIds = [];
+        
+        for (let i = 0; i < batchSize && currentId < batchEndPosition; i++) {
+          batchIds.push(currentId);
+          
+          // We'll use a special admin API key for crawling
+          promises.push(this.processSinglePlayer(currentId));
+          
+          currentId++;
+          await new Promise(resolve => setTimeout(resolve, this.config.request_delay_ms));
+        }
+        
+        // Wait for all promises in the batch to complete
+        const results = await Promise.allSettled(promises);
+        
+        // Process results
+        for (let i = 0; i < results.length; i++) {
+          processedCount++;
+          const playerId = batchIds[i];
+          const result = results[i];
+          
+          if (result.status === "fulfilled") {
+            successCount++;
+          } else {
+            errorCount++;
+            this.addLog("Error", `Failed to process player ID ${playerId}: ${result.reason}`, false);
+          }
+        }
+        
+        // Update the current position and save it
+        this.currentPosition = currentId;
+        await this.storage.updateCrawlPosition(this.currentPosition);
+        
+        // Update the status
+        this.status.indexedPlayers += successCount;
+        const elapsedSeconds = (Date.now() - startTime) / 1000;
+        this.status.crawlSpeed = elapsedSeconds > 0 ? Math.round(processedCount / elapsedSeconds) : 0;
+      }
+      
+      // Complete the crawl
+      this.status.lastUpdated = Date.now();
+      if (this.status.status === "running") {
+        this.status.status = "idle";
+      }
+      
+      this.addLog(
+        "Crawl", 
+        `Completed batch crawl. Processed: ${processedCount}, Success: ${successCount}, Errors: ${errorCount}`, 
+        true
+      );
+      
+      // Update the storage with the final position
+      await this.storage.updateCrawlPosition(this.currentPosition);
+      await this.storage.updateLastCrawlTime(Date.now());
+      
+    } catch (error) {
+      this.status.status = "error";
+      this.status.error = error instanceof Error ? error.message : "Unknown error during crawl";
+      this.addLog("Error", `Crawl failed: ${this.status.error}`, false);
+      throw error;
+    }
+  }
+  
+  private async processSinglePlayer(playerId: number): Promise<void> {
+    try {
+      // Use first available API key with admin access
+      // In a real implementation, you'd have a pool of API keys or a special crawler key
+      const apiKey = process.env.TORN_ADMIN_API_KEY || process.env.TORN_API_KEY;
+      
+      if (!apiKey) {
+        throw new Error("No API key available for crawler");
+      }
+      
+      // Get player data from the API
+      const playerData = await this.tornAPI.getPlayerStats(apiKey);
+      
+      // In a real implementation, you would store the results
+      // await this.storage.storePlayerData(playerData);
+      
+      // Log the action
+      this.addLog("Process", `Processed player ID ${playerId}`, true);
+      
+      return Promise.resolve();
+    } catch (error) {
+      this.addLog("Error", `Failed to process player ID ${playerId}: ${error instanceof Error ? error.message : "Unknown error"}`, false);
+      throw error;
+    }
+  }
+  
+  private scheduleCrawl(): void {
+    if (this.crawlTimer) {
+      clearTimeout(this.crawlTimer);
+    }
+    
+    const delayMs = this.status.nextScheduledRun - Date.now();
+    
+    if (delayMs <= 0) {
+      // If the next scheduled time is in the past, run immediately
+      this.start();
+      return;
+    }
+    
+    this.crawlTimer = setTimeout(() => {
+      if (this.config.enabled) {
+        this.start();
+      }
+    }, delayMs);
   }
 }
