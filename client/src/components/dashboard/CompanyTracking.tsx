@@ -84,7 +84,7 @@ export default function CompanyTracking() {
     );
   }
 
-  if (isError || !companyData || !companyData.employees || !companyData.employees.list) {
+  if (isError || !companyData) {
     const errorMessage = user?.apiKey 
       ? "Failed to load company data. You might not be in a company or there was an API error."
       : "Please add your Torn API key in settings to view your company data.";
@@ -98,7 +98,7 @@ export default function CompanyTracking() {
         </div>
         
         <CardContent className="p-6 flex flex-col items-center justify-center text-center h-full">
-          <AlertCircle className="h-10 w-10 text-red-500 mb-4" />
+          <Building className="h-10 w-10 text-gray-500 mb-4" />
           <h3 className="text-lg font-semibold mb-2">No Company Data</h3>
           <p className="text-gray-400 text-sm mb-4">
             {errorMessage}
@@ -111,6 +111,38 @@ export default function CompanyTracking() {
         </CardContent>
       </Card>
     );
+  }
+  
+  // If the user isn't in a company (id is 0), show a nicer message
+  if (companyData.id === 0 || companyData.name === "No Company") {
+    return (
+      <Card className="bg-game-dark border-gray-700 shadow-game h-full">
+        <div className="p-4 border-b border-gray-700">
+          <div className="flex items-center justify-between">
+            <h3 className="font-rajdhani font-bold text-lg">Company Tracking</h3>
+          </div>
+        </div>
+        
+        <CardContent className="p-6 flex flex-col items-center justify-center text-center h-full">
+          <Building className="h-10 w-10 text-gray-500 mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Not in a Company</h3>
+          <p className="text-gray-400 text-sm mb-4">
+            You are currently not a member of any company.
+          </p>
+          <Link href="/settings">
+            <Button size="sm" variant="outline">
+              Manage API Key
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  // Initialize employees list if it doesn't exist
+  const employees = companyData.employees || { current: 0, max: 0, list: [] };
+  if (!employees.list) {
+    employees.list = [];
   }
 
   return (
