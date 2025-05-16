@@ -19,6 +19,8 @@ export default function PlayerStats() {
   
   // Helper function to safely access nested objects
   const safeObj = (obj: any, path: string, defaultValue: any = undefined) => {
+    if (!obj) return defaultValue;
+    
     const keys = path.split('.');
     let current = obj;
     
@@ -129,21 +131,21 @@ export default function PlayerStats() {
             
             <div className="mt-auto grid grid-cols-2 gap-2 text-sm">
               <div className="bg-game-black bg-opacity-50 rounded p-2">
-                <div className="text-xs text-gray-400">RANK</div>
-                <div className="font-medium">{playerStats.rank || "Unknown"}</div>
+                <div className="text-xs text-gray-400">LEVEL</div>
+                <div className="font-medium">{safeObj(playerStats, 'level', "Unknown")}</div>
               </div>
               
               <div className="bg-game-black bg-opacity-50 rounded p-2">
                 <div className="text-xs text-gray-400">STATUS</div>
                 <div 
                   className={`font-medium ${
-                    playerStats.status === "Okay" ? "text-green-400" :
-                    playerStats.status === "Hospital" ? "text-red-400" :
-                    playerStats.status === "Traveling" ? "text-blue-400" :
+                    safeObj(playerStats, 'status') === "Okay" ? "text-green-400" :
+                    safeObj(playerStats, 'status') === "Hospital" ? "text-red-400" :
+                    safeObj(playerStats, 'status') === "Traveling" ? "text-blue-400" :
                     "text-yellow-400"
                   }`}
                 >
-                  {playerStats.status || "Unknown"}
+                  {safeObj(playerStats, 'status', "Unknown")}
                 </div>
               </div>
             </div>

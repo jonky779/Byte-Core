@@ -36,11 +36,13 @@ export default function CompanyTracking() {
     enabled: !!user?.apiKey
   });
   
-  const getStatusColor = (status: EmployeeStatus) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
-      case "Online": return "text-secondary";
+      case "Online": 
+      case "Okay": return "text-green-400";
       case "Idle": return "text-yellow-400";
       case "Offline": return "text-red-400";
+      case "Hospital": return "text-red-400";
       default: return "text-gray-400";
     }
   };
