@@ -455,14 +455,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update user's API key
       await storage.updateUserApiKey(user.id, key);
       
-      // Force update session to ensure it has correct data
-      req.login(user, (err) => {
-        if (err) {
-          console.error("Error refreshing session:", err);
-        }
-      });
+      // Pre-fetch data with new API key to ensure fresh data and correct caching
+      try {
+        const freshAPI = new TornAPI();
+        await freshAPI.getPlayerStats(key);
+        console.log(`Pre-fetched data for ${playerName} with new API key`);
+      } catch (dataErr) {
+        console.error("Error pre-fetching data with new API key:", dataErr);
+      }
       
-      res.json({ success: true, message: "API key saved successfully" });
+      // Force a complete session reset by regenerating it
+      req.session.regenerate((err) => {
+        if (err) {
+          console.error("Error regenerating session:", err);
+          return res.status(500).json({ message: "Error updating your session" });
+        }
+        
+        // Re-login after session regeneration
+        req.login(user, (loginErr) => {
+          if (loginErr) {
+            console.error("Error logging in after session regeneration:", loginErr);
+            return res.status(500).json({ message: "Error updating your session" });
+          }
+          
+          res.json({ success: true, message: "API key saved successfully" });
+        });
+      });
     } catch (error) {
       res.status(500).json({
         message: error instanceof Error ? error.message : "Failed to save API key",
