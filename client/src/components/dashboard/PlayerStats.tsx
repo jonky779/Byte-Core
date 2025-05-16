@@ -16,6 +16,19 @@ export default function PlayerStats() {
   const safeValue = (value: any, defaultValue: any = 0) => {
     return value !== undefined ? value : defaultValue;
   };
+  
+  // Helper function to safely access nested objects
+  const safeObj = (obj: any, path: string, defaultValue: any = undefined) => {
+    const keys = path.split('.');
+    let current = obj;
+    
+    for (const key of keys) {
+      if (current === undefined || current === null) return defaultValue;
+      current = current[key];
+    }
+    
+    return current !== undefined ? current : defaultValue;
+  };
   if (isLoading) {
     return (
       <Card className="shadow-md col-span-1 h-full">
@@ -82,7 +95,7 @@ export default function PlayerStats() {
             <div className="flex mb-3">
               {/* Player avatar with fallback */}
               <div className="w-14 h-14 mr-3">
-                {playerStats.profile_image ? (
+                {playerStats?.profile_image ? (
                   <img 
                     src={playerStats.profile_image}
                     alt={playerStats.name || "Player"}
@@ -91,7 +104,7 @@ export default function PlayerStats() {
                       // If image fails to load, use a letter avatar
                       const div = document.createElement('div');
                       div.className = "w-14 h-14 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl";
-                      div.innerHTML = `<span>${playerStats.name?.[0]?.toUpperCase() || '?'}</span>`;
+                      div.innerHTML = `<span>${safeObj(playerStats, 'name', '?')[0]?.toUpperCase() || '?'}</span>`;
                       e.currentTarget.parentElement?.appendChild(div);
                       e.currentTarget.remove();
                     }}
@@ -99,15 +112,17 @@ export default function PlayerStats() {
                 ) : (
                   // Default avatar - colored initial
                   <div className="w-14 h-14 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-                    <span>{playerStats.name?.[0]?.toUpperCase() || '?'}</span>
+                    <span>{safeObj(playerStats, 'name', '?')[0]?.toUpperCase() || '?'}</span>
                   </div>
                 )}
               </div>
               <div>
-                <h4 className="font-rajdhani font-semibold">{playerStats.name}</h4>
-                <div className="text-xs text-gray-400 mt-1">Player #{playerStats.player_id}</div>
+                <h4 className="font-rajdhani font-semibold">{safeObj(playerStats, 'name', 'Player')}</h4>
+                <div className="text-xs text-gray-400 mt-1">Player #{safeObj(playerStats, 'player_id', '-')}</div>
                 <div className="text-xs font-medium bg-gray-800 bg-opacity-70 px-2 py-0.5 rounded text-white mt-1">
-                  {playerStats.job?.position || (playerStats.faction?.position === "None" ? "Not in a faction" : playerStats.faction?.position) || "Civilian"}
+                  {safeObj(playerStats, 'company.position', 
+                    safeObj(playerStats, 'faction.position') === "None" ? "Not in a faction" : 
+                    safeObj(playerStats, 'faction.position', "Civilian"))}
                 </div>
               </div>
             </div>

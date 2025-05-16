@@ -103,6 +103,7 @@ export default function CompanyPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Online": 
+      case "Okay": 
         return <Badge className="bg-green-500/20 text-green-500 hover:bg-green-500/30">Online</Badge>;
       case "Idle": 
         return <Badge className="bg-yellow-500/20 text-yellow-500 hover:bg-yellow-500/30">Idle</Badge>;
@@ -111,7 +112,7 @@ export default function CompanyPage() {
       case "Hospital": 
         return <Badge className="bg-gray-500/20 text-gray-400 hover:bg-gray-500/30">Hospital</Badge>;
       default: 
-        return <Badge variant="outline">Unknown</Badge>;
+        return <Badge variant="outline">{status}</Badge>;
     }
   };
   
