@@ -11,6 +11,11 @@ export default function PlayerStats() {
     queryKey: ['/api/player/stats'],
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
+  
+  // Helper function to safely access nested properties
+  const safeValue = (value: any, defaultValue: any = 0) => {
+    return value !== undefined ? value : defaultValue;
+  };
   if (isLoading) {
     return (
       <Card className="shadow-md col-span-1 h-full">
@@ -41,13 +46,22 @@ export default function PlayerStats() {
     );
   }
 
+  // Ensure we have playerStats data with default fallbacks
+  const stats = playerStats || {} as PlayerStatsType;
+  const energy = stats.energy || { current: 0, maximum: 100 };
+  const nerve = stats.nerve || { current: 0, maximum: 100 };
+  const happy = stats.happy || { current: 0, maximum: 100 };
+  const life = stats.life || { current: 0, maximum: 100 };
+  const playerStatus = stats.status || "Unknown";
+  const lastAction = stats.last_action || "Unknown";
+
   return (
     <Card className="shadow-md col-span-1 h-full">
       <CardContent className="p-0">
         <div className="p-4 pb-2 flex items-center justify-between">
           <h3 className="font-semibold font-game-title text-xl">Player Stats</h3>
           <div className="text-xs font-medium bg-game-black bg-opacity-50 px-2 py-1 rounded-full">
-            Level {playerStats.level || 0}
+            Level {stats.level || 0}
           </div>
         </div>
         
