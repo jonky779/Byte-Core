@@ -117,12 +117,12 @@ export default function PlayerStats() {
               {/* Player avatar with fallback */}
               <div className="w-14 h-14 mr-3">
                 <img 
-                  src={playerStats.profile_image || '/torn_default_avatar.png'}
+                  src={playerStats.profile_image || '/torn_default_avatar.jpg'}
                   alt={playerStats.name || "Player"}
                   className="w-14 h-14 rounded-lg object-cover"
                   style={{ objectFit: 'cover' }}
                   onError={(e) => {
-                    e.currentTarget.src = '/torn_default_avatar.png';
+                    e.currentTarget.src = '/torn_default_avatar.jpg';
                   }}
                 />
               </div>
