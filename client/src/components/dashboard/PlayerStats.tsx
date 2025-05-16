@@ -141,7 +141,7 @@ export default function PlayerStats() {
                 <h4 className="font-rajdhani font-semibold">{playerStats.name}</h4>
                 <div className="text-xs text-gray-400 mt-1">Player #{playerStats.player_id}</div>
                 <div className="text-xs font-medium text-secondary mt-1">
-                  {playerStats.faction?.position || playerStats.company?.position || "Civilian"}
+                  {playerStats.job?.position || playerStats.faction?.position || "Civilian"}
                 </div>
               </div>
             </div>
@@ -165,9 +165,10 @@ export default function PlayerStats() {
                   playerStats.status === "Online" ? "text-green-400" :
                   playerStats.status === "Idle" ? "text-yellow-400" :
                   playerStats.status === "Hospital" ? "text-red-400" :
+                  playerStats.status === "Okay" ? "text-blue-400" :
                   "text-gray-400"
                 }`}>
-                  {playerStats.status || "Unknown"}
+                  {playerStats.status === "Okay" ? "Online" : (playerStats.status || "Unknown")}
                 </div>
               </div>
             </div>
