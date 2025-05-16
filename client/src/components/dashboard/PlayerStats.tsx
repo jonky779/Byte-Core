@@ -114,20 +114,23 @@ export default function PlayerStats() {
             </div>
             
             <div className="flex mb-3">
-              {/* Player avatar with direct image */}
+              {/* Player avatar with fallback */}
               <div className="w-14 h-14 mr-3">
                 <img 
-                  src={playerStats.profile_image}
+                  src={playerStats.profile_image || '/torn_default_avatar.png'}
                   alt={playerStats.name || "Player"}
                   className="w-14 h-14 rounded-lg object-cover"
                   style={{ objectFit: 'cover' }}
+                  onError={(e) => {
+                    e.currentTarget.src = '/torn_default_avatar.png';
+                  }}
                 />
               </div>
               <div>
                 <h4 className="font-rajdhani font-semibold">{playerStats.name}</h4>
                 <div className="text-xs text-gray-400 mt-1">Player #{playerStats.player_id}</div>
                 <div className="text-xs font-medium bg-gray-800 bg-opacity-70 px-2 py-0.5 rounded text-white mt-1">
-                  {playerStats.job?.position || playerStats.faction?.position || "Civilian"}
+                  {playerStats.job?.position || (playerStats.faction?.position === "None" ? "Not in a faction" : playerStats.faction?.position) || "Civilian"}
                 </div>
               </div>
             </div>
