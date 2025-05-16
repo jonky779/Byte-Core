@@ -29,20 +29,20 @@ interface CompanyEmployee {
   id: number;
   name: string;
   position: string;
-  status: "Online" | "Offline" | "Idle" | "Hospital";
+  status: string;
   last_action: string;
   days_in_company: number;
-  effectiveness: number;
-  wage: number;
-  nerve: {
+  effectiveness?: number; // Made optional as Torn API may not provide it
+  wage?: number; // Made optional as Torn API may not provide it
+  nerve?: {
     current: number;
     maximum: number;
   };
-  energy: {
+  energy?: {
     current: number;
     maximum: number;
   };
-  activity: {
+  activity?: {
     working: boolean;
     training: boolean;
     traveling: boolean;
@@ -218,33 +218,30 @@ export default function CompanyPage() {
                   {data.employees.current} / {data.employees.max}
                 </div>
                 <Progress 
-                  value={(data.employees.current / data.employees.max) * 100} 
+                  value={(data.employees.current / (data.employees.max || 1)) * 100} 
                   className="h-1.5 mt-1 bg-gray-700" 
-                  indicatorClassName="bg-primary" 
                 />
               </div>
               
               <div className="bg-game-panel rounded p-3 border border-gray-700">
                 <div className="text-xs text-gray-400 mb-1">POPULARITY</div>
                 <div className="text-xl font-rajdhani font-bold">
-                  {data.stats.popularity.toFixed(1)}%
+                  {(data.stats.popularity || 0).toFixed(1)}%
                 </div>
                 <Progress 
-                  value={data.stats.popularity} 
+                  value={data.stats.popularity || 0} 
                   className="h-1.5 mt-1 bg-gray-700" 
-                  indicatorClassName="bg-green-500" 
                 />
               </div>
               
               <div className="bg-game-panel rounded p-3 border border-gray-700">
                 <div className="text-xs text-gray-400 mb-1">EFFICIENCY</div>
                 <div className="text-xl font-rajdhani font-bold">
-                  {data.stats.efficiency.toFixed(1)}%
+                  {(data.stats.efficiency || 0).toFixed(1)}%
                 </div>
                 <Progress 
-                  value={data.stats.efficiency} 
+                  value={data.stats.efficiency || 0} 
                   className="h-1.5 mt-1 bg-gray-700" 
-                  indicatorClassName="bg-blue-500" 
                 />
               </div>
               
@@ -338,7 +335,7 @@ export default function CompanyPage() {
                       <TableCell>{employee.position}</TableCell>
                       <TableCell>{getStatusBadge(employee.status)}</TableCell>
                       <TableCell>
-                        {employee.activity.working ? (
+                        {employee.activity && employee.activity.working ? (
                           <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">
                             Yes
                           </Badge>
@@ -350,19 +347,19 @@ export default function CompanyPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end">
-                          <span className="mr-2">{employee.effectiveness}%</span>
+                          <span className="mr-2">{employee.effectiveness || 100}%</span>
                           <div className="w-16 bg-gray-700 h-2 rounded-full overflow-hidden">
                             <div 
                               className={`h-full ${
-                                employee.effectiveness > 80 ? "bg-green-500" : 
-                                employee.effectiveness > 50 ? "bg-yellow-500" : "bg-red-500"
+                                (employee.effectiveness || 100) > 80 ? "bg-green-500" : 
+                                (employee.effectiveness || 100) > 50 ? "bg-yellow-500" : "bg-red-500"
                               }`}
-                              style={{ width: `${employee.effectiveness}%` }}
+                              style={{ width: `${employee.effectiveness || 100}%` }}
                             ></div>
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-right">${employee.wage.toLocaleString()}</TableCell>
+                      <TableCell className="text-right">${(employee.wage || 0).toLocaleString()}</TableCell>
                     </TableRow>
                   ))
                 ) : (
