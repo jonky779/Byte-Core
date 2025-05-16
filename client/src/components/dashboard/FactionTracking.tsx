@@ -235,12 +235,12 @@ export default function FactionTracking() {
       
       <CardContent className="p-4">
         <div className="mb-4 flex items-center">
-          <div className="w-12 h-12 rounded mr-3 bg-primary bg-opacity-20 flex items-center justify-center">
-            <Users className="text-primary h-6 w-6" />
+          <div className="w-12 h-12 rounded mr-3 bg-blue-600 bg-opacity-20 flex items-center justify-center">
+            <Users className="text-blue-400 h-6 w-6" />
           </div>
           <div>
             <h4 className="font-medium">{factionData.name}</h4>
-            <div className="text-xs text-gray-400">ID: #{factionData.id} • {factionData.type}</div>
+            <div className="text-xs text-gray-400">ID: #{factionData.id} • {factionData.tag}</div>
           </div>
         </div>
         
@@ -253,7 +253,11 @@ export default function FactionTracking() {
             <div className="text-xs text-gray-400">MEMBERS</div>
           </div>
           <div className="bg-game-panel rounded p-2 text-center">
-            <div className="text-2xl font-rajdhani font-bold">{(factionData.respect / 1000000).toFixed(1)}M</div>
+            <div className="text-2xl font-rajdhani font-bold">
+              {factionData.respect >= 1000000 
+                ? `${(factionData.respect / 1000000).toFixed(1)}M` 
+                : factionData.respect.toLocaleString()}
+            </div>
             <div className="text-xs text-gray-400">RESPECT</div>
           </div>
           <div className="bg-game-panel rounded p-2 text-center">
@@ -274,13 +278,13 @@ export default function FactionTracking() {
               <div className="h-full bg-green-500" style={{ width: `${onlinePercentage}%` }}></div>
               <div className="h-full bg-yellow-500" style={{ width: `${idlePercentage}%` }}></div>
               <div className="h-full bg-red-500" style={{ width: `${offlinePercentage}%` }}></div>
-              <div className="h-full bg-gray-600" style={{ width: `${hospitalPercentage}%` }}></div>
+              <div className="h-full bg-blue-500" style={{ width: `${hospitalPercentage}%` }}></div>
             </div>
             <div className="grid grid-cols-4 text-center text-xs py-1">
               <div className="text-green-400">{factionData.member_status.online} Online</div>
               <div className="text-yellow-400">{factionData.member_status.idle} Idle</div>
               <div className="text-red-400">{factionData.member_status.offline} Offline</div>
-              <div className="text-gray-400">{factionData.member_status.hospital} Hospital</div>
+              <div className="text-blue-400">{factionData.member_status.hospital} Hospital</div>
             </div>
           </div>
         </div>
