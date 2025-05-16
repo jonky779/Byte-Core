@@ -168,14 +168,14 @@ export default function PlayerStats() {
               <div>
                 <div className="flex justify-between text-sm mb-2">
                   <span className="font-medium">Strength</span>
-                  <span className="font-mono">{formatNumber(playerStats.stats?.strength || 0)}</span>
+                  <span className="font-mono">{formatNumber(safeObj(playerStats, 'stats.strength', 0))}</span>
                 </div>
                 <div className="relative">
                   <div className="h-1 w-full bg-gray-700 rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-blue-500 rounded-full"
                       style={{ 
-                        width: `${Math.min(100, (playerStats.stats?.strength || 0) / (playerStats.stats?.total || 1) * 100)}%` 
+                        width: `${Math.min(100, safeObj(playerStats, 'stats.strength', 0) / Math.max(1, safeObj(playerStats, 'stats.total', 1)) * 100)}%` 
                       }}
                     />
                   </div>
