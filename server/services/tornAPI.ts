@@ -256,9 +256,6 @@ export class TornAPI {
         throw new Error("Security check failed");
       }
       
-      // Debug profile image
-      console.log("Profile data received:", JSON.stringify(data.profile, null, 2));
-      
       // Format the data into PlayerStats object
       return {
         player_id: data.player_id || 0,
@@ -267,7 +264,7 @@ export class TornAPI {
         rank: data.rank || "Unknown", // Add rank directly from API response
         status: data.status?.state || "Offline",
         last_action: data.last_action?.relative || "Unknown",
-        profile_image: data.profile?.image || null, // Include the profile image from API
+        profile_image: data.profile_image || null, // Include the profile image from API
         energy: {
           current: data.energy?.current || 0,
           maximum: data.energy?.maximum || 0
