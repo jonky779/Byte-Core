@@ -311,9 +311,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/system/crawler/start", async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
-    
+  app.post("/api/system/crawler/start", isAdmin, async (req, res) => {
     try {
       await crawler.start();
       res.json({ success: true, message: "Crawler started successfully" });
@@ -324,9 +322,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/system/crawler/pause", async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
-    
+  app.post("/api/system/crawler/pause", isAdmin, async (req, res) => {
     try {
       await crawler.pause();
       res.json({ success: true, message: "Crawler paused successfully" });
@@ -337,9 +333,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/system/crawler/config", async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
-    
+  app.post("/api/system/crawler/config", isAdmin, async (req, res) => {
     try {
       await crawler.updateConfig(req.body);
       res.json({ success: true, message: "Crawler configuration updated" });
@@ -350,12 +344,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // User Settings
-  app.get("/api/settings", async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
-    
+  // User Settings - Requires authentication
+  app.get("/api/settings", isAuthenticated, async (req, res) => {
     try {
-      const settings = await storage.getUserSettings(req.user!.id);
+      const user = req.user as any;
+      const settings = await storage.getUserSettings(user.id);
       res.json(settings);
     } catch (error) {
       res.status(500).json({
@@ -364,11 +357,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/settings", async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
-    
+  app.post("/api/settings", isAuthenticated, async (req, res) => {
     try {
-      const updatedSettings = await storage.updateUserSettings(req.user!.id, req.body);
+      const user = req.user as any;
+      const updatedSettings = await storage.updateUserSettings(user.id, req.body);
       res.json(updatedSettings);
     } catch (error) {
       res.status(500).json({
@@ -377,12 +369,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // API Key Management
-  app.get("/api/settings/apikey", async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
-    
+  // API Key Management - Requires authentication
+  app.get("/api/settings/apikey", isAuthenticated, async (req, res) => {
     try {
-      const apiKeyData = await tornAPI.checkApiKey(req.user!.apiKey || "");
+      const user = req.user as any;
+      const apiKeyData = await tornAPI.checkApiKey(user.apiKey || "");
       res.json(apiKeyData);
     } catch (error) {
       res.status(500).json({
@@ -391,11 +382,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/settings/apikey", async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
-    
+  app.post("/api/settings/apikey", isAuthenticated, async (req, res) => {
     try {
       const { key } = req.body;
+      const user = req.user as any;
       
       // Validate the API key
       const keyData = await tornAPI.checkApiKey(key);
@@ -407,7 +397,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Update user's API key
-      await storage.updateUserApiKey(req.user!.id, key);
+      await storage.updateUserApiKey(user.id, key);
       
       res.json({ success: true, message: "API key saved successfully" });
     } catch (error) {
