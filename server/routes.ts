@@ -88,7 +88,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "API key not configured. Please add your Torn API key in settings." });
       }
       
-      const companyDetails = await tornAPI.getCompanyDetailedData(user.apiKey);
+      // Create a fresh instance of TornAPI for each request to avoid data leakage
+      const userAPI = new TornAPI();
+      const companyDetails = await userAPI.getCompanyDetailedData(user.apiKey);
       res.json(companyDetails);
     } catch (error) {
       res.status(500).json({
@@ -105,7 +107,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "API key not configured. Please add your Torn API key in settings." });
       }
       
-      const factionData = await tornAPI.getFactionData(user.apiKey);
+      // Create a fresh instance of TornAPI for each request
+      const userAPI = new TornAPI();
+      const factionData = await userAPI.getFactionData(user.apiKey);
       res.json(factionData);
     } catch (error) {
       res.status(500).json({
@@ -121,7 +125,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "API key not configured. Please add your Torn API key in settings." });
       }
       
-      const factionDetails = await tornAPI.getFactionDetailedData(user.apiKey);
+      // Create a fresh instance of TornAPI for each request
+      const userAPI = new TornAPI();
+      const factionDetails = await userAPI.getFactionDetailedData(user.apiKey);
       res.json(factionDetails);
     } catch (error) {
       res.status(500).json({
@@ -139,7 +145,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const category = req.query.category as string || 'all';
-      const bazaarItems = await tornAPI.getBazaarItems(user.apiKey, category);
+      // Create a fresh instance of TornAPI for each request to prevent data leakage
+      const userAPI = new TornAPI();
+      const bazaarItems = await userAPI.getBazaarItems(user.apiKey, category);
       res.json(bazaarItems);
     } catch (error) {
       res.status(500).json({
@@ -278,7 +286,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const crawlStatus = await crawler.getStatus();
       const systemStats = await storage.getSystemStats();
       
-      const apiStatus = await tornAPI.checkApiStatus(user.apiKey);
+      // Create a fresh instance of TornAPI for each request
+      const userAPI = new TornAPI();
+      const apiStatus = await userAPI.checkApiStatus(user.apiKey);
       
       res.json({
         crawler: {
@@ -386,7 +396,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/settings/apikey", isAuthenticated, async (req, res) => {
     try {
       const user = req.user as any;
-      const apiKeyData = await tornAPI.checkApiKey(user.apiKey || "");
+      // Create a fresh instance of TornAPI for each request to ensure data isolation
+      const userAPI = new TornAPI();
+      const apiKeyData = await userAPI.checkApiKey(user.apiKey || "");
       res.json(apiKeyData);
     } catch (error) {
       res.status(500).json({
@@ -400,8 +412,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { key } = req.body;
       const user = req.user as any;
       
-      // Validate the API key
-      const keyData = await tornAPI.checkApiKey(key);
+      // Validate the API key with a fresh TornAPI instance
+      const testAPI = new TornAPI();
+      const keyData = await testAPI.checkApiKey(key);
       if (keyData.status === "invalid") {
         return res.status(400).json({
           message: "Invalid API key",
@@ -438,7 +451,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     try {
       const { key } = req.body;
-      const keyData = await tornAPI.checkApiKey(key);
+      // Create a fresh TornAPI instance to test the key
+      const testAPI = new TornAPI();
+      const keyData = await testAPI.checkApiKey(key);
       res.json(keyData);
     } catch (error) {
       res.status(500).json({
@@ -482,7 +497,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Trigger sync for user data
-      await tornAPI.syncUserData(user.apiKey, user.id);
+      // Create a fresh instance of TornAPI for each request to ensure data isolation
+      const userAPI = new TornAPI();
+      await userAPI.syncUserData(user.apiKey, user.id);
       
       res.json({ success: true, message: "Data sync triggered successfully" });
     } catch (error) {
