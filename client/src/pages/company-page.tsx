@@ -63,14 +63,14 @@ interface CompanyPosition {
 }
 
 interface CompanyStats {
-  popularity: number;
-  efficiency: number;
-  environment: number;
-  profitability: number;
-  days_old: number;
-  daily_revenue: number;
-  weekly_profit: number;
-  production_rate: number;
+  popularity?: number;
+  efficiency?: number;
+  environment?: number;
+  profitability?: number;
+  days_old?: number;
+  daily_revenue?: number;
+  weekly_profit?: number;
+  production_rate?: number;
 }
 
 interface CompanyDetailResponse {
@@ -301,9 +301,12 @@ export default function CompanyPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Positions</SelectItem>
-                  {data.positions.map(position => (
-                    <SelectItem key={position.id} value={position.name}>
-                      {position.name}
+                  {/* Extract unique positions from employees */}
+                  {Array.from(
+                    new Set(data.employees.list.map(emp => emp.position))
+                  ).map(position => (
+                    <SelectItem key={position} value={position}>
+                      {position}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -341,7 +344,8 @@ export default function CompanyPage() {
                       <TableCell>{employee.position}</TableCell>
                       <TableCell>{getStatusBadge(employee.status)}</TableCell>
                       <TableCell>
-                        {employee.activity && employee.activity.working ? (
+                        {/* Infer working status from the employee status */}
+                        {employee.status === "Online" ? (
                           <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">
                             Yes
                           </Badge>
@@ -353,19 +357,17 @@ export default function CompanyPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end">
-                          <span className="mr-2">{employee.effectiveness || 100}%</span>
+                          <span className="mr-2">100%</span>
                           <div className="w-16 bg-gray-700 h-2 rounded-full overflow-hidden">
+                            {/* Since the API doesn't provide actual effectiveness, we'll show a default of 100% */}
                             <div 
-                              className={`h-full ${
-                                (employee.effectiveness || 100) > 80 ? "bg-green-500" : 
-                                (employee.effectiveness || 100) > 50 ? "bg-yellow-500" : "bg-red-500"
-                              }`}
-                              style={{ width: `${employee.effectiveness || 100}%` }}
+                              className="h-full bg-green-500"
+                              style={{ width: "100%" }}
                             ></div>
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-right">${(employee.wage || 0).toLocaleString()}</TableCell>
+                      <TableCell className="text-right">$0</TableCell>
                     </TableRow>
                   ))
                 ) : (
