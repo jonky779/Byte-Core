@@ -51,14 +51,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Company Tracking
-  app.get("/api/company", async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
-    
+  // Company Tracking - Requires authentication and API key
+  app.get("/api/company", isAuthenticated, async (req, res) => {
     try {
-      const user = req.user!;
+      const user = req.user as any;
       if (!user.apiKey) {
-        return res.status(400).json({ message: "API key not configured" });
+        return res.status(400).json({ message: "API key not configured. Please add your Torn API key in settings." });
       }
       
       const companyData = await tornAPI.getCompanyData(user.apiKey);
@@ -70,13 +68,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/company/detail", async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
-    
+  app.get("/api/company/detail", isAuthenticated, async (req, res) => {
     try {
-      const user = req.user!;
+      const user = req.user as any;
       if (!user.apiKey) {
-        return res.status(400).json({ message: "API key not configured" });
+        return res.status(400).json({ message: "API key not configured. Please add your Torn API key in settings." });
       }
       
       const companyDetails = await tornAPI.getCompanyDetailedData(user.apiKey);
@@ -88,14 +84,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Faction Tracking
-  app.get("/api/faction", async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
-    
+  // Faction Tracking - Requires authentication and API key
+  app.get("/api/faction", isAuthenticated, async (req, res) => {
     try {
-      const user = req.user!;
+      const user = req.user as any;
       if (!user.apiKey) {
-        return res.status(400).json({ message: "API key not configured" });
+        return res.status(400).json({ message: "API key not configured. Please add your Torn API key in settings." });
       }
       
       const factionData = await tornAPI.getFactionData(user.apiKey);
@@ -107,13 +101,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/faction/detail", async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
-    
+  app.get("/api/faction/detail", isAuthenticated, async (req, res) => {
     try {
-      const user = req.user!;
+      const user = req.user as any;
       if (!user.apiKey) {
-        return res.status(400).json({ message: "API key not configured" });
+        return res.status(400).json({ message: "API key not configured. Please add your Torn API key in settings." });
       }
       
       const factionDetails = await tornAPI.getFactionDetailedData(user.apiKey);
@@ -125,14 +117,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Bazaar
-  app.get("/api/bazaar", async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
-    
+  // Bazaar - Requires authentication and API key
+  app.get("/api/bazaar", isAuthenticated, async (req, res) => {
     try {
-      const user = req.user!;
+      const user = req.user as any;
       if (!user.apiKey) {
-        return res.status(400).json({ message: "API key not configured" });
+        return res.status(400).json({ message: "API key not configured. Please add your Torn API key in settings." });
       }
       
       const category = req.query.category as string || 'all';
@@ -145,14 +135,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Employees Search
-  app.get("/api/employees/search", async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
-    
+  // Employees Search - Requires authentication and API key
+  app.get("/api/employees/search", isAuthenticated, async (req, res) => {
     try {
-      const user = req.user!;
+      const user = req.user as any;
       if (!user.apiKey) {
-        return res.status(400).json({ message: "API key not configured" });
+        return res.status(400).json({ message: "API key not configured. Please add your Torn API key in settings." });
       }
       
       const page = parseInt(req.query.page as string) || 1;
@@ -194,14 +182,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Faction Search
-  app.get("/api/faction/search", async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
-    
+  // Faction Search - Requires authentication and API key
+  app.get("/api/faction/search", isAuthenticated, async (req, res) => {
     try {
-      const user = req.user!;
+      const user = req.user as any;
       if (!user.apiKey) {
-        return res.status(400).json({ message: "API key not configured" });
+        return res.status(400).json({ message: "API key not configured. Please add your Torn API key in settings." });
       }
       
       const page = parseInt(req.query.page as string) || 1;
@@ -243,10 +229,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Items Database
-  app.get("/api/items", async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
-    
+  // Items Database - Requires authentication
+  app.get("/api/items", isAuthenticated, async (req, res) => {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const category = req.query.category as string || 'all';
@@ -270,14 +254,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // System Status
-  app.get("/api/system/status", async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
-    
+  // System Status - Requires admin privileges
+  app.get("/api/system/status", isAdmin, async (req, res) => {
     try {
-      const user = req.user!;
+      const user = req.user as any;
       if (!user.apiKey) {
-        return res.status(400).json({ message: "API key not configured" });
+        return res.status(400).json({ message: "API key not configured. Please add your Torn API key in settings." });
       }
       
       const crawlStatus = await crawler.getStatus();
@@ -317,10 +299,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Crawler Management
-  app.get("/api/system/crawler", async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
-    
+  // Crawler Management - Requires admin privileges
+  app.get("/api/system/crawler", isAdmin, async (req, res) => {
     try {
       const detailedStatus = await crawler.getDetailedStatus();
       res.json(detailedStatus);
