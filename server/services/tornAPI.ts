@@ -211,9 +211,9 @@ export class TornAPI {
         const data = await response.json();
         
         // Check for Torn API error responses
-        if (data && data.error) {
+        if (data && typeof data === 'object' && 'error' in data) {
           console.error("Torn API Error:", data.error);
-          throw new Error(data.error.error || "API request failed");
+          throw new Error(data.error?.error || "API request failed");
         }
         
         return data;
@@ -533,8 +533,8 @@ export class TornAPI {
   
   public async getFactionData(apiKey: string): Promise<FactionData> {
     try {
-      // The correct way to get faction info is through user profile data
-      const userData = await this.makeRequest("user?selections=profile", apiKey);
+      // Get faction info through basic profile data
+      const userData = await this.makeRequest("user?selections=basic,profile", apiKey);
       
       // If the user doesn't have a faction, return a "Not in a faction" response
       if (!userData.faction || !userData.faction.faction_id) {
