@@ -119,28 +119,14 @@ export default function PlayerStats() {
                 <img 
                   src={playerStats.profile_image}
                   alt={playerStats.name || "Player"}
+                  crossOrigin="anonymous"
                   className="w-14 h-14 rounded-lg object-cover bg-primary bg-opacity-20"
                   onError={(e) => {
-                    // If the direct API profile image fails, try Torn's directory format
+                    // On error, show the fallback
                     const target = e.target as HTMLImageElement;
                     target.onerror = null;
-                    // Try the format with "p" prefix
-                    target.src = `https://profileimages.torn.com/p${playerStats.player_id}.png`;
-                    
-                    const handleSecondFallback = () => {
-                      // Try jpg format
-                      target.onerror = null;
-                      target.src = `https://profileimages.torn.com/p${playerStats.player_id}.jpg`;
-                      
-                      const handleFinalError = () => {
-                        // If all image sources fail, show the letter fallback
-                        target.onerror = null;
-                        target.style.display = 'none';
-                        document.getElementById('profileFallback')?.classList.remove('hidden');
-                      };
-                      target.onerror = handleFinalError;
-                    };
-                    target.onerror = handleSecondFallback;
+                    target.style.display = 'none';
+                    document.getElementById('profileFallback')?.classList.remove('hidden');
                   }}
                 />
                 <div id="profileFallback" className="hidden absolute inset-0 w-14 h-14 rounded-lg bg-primary bg-opacity-20 flex items-center justify-center text-2xl font-bold text-primary">
