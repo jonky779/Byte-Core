@@ -16,6 +16,7 @@ export interface PlayerStats {
   player_id: number;
   name: string;
   level: number;
+  rank: string;
   status: string;
   job?: {
     position: string;
