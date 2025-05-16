@@ -453,7 +453,7 @@ export class TornAPI {
                 status: emp.status?.state || "Okay",
                 last_action: emp.last_action?.relative || "Unknown",
                 days_in_company: emp.days_in_company || 0,
-                effectiveness: emp.position?.toLowerCase().includes("director") ? 0 : testEffectiveness[index % testEffectiveness.length]
+                effectiveness: emp.position?.toLowerCase().includes("director") ? 0 : emp.effectiveness?.working_stats || 0
               };
             })
           },
