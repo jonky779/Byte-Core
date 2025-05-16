@@ -188,7 +188,9 @@ export default function CompanyTracking() {
         <div className="grid grid-cols-2 gap-2 mb-4">
           <div className="bg-game-panel rounded p-2 text-center">
             <div className="text-2xl font-rajdhani font-bold">
-              {companyData.employees.list ? companyData.employees.list.length : 0}<span className="text-xs text-gray-400">/{companyData.employees.max}</span>
+              {companyData.employees.list ? 
+                companyData.employees.list.filter(emp => !emp.position.toLowerCase().includes("director")).length : 0
+              }<span className="text-xs text-gray-400">/{companyData.employees.max}</span>
             </div>
             <div className="text-xs text-gray-400">EMPLOYEES</div>
           </div>
@@ -202,8 +204,9 @@ export default function CompanyTracking() {
         <div className="mb-3">
           <div className="text-xs text-gray-400 uppercase font-semibold mb-2">Top Employees</div>
           <div className="space-y-2">
-            {/* Sort by effectiveness and take top 3 */}
+            {/* Sort by effectiveness, exclude director, and take top 3 */}
             {[...companyData.employees.list]
+              .filter(emp => !emp.position.toLowerCase().includes("director"))
               .sort((a, b) => (b.effectiveness || 0) - (a.effectiveness || 0))
               .slice(0, 3)
               .map((employee) => (
