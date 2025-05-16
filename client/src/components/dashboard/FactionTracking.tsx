@@ -89,7 +89,7 @@ export default function FactionTracking() {
     );
   }
 
-  if (isError || !factionData) {
+  if (isError || !factionData || !factionData.capacity || !factionData.member_status) {
     const errorMessage = user?.apiKey 
       ? "Failed to load faction data. You might not be in a faction or there was an API error."
       : "Please add your Torn API key in settings to view your faction data.";
@@ -118,11 +118,14 @@ export default function FactionTracking() {
     );
   }
 
-  const totalMembers = factionData.capacity.current;
-  const onlinePercentage = (factionData.member_status.online / totalMembers) * 100;
-  const idlePercentage = (factionData.member_status.idle / totalMembers) * 100;
-  const offlinePercentage = (factionData.member_status.offline / totalMembers) * 100;
-  const hospitalPercentage = (factionData.member_status.hospital / totalMembers) * 100;
+  // Safe access to nested properties
+  const totalMembers = factionData.capacity?.current || 1; // Fallback to 1 to avoid division by zero
+  const memberStatus = factionData.member_status || { online: 0, idle: 0, offline: 0, hospital: 0 };
+  
+  const onlinePercentage = (memberStatus.online / totalMembers) * 100;
+  const idlePercentage = (memberStatus.idle / totalMembers) * 100;
+  const offlinePercentage = (memberStatus.offline / totalMembers) * 100;
+  const hospitalPercentage = (memberStatus.hospital / totalMembers) * 100;
 
   return (
     <Card className="bg-game-dark border-gray-700 shadow-game h-full">

@@ -35,15 +35,18 @@ export default function TornBazaar() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   
-  const { data: bazaarItems, isLoading, isError } = useQuery<BazaarItem[]>({
+  const { data, isLoading, isError } = useQuery<{items: BazaarItem[]}>({
     queryKey: ["/api/bazaar", selectedCategory],
     enabled: !!user?.apiKey
   });
   
+  // Get bazaar items from the response and safely handle the structure
+  const bazaarItems = data?.items || [];
+  
   // Filter based on search query
-  const filteredItems = bazaarItems?.filter(item => 
-    item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.seller.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredItems = bazaarItems.filter(item => 
+    (item?.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (item?.seller?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (isLoading) {

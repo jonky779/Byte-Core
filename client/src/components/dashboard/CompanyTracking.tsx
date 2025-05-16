@@ -84,7 +84,7 @@ export default function CompanyTracking() {
     );
   }
 
-  if (isError || !companyData) {
+  if (isError || !companyData || !companyData.employees || !companyData.employees.list) {
     const errorMessage = user?.apiKey 
       ? "Failed to load company data. You might not be in a company or there was an API error."
       : "Please add your Torn API key in settings to view your company data.";
