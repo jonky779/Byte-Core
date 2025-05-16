@@ -165,8 +165,7 @@ export default function AuthPage() {
                             <Input 
                               placeholder="Enter your Torn API key" 
                               {...field} 
-                              type="password"
-                              autoComplete="current-password" 
+                              type="text"
                               className="bg-gray-800 dark:bg-gray-700 border-gray-700"
                             />
                           </FormControl>
@@ -206,7 +205,7 @@ export default function AuthPage() {
                   </form>
                 </Form>
                 <div className="mt-6 text-center text-sm text-gray-400">
-                  <p>New users will be automatically registered with your Torn API key</p>
+                  <p>First time users: Your account will be created automatically when you sign in</p>
                 </div>
               </CardContent>
             </Card>
