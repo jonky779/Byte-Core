@@ -32,20 +32,12 @@ interface CompanyEmployee {
   status: string;
   last_action: string;
   days_in_company: number;
-  effectiveness?: number; // Made optional as Torn API may not provide it
-  wage?: number; // Made optional as Torn API may not provide it
-  nerve?: {
-    current: number;
-    maximum: number;
-  };
-  energy?: {
-    current: number;
-    maximum: number;
-  };
-  activity?: {
-    working: boolean;
-    training: boolean;
-    traveling: boolean;
+  effectiveness?: number; // From the company_employees data
+  wage?: number; 
+  stats?: {
+    manual_labor: number;
+    intelligence: number;
+    endurance: number;
   };
 }
 
@@ -343,31 +335,23 @@ export default function CompanyPage() {
                       </TableCell>
                       <TableCell>{employee.position}</TableCell>
                       <TableCell>{getStatusBadge(employee.status)}</TableCell>
-                      <TableCell>
-                        {/* Infer working status from the employee status */}
-                        {employee.status === "Online" ? (
-                          <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">
-                            Yes
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/30">
-                            No
-                          </Badge>
-                        )}
-                      </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end">
-                          <span className="mr-2">100%</span>
+                          <span className="mr-2">{employee.effectiveness || 0}%</span>
                           <div className="w-16 bg-gray-700 h-2 rounded-full overflow-hidden">
-                            {/* Since the API doesn't provide actual effectiveness, we'll show a default of 100% */}
                             <div 
-                              className="h-full bg-green-500"
-                              style={{ width: "100%" }}
+                              className={`h-full ${
+                                (employee.effectiveness || 0) > 120 ? "bg-green-500" : 
+                                (employee.effectiveness || 0) > 90 ? "bg-blue-500" : 
+                                (employee.effectiveness || 0) > 70 ? "bg-yellow-500" : "bg-red-500"
+                              }`}
+                              style={{ width: `${Math.min((employee.effectiveness || 0), 140) / 1.4}%` }}
                             ></div>
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-right">$0</TableCell>
+                      <TableCell className="text-right">{employee.days_in_company}</TableCell>
+                      <TableCell className="text-right">${(employee.wage || 0).toLocaleString()}</TableCell>
                     </TableRow>
                   ))
                 ) : (
