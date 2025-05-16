@@ -158,8 +158,9 @@ export default function FactionTracking() {
   
   // Set up capacity if it doesn't exist
   if (!factionData.capacity) {
-    // Use members_count if available, otherwise estimate
-    const memberCount = factionData.members_count || 15;
+    // Use members_count or members length if available, otherwise estimate
+    const memberCount = factionData.members_count || 
+                       (factionData.members ? Object.keys(factionData.members).length : 15);
     factionData.capacity = {
       current: memberCount,
       maximum: memberCount + 5 // Add buffer for maximum

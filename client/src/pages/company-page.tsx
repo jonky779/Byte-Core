@@ -217,10 +217,12 @@ export default function CompanyPage() {
                 <div className="text-xl font-rajdhani font-bold">
                   {data.employees.current} / {data.employees.max}
                 </div>
-                <Progress 
-                  value={(data.employees.current / (data.employees.max || 1)) * 100} 
-                  className="h-1.5 mt-1 bg-gray-700" 
-                />
+                <div className="h-1.5 mt-1 bg-gray-700 rounded-full relative overflow-hidden">
+                  <div 
+                    className="h-full bg-primary rounded-full absolute top-0 left-0"
+                    style={{ width: `${(data.employees.current / (data.employees.max || 1)) * 100}%` }}
+                  />
+                </div>
               </div>
               
               <div className="bg-game-panel rounded p-3 border border-gray-700">
@@ -228,10 +230,12 @@ export default function CompanyPage() {
                 <div className="text-xl font-rajdhani font-bold">
                   {(data.stats.popularity || 0).toFixed(1)}%
                 </div>
-                <Progress 
-                  value={data.stats.popularity || 0} 
-                  className="h-1.5 mt-1 bg-gray-700" 
-                />
+                <div className="h-1.5 mt-1 bg-gray-700 rounded-full relative overflow-hidden">
+                  <div 
+                    className="h-full bg-green-500 rounded-full absolute top-0 left-0"
+                    style={{ width: `${data.stats.popularity || 0}%` }}
+                  />
+                </div>
               </div>
               
               <div className="bg-game-panel rounded p-3 border border-gray-700">
@@ -239,10 +243,12 @@ export default function CompanyPage() {
                 <div className="text-xl font-rajdhani font-bold">
                   {(data.stats.efficiency || 0).toFixed(1)}%
                 </div>
-                <Progress 
-                  value={data.stats.efficiency || 0} 
-                  className="h-1.5 mt-1 bg-gray-700" 
-                />
+                <div className="h-1.5 mt-1 bg-gray-700 rounded-full relative overflow-hidden">
+                  <div 
+                    className="h-full bg-blue-500 rounded-full absolute top-0 left-0"
+                    style={{ width: `${data.stats.efficiency || 0}%` }}
+                  />
+                </div>
               </div>
               
               <div className="bg-game-panel rounded p-3 border border-gray-700">
