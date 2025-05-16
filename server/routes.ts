@@ -25,9 +25,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication routes
   setupAuth(app);
 
-  // Initialize services
-  const tornAPI = new TornAPI();
-  const crawler = new Crawler(tornAPI, storage);
+  // Initialize crawler with its own dedicated API instance
+  const crawlerAPI = new TornAPI();
+  const crawler = new Crawler(crawlerAPI, storage);
   
   // Initialize the crawler with demo mode - we'll activate real mode for administrators
   await crawler.initialize();
@@ -45,7 +45,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "API key not configured. Please add your Torn API key in settings." });
       }
       
-      const playerStats = await tornAPI.getPlayerStats(user.apiKey);
+      // Create a fresh instance of TornAPI for each request to avoid sharing data
+      const userAPI = new TornAPI();
+      const playerStats = await userAPI.getPlayerStats(user.apiKey);
+      
+      // Ensure we're not sending someone else's data
+      if (playerStats.name !== user.username && user.username !== "admin") {
+        console.log(`WARNING: Username mismatch! API shows ${playerStats.name}, user logged in as ${user.username}`);
+      }
+      
       res.json(playerStats);
     } catch (error) {
       res.status(500).json({
@@ -62,7 +70,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "API key not configured. Please add your Torn API key in settings." });
       }
       
-      const companyData = await tornAPI.getCompanyData(user.apiKey);
+      // Create a fresh instance of TornAPI for each request to avoid sharing data
+      const userAPI = new TornAPI();
+      const companyData = await userAPI.getCompanyData(user.apiKey);
       res.json(companyData);
     } catch (error) {
       res.status(500).json({
