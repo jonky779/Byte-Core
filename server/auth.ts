@@ -6,6 +6,7 @@ import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
 import { User } from "@shared/schema";
+import { TornAPI } from "./services/tornAPI";
 
 declare global {
   namespace Express {
@@ -118,27 +119,51 @@ export function setupAuth(app: Express) {
     }
   });
 
-  app.post("/api/login", (req, res, next) => {
-    passport.authenticate("local", (err, user, info) => {
-      if (err) {
-        return next(err);
+  // API key login
+  app.post("/api/login", async (req, res) => {
+    try {
+      const { apiKey } = req.body;
+      
+      if (!apiKey) {
+        return res.status(400).json({ message: "API key is required" });
       }
+      
+      // Verify the API key with Torn API
+      const tornAPI = new TornAPI();
+      const apiKeyData = await tornAPI.checkApiKey(apiKey);
+      
+      if (apiKeyData.status === "invalid") {
+        return res.status(401).json({ message: "Invalid Torn API key" });
+      }
+      
+      // Get or create a user with this API key
+      let user = await storage.getUserByApiKey(apiKey);
+      
       if (!user) {
-        return res.status(401).json({ message: info.message || "Authentication failed" });
+        // Create a new user with the Torn API key
+        user = await storage.createUser({
+          username: apiKeyData.name || "Torn User",
+          password: randomBytes(16).toString('hex'), // Generate random password 
+          apiKey: apiKey
+        });
       }
+      
       req.login(user, (err) => {
         if (err) {
-          return next(err);
+          return res.status(500).json({ message: "Error during login" });
         }
         return res.json({
           id: user.id,
           username: user.username,
           email: user.email,
-          apiKey: user.apiKey ? true : false,
+          apiKey: true,
           role: user.role || "user"
         });
       });
-    })(req, res, next);
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ message: "Failed to authenticate with API key" });
+    }
   });
 
   app.post("/api/logout", (req, res) => {

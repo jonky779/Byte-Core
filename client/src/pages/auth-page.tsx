@@ -147,36 +147,21 @@ export default function AuthPage() {
                       <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
                         <FormField
                           control={loginForm.control}
-                          name="username"
+                          name="apiKey"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Username</FormLabel>
+                              <FormLabel>Torn API Key</FormLabel>
                               <FormControl>
                                 <Input 
-                                  placeholder="Enter your username" 
+                                  placeholder="Paste your Torn API key here" 
                                   {...field} 
                                   className="bg-game-panel border-gray-700"
                                 />
                               </FormControl>
                               <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={loginForm.control}
-                          name="password"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Password</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  type="password" 
-                                  placeholder="Enter your password" 
-                                  {...field} 
-                                  className="bg-game-panel border-gray-700"
-                                />
-                              </FormControl>
-                              <FormMessage />
+                              <p className="text-xs text-gray-400 mt-1">
+                                <a href="https://www.torn.com/preferences.php#tab=api&step=addNewKey&title=Byte-Core%20Vault&type=3" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Generate a Torn API key here</a>
+                              </p>
                             </FormItem>
                           )}
                         />
@@ -228,19 +213,21 @@ export default function AuthPage() {
                         />
                         <FormField
                           control={registerForm.control}
-                          name="password"
+                          name="apiKey"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Password</FormLabel>
+                              <FormLabel>Torn API Key</FormLabel>
                               <FormControl>
                                 <Input 
-                                  type="password" 
-                                  placeholder="Create a password" 
+                                  placeholder="Paste your Torn API key here" 
                                   {...field} 
                                   className="bg-game-panel border-gray-700"
                                 />
                               </FormControl>
                               <FormMessage />
+                              <p className="text-xs text-gray-400 mt-1">
+                                <a href="https://www.torn.com/preferences.php#tab=api&step=addNewKey&title=Byte-Core%20Vault&type=3" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Generate a Torn API key here</a>
+                              </p>
                             </FormItem>
                           )}
                         />
