@@ -114,15 +114,14 @@ export default function PlayerStats() {
             </div>
             
             <div className="flex mb-3">
-              {/* Try different Torn API image formats */}
-              <div className="relative w-14 h-14 mr-3">
+              {/* Player avatar */}
+              <div className="relative w-14 h-14 mr-3 rounded-lg overflow-hidden bg-primary bg-opacity-20">
                 <img 
                   src={playerStats.profile_image}
                   alt={playerStats.name || "Player"}
-                  crossOrigin="anonymous"
-                  className="w-14 h-14 rounded-lg object-cover bg-primary bg-opacity-20"
+                  className="w-full h-full object-cover"
+                  style={{ objectFit: 'cover', objectPosition: 'center' }}
                   onError={(e) => {
-                    // On error, show the fallback
                     const target = e.target as HTMLImageElement;
                     target.onerror = null;
                     target.style.display = 'none';
@@ -130,7 +129,7 @@ export default function PlayerStats() {
                   }}
                 />
                 <div id="profileFallback" className="hidden absolute inset-0 w-14 h-14 rounded-lg bg-primary bg-opacity-20 flex items-center justify-center text-2xl font-bold text-primary">
-                  {playerStats.name ? playerStats.name.charAt(0) : "?"}
+                  {playerStats.name ? playerStats.name.charAt(0).toUpperCase() : "?"}
                 </div>
               </div>
               <div>
