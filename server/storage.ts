@@ -117,7 +117,7 @@ export interface IStorage {
   getSystemStats(): Promise<SystemStats>;
   
   // Session store for authentication
-  sessionStore: session.SessionStore;
+  sessionStore: any; // Using any for session store type
 }
 
 export class MemStorage implements IStorage {
