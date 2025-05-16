@@ -86,6 +86,7 @@ export interface IStorage {
   validateUserPassword(userId: number, password: string): Promise<boolean>;
   updateUserPassword(userId: number, newPassword: string): Promise<void>;
   updateUserApiKey(userId: number, apiKey: string): Promise<void>;
+  updateUsername(userId: number, username: string): Promise<void>;
   
   // Settings management
   getUserSettings(userId: number): Promise<UserSettings>;

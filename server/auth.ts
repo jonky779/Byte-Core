@@ -154,13 +154,29 @@ export function setupAuth(app: Express) {
         return res.status(401).json({ message: "Invalid Torn API key" });
       }
       
-      // Get or create a user with this API key
+      // Always verify the API key owner from the Torn API
+      const playerName = apiKeyData.name;
+      
+      if (!playerName) {
+        return res.status(401).json({ message: "Could not retrieve player name from Torn API" });
+      }
+      
+      // Look for existing user with this API key or create a new one
       let user = await storage.getUserByApiKey(apiKey);
       
-      if (!user) {
-        // Create a new user with the Torn API key
+      if (user) {
+        // Update the username in case it changed
+        if (user.username !== playerName) {
+          console.log(`Updating username from ${user.username} to ${playerName} for user ID ${user.id}`);
+          user.username = playerName;
+          // Update username in storage
+          await storage.updateUsername(user.id, playerName);
+        }
+      } else {
+        // Create a new user with this API key
+        console.log(`Creating new user for ${playerName} with API key`);
         user = await storage.createUser({
-          username: apiKeyData.name || "Torn User",
+          username: playerName,
           password: randomBytes(16).toString('hex'), // Generate random password 
           apiKey: apiKey
         });
