@@ -1,0 +1,501 @@
+import type { Express } from "express";
+import { createServer, type Server } from "http";
+import { storage } from "./storage";
+import { setupAuth } from "./auth";
+import { TornAPI } from "./services/tornAPI";
+import { Crawler } from "./services/crawler";
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Set up authentication routes
+  setupAuth(app);
+
+  // Initialize services
+  const tornAPI = new TornAPI();
+  const crawler = new Crawler(tornAPI, storage);
+
+  // Start the crawler if it's enabled
+  await crawler.initialize();
+
+  // API Routes
+  
+  // Player Stats
+  app.get("/api/player/stats", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    try {
+      const user = req.user!;
+      if (!user.apiKey) {
+        return res.status(400).json({ message: "API key not configured" });
+      }
+      
+      const playerStats = await tornAPI.getPlayerStats(user.apiKey);
+      res.json(playerStats);
+    } catch (error) {
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to fetch player stats",
+      });
+    }
+  });
+
+  // Company Tracking
+  app.get("/api/company", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    try {
+      const user = req.user!;
+      if (!user.apiKey) {
+        return res.status(400).json({ message: "API key not configured" });
+      }
+      
+      const companyData = await tornAPI.getCompanyData(user.apiKey);
+      res.json(companyData);
+    } catch (error) {
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to fetch company data",
+      });
+    }
+  });
+
+  app.get("/api/company/detail", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    try {
+      const user = req.user!;
+      if (!user.apiKey) {
+        return res.status(400).json({ message: "API key not configured" });
+      }
+      
+      const companyDetails = await tornAPI.getCompanyDetailedData(user.apiKey);
+      res.json(companyDetails);
+    } catch (error) {
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to fetch company details",
+      });
+    }
+  });
+
+  // Faction Tracking
+  app.get("/api/faction", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    try {
+      const user = req.user!;
+      if (!user.apiKey) {
+        return res.status(400).json({ message: "API key not configured" });
+      }
+      
+      const factionData = await tornAPI.getFactionData(user.apiKey);
+      res.json(factionData);
+    } catch (error) {
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to fetch faction data",
+      });
+    }
+  });
+
+  app.get("/api/faction/detail", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    try {
+      const user = req.user!;
+      if (!user.apiKey) {
+        return res.status(400).json({ message: "API key not configured" });
+      }
+      
+      const factionDetails = await tornAPI.getFactionDetailedData(user.apiKey);
+      res.json(factionDetails);
+    } catch (error) {
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to fetch faction details",
+      });
+    }
+  });
+
+  // Bazaar
+  app.get("/api/bazaar", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    try {
+      const user = req.user!;
+      if (!user.apiKey) {
+        return res.status(400).json({ message: "API key not configured" });
+      }
+      
+      const category = req.query.category as string || 'all';
+      const bazaarItems = await tornAPI.getBazaarItems(user.apiKey, category);
+      res.json(bazaarItems);
+    } catch (error) {
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to fetch bazaar data",
+      });
+    }
+  });
+
+  // Employees Search
+  app.get("/api/employees/search", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    try {
+      const user = req.user!;
+      if (!user.apiKey) {
+        return res.status(400).json({ message: "API key not configured" });
+      }
+      
+      const page = parseInt(req.query.page as string) || 1;
+      const companyType = req.query.companyType as string || 'all';
+      const minLevel = parseInt(req.query.minLevel as string) || 1;
+      const maxLevel = parseInt(req.query.maxLevel as string) || 100;
+      const minIntelligence = parseInt(req.query.minIntelligence as string) || 0;
+      const minEndurance = parseInt(req.query.minEndurance as string) || 0;
+      const minManualLabor = parseInt(req.query.minManualLabor as string) || 0;
+      const sortBy = req.query.sortBy as string || 'level-desc';
+      const searchQuery = req.query.searchQuery as string || '';
+      
+      const searchResults = await storage.searchEmployeeCandidates({
+        page,
+        companyType,
+        minLevel,
+        maxLevel,
+        minIntelligence,
+        minEndurance,
+        minManualLabor,
+        sortBy,
+        searchQuery
+      });
+      
+      const crawlStatus = await crawler.getStatus();
+      
+      res.json({
+        ...searchResults,
+        crawl_status: {
+          total_indexed: crawlStatus.indexedPlayers,
+          last_indexed: new Date(crawlStatus.lastUpdated).toLocaleString(),
+          crawl_complete_percentage: Math.floor((crawlStatus.indexedPlayers / crawlStatus.totalPlayers) * 100)
+        }
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to search for employees",
+      });
+    }
+  });
+
+  // Faction Search
+  app.get("/api/faction/search", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    try {
+      const user = req.user!;
+      if (!user.apiKey) {
+        return res.status(400).json({ message: "API key not configured" });
+      }
+      
+      const page = parseInt(req.query.page as string) || 1;
+      const minLevel = parseInt(req.query.minLevel as string) || 1;
+      const maxLevel = parseInt(req.query.maxLevel as string) || 100;
+      const minStats = parseInt(req.query.minStats as string) || 0;
+      const activeOnly = req.query.activeOnly === 'true';
+      const excludeInFaction = req.query.excludeInFaction === 'true';
+      const excludeTraveling = req.query.excludeTraveling === 'true';
+      const sortBy = req.query.sortBy as string || 'level-desc';
+      const searchQuery = req.query.searchQuery as string || '';
+      
+      const searchResults = await storage.searchFactionCandidates({
+        page,
+        minLevel,
+        maxLevel,
+        minStats,
+        activeOnly,
+        excludeInFaction,
+        excludeTraveling,
+        sortBy,
+        searchQuery
+      });
+      
+      const crawlStatus = await crawler.getStatus();
+      
+      res.json({
+        ...searchResults,
+        crawl_status: {
+          total_indexed: crawlStatus.indexedPlayers,
+          last_indexed: new Date(crawlStatus.lastUpdated).toLocaleString(),
+          crawl_complete_percentage: Math.floor((crawlStatus.indexedPlayers / crawlStatus.totalPlayers) * 100)
+        }
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to search for faction members",
+      });
+    }
+  });
+
+  // Items Database
+  app.get("/api/items", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const category = req.query.category as string || 'all';
+      const type = req.query.type as string || 'all';
+      const sortBy = req.query.sortBy as string || 'id-asc';
+      const searchQuery = req.query.searchQuery as string || '';
+      
+      const itemData = await storage.getItems({
+        page,
+        category,
+        type,
+        sortBy,
+        searchQuery
+      });
+      
+      res.json(itemData);
+    } catch (error) {
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to fetch items",
+      });
+    }
+  });
+
+  // System Status
+  app.get("/api/system/status", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    try {
+      const user = req.user!;
+      if (!user.apiKey) {
+        return res.status(400).json({ message: "API key not configured" });
+      }
+      
+      const crawlStatus = await crawler.getStatus();
+      const systemStats = await storage.getSystemStats();
+      
+      const apiStatus = await tornAPI.checkApiStatus(user.apiKey);
+      
+      res.json({
+        crawler: {
+          status: crawlStatus.status,
+          indexed_players: crawlStatus.indexedPlayers,
+          total_players: crawlStatus.totalPlayers,
+          crawl_speed: crawlStatus.crawlSpeed,
+          next_scan: new Date(crawlStatus.nextScheduledRun).toLocaleString()
+        },
+        database: {
+          status: "healthy",
+          player_count: systemStats.playerCount,
+          item_count: systemStats.itemCount,
+          data_size: systemStats.dataSize,
+          queries_today: systemStats.queriesToday
+        },
+        api: {
+          status: apiStatus.status,
+          avg_response_time: apiStatus.averageResponseTimeMs,
+          uptime_percentage: apiStatus.uptimePercentage,
+          calls_per_hour: apiStatus.callsPerHour,
+          rate_limit_available: apiStatus.rateLimitAvailable,
+          last_error_time: apiStatus.lastErrorTime ? new Date(apiStatus.lastErrorTime).toLocaleString() : "N/A"
+        },
+        last_updated: new Date().toLocaleString()
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to fetch system status",
+      });
+    }
+  });
+
+  // Crawler Management
+  app.get("/api/system/crawler", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    try {
+      const detailedStatus = await crawler.getDetailedStatus();
+      res.json(detailedStatus);
+    } catch (error) {
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to fetch crawler status",
+      });
+    }
+  });
+
+  app.post("/api/system/crawler/start", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    try {
+      await crawler.start();
+      res.json({ success: true, message: "Crawler started successfully" });
+    } catch (error) {
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to start crawler",
+      });
+    }
+  });
+
+  app.post("/api/system/crawler/pause", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    try {
+      await crawler.pause();
+      res.json({ success: true, message: "Crawler paused successfully" });
+    } catch (error) {
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to pause crawler",
+      });
+    }
+  });
+
+  app.post("/api/system/crawler/config", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    try {
+      await crawler.updateConfig(req.body);
+      res.json({ success: true, message: "Crawler configuration updated" });
+    } catch (error) {
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to update crawler configuration",
+      });
+    }
+  });
+
+  // User Settings
+  app.get("/api/settings", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    try {
+      const settings = await storage.getUserSettings(req.user!.id);
+      res.json(settings);
+    } catch (error) {
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to fetch user settings",
+      });
+    }
+  });
+
+  app.post("/api/settings", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    try {
+      const updatedSettings = await storage.updateUserSettings(req.user!.id, req.body);
+      res.json(updatedSettings);
+    } catch (error) {
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to update user settings",
+      });
+    }
+  });
+
+  // API Key Management
+  app.get("/api/settings/apikey", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    try {
+      const apiKeyData = await tornAPI.checkApiKey(req.user!.apiKey || "");
+      res.json(apiKeyData);
+    } catch (error) {
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to fetch API key data",
+      });
+    }
+  });
+
+  app.post("/api/settings/apikey", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    try {
+      const { key } = req.body;
+      
+      // Validate the API key
+      const keyData = await tornAPI.checkApiKey(key);
+      if (keyData.status === "invalid") {
+        return res.status(400).json({
+          message: "Invalid API key",
+          details: keyData.error || "The API key could not be validated"
+        });
+      }
+      
+      // Update user's API key
+      await storage.updateUserApiKey(req.user!.id, key);
+      
+      res.json({ success: true, message: "API key saved successfully" });
+    } catch (error) {
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to save API key",
+      });
+    }
+  });
+
+  app.delete("/api/settings/apikey", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    try {
+      await storage.updateUserApiKey(req.user!.id, "");
+      res.json({ success: true, message: "API key removed successfully" });
+    } catch (error) {
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to remove API key",
+      });
+    }
+  });
+
+  app.post("/api/settings/test-apikey", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    try {
+      const { key } = req.body;
+      const keyData = await tornAPI.checkApiKey(key);
+      res.json(keyData);
+    } catch (error) {
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to test API key",
+      });
+    }
+  });
+
+  // Password Update
+  app.post("/api/user/password", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    try {
+      const { currentPassword, newPassword } = req.body;
+      
+      // Validate current password
+      const isValid = await storage.validateUserPassword(req.user!.id, currentPassword);
+      if (!isValid) {
+        return res.status(400).json({ message: "Current password is incorrect" });
+      }
+      
+      // Update password
+      await storage.updateUserPassword(req.user!.id, newPassword);
+      
+      res.json({ success: true, message: "Password updated successfully" });
+    } catch (error) {
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to update password",
+      });
+    }
+  });
+
+  // Data Sync
+  app.post("/api/sync", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    try {
+      const user = req.user!;
+      if (!user.apiKey) {
+        return res.status(400).json({ message: "API key not configured" });
+      }
+      
+      // Trigger sync for user data
+      await tornAPI.syncUserData(user.apiKey, user.id);
+      
+      res.json({ success: true, message: "Data sync triggered successfully" });
+    } catch (error) {
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to sync data",
+      });
+    }
+  });
+
+  const httpServer = createServer(app);
+
+  return httpServer;
+}
