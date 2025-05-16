@@ -256,6 +256,9 @@ export class TornAPI {
         throw new Error("Security check failed");
       }
       
+      // Debug profile image
+      console.log("Profile data received:", JSON.stringify(data.profile, null, 2));
+      
       // Format the data into PlayerStats object
       return {
         player_id: data.player_id || 0,
