@@ -454,7 +454,8 @@ export class TornAPI {
                 last_action: emp.last_action?.relative || "Unknown",
                 days_in_company: emp.days_in_company || 0,
                 effectiveness: emp.position?.toLowerCase().includes("director") ? 0 : testEffectiveness[index % testEffectiveness.length]
-            }))
+              };
+            })
           },
           last_updated: new Date().toISOString()
         };
