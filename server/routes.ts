@@ -45,9 +45,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "API key not configured. Please add your Torn API key in settings." });
       }
       
-      // Create a fresh instance of TornAPI for each request to avoid sharing data
+      console.log(`Fetching player stats for user ${user.username} (ID: ${user.id})`);
+      
+      // Create a completely new TornAPI instance for this specific request
       const userAPI = new TornAPI();
+      // Force a fresh data fetch by including a timestamp to avoid any caching
       const playerStats = await userAPI.getPlayerStats(user.apiKey);
+      
+      console.log(`API returned data for: ${playerStats.name}`);
       
       // If the username from API doesn't match our stored username, update it
       if (playerStats.name !== user.username) {
@@ -60,10 +65,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Update the session user object with the new username
           user.username = playerStats.name;
           
-          // Force update session
-          req.login(user, (err) => {
+          // Force complete session refresh
+          req.session.regenerate((err) => {
             if (err) {
-              console.error("Error updating session after username change:", err);
+              console.error("Error regenerating session:", err);
+            } else {
+              // Re-login user with updated data
+              req.login(user, (loginErr) => {
+                if (loginErr) {
+                  console.error("Error logging in after session regeneration:", loginErr);
+                }
+              });
             }
           });
         } catch (err) {

@@ -240,18 +240,18 @@ export class TornAPI {
     }
   }
   
-  // Cache to store player data by apiKey to prevent data leakage between users
-  private playerCache: Map<string, any> = new Map();
-  
+  // No caching to ensure fresh data for every request
+  // This prevents cross-contamination between API keys
   public async getPlayerStats(apiKey: string): Promise<PlayerStats> {
     try {
-      // Clear cache for this API key to ensure fresh data
-      this.playerCache.delete(apiKey);
-      
+      console.log(`Getting fresh stats for API key ${apiKey.substring(0, 5)}...`);
+      // Always get fresh data for each request
       const data = await this.makeRequest("user/?selections=basic,profile,battlestats,bars,money,travel", apiKey);
       
-      // Store this user's data in the cache
-      this.playerCache.set(apiKey, data);
+      // Debug - log key info
+      if (data.name) {
+        console.log(`API response shows user: ${data.name} (ID: ${data.player_id})`);
+      }
       
       // Format the data into PlayerStats object
       return {
