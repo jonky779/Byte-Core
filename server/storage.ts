@@ -112,7 +112,7 @@ export interface IStorage {
   getSystemStats(): Promise<SystemStats>;
   
   // Session store for authentication
-  sessionStore: any;
+  sessionStore: session.Store;
 }
 
 export class MemStorage implements IStorage {
@@ -125,7 +125,7 @@ export class MemStorage implements IStorage {
   private lastCrawlTime: number | null = null;
   private apiRequests: number = 0;
   
-  public sessionStore: session.SessionStore;
+  public sessionStore: session.Store;
   currentId: number;
 
   constructor() {
@@ -261,7 +261,14 @@ export class MemStorage implements IStorage {
       userToInsert.password = await this.hashPassword(userToInsert.password);
     }
     
-    const user: User = { ...userToInsert, id };
+    // Ensure required fields have default values
+    const user: User = { 
+      ...userToInsert, 
+      id,
+      apiKey: userToInsert.apiKey || null,
+      email: userToInsert.email || null
+    };
+    
     this.users.set(id, user);
     
     // Create default settings for the new user
