@@ -353,7 +353,7 @@ export class TornAPI {
       }
       
       // User is in a company, fetch company data
-      const data = await this.makeRequest("company/?selections=profile,employees", apiKey);
+      const data = await this.makeRequest("company/", apiKey);
       
       // Map employee data if available
       const employeesList = Array.isArray(data.employees) 
@@ -496,7 +496,7 @@ export class TornAPI {
       }
       
       // User is in a faction, fetch faction data
-      const data = await this.makeRequest("faction/?selections=basic", apiKey);
+      const data = await this.makeRequest("faction/", apiKey);
       
       return {
         id: data.ID || 0,
