@@ -165,14 +165,14 @@ export default function PlayerStats() {
             
             <div className="grid grid-cols-2 gap-x-4 gap-y-6">
               <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="font-medium truncate">Strength</span>
-                  <span className="font-mono truncate ml-1">{formatNumber(safeObj(playerStats, 'stats.strength', 0))}</span>
+                <div className="flex flex-col text-sm mb-2">
+                  <span className="font-medium">Strength</span>
+                  <span className="font-mono text-right">{formatNumber(safeObj(playerStats, 'stats.strength', 0))}</span>
                 </div>
                 <div className="relative">
                   <div className="h-1 w-full bg-gray-700 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-blue-500 rounded-full"
+                      className="h-full bg-red-500 rounded-full"
                       style={{ 
                         width: `${Math.min(100, safeObj(playerStats, 'stats.strength', 0) / Math.max(1, safeObj(playerStats, 'stats.total', 1)) * 100)}%` 
                       }}
@@ -182,16 +182,16 @@ export default function PlayerStats() {
               </div>
               
               <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="font-medium truncate">Defense</span>
-                  <span className="font-mono truncate ml-1">{formatNumber(safeObj(playerStats, 'stats.defense', 0))}</span>
+                <div className="flex flex-col text-sm mb-2">
+                  <span className="font-medium">Defense</span>
+                  <span className="font-mono text-right">{formatNumber(safeObj(playerStats, 'stats.defense', 0))}</span>
                 </div>
                 <div className="relative">
                   <div className="h-1 w-full bg-gray-700 rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-gray-300 rounded-full"
                       style={{ 
-                        width: `${Math.min(100, (playerStats.stats?.defense || 0) / (playerStats.stats?.total || 1) * 100)}%` 
+                        width: `${Math.min(100, safeObj(playerStats, 'stats.defense', 0) / Math.max(1, safeObj(playerStats, 'stats.total', 1)) * 100)}%` 
                       }}
                     />
                   </div>
@@ -199,16 +199,16 @@ export default function PlayerStats() {
               </div>
               
               <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="font-medium truncate">Speed</span>
-                  <span className="font-mono truncate ml-1">{formatNumber(safeObj(playerStats, 'stats.speed', 0))}</span>
+                <div className="flex flex-col text-sm mb-2">
+                  <span className="font-medium">Speed</span>
+                  <span className="font-mono text-right">{formatNumber(safeObj(playerStats, 'stats.speed', 0))}</span>
                 </div>
                 <div className="relative">
                   <div className="h-1 w-full bg-gray-700 rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-yellow-500 rounded-full"
                       style={{ 
-                        width: `${Math.min(100, (playerStats.stats?.speed || 0) / (playerStats.stats?.total || 1) * 100)}%` 
+                        width: `${Math.min(100, safeObj(playerStats, 'stats.speed', 0) / Math.max(1, safeObj(playerStats, 'stats.total', 1)) * 100)}%` 
                       }}
                     />
                   </div>
@@ -216,16 +216,16 @@ export default function PlayerStats() {
               </div>
               
               <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="font-medium truncate">Dexterity</span>
-                  <span className="font-mono truncate ml-1">{formatNumber(safeObj(playerStats, 'stats.dexterity', 0))}</span>
+                <div className="flex flex-col text-sm mb-2">
+                  <span className="font-medium">Dexterity</span>
+                  <span className="font-mono text-right">{formatNumber(safeObj(playerStats, 'stats.dexterity', 0))}</span>
                 </div>
                 <div className="relative">
                   <div className="h-1 w-full bg-gray-700 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-red-500 rounded-full"
+                      className="h-full bg-blue-500 rounded-full"
                       style={{ 
-                        width: `${Math.min(100, (playerStats.stats?.dexterity || 0) / (playerStats.stats?.total || 1) * 100)}%` 
+                        width: `${Math.min(100, safeObj(playerStats, 'stats.dexterity', 0) / Math.max(1, safeObj(playerStats, 'stats.total', 1)) * 100)}%` 
                       }}
                     />
                   </div>
