@@ -464,34 +464,9 @@ export default function SettingsPage() {
                           {isTestingKey ? <Loader2 className="h-4 w-4 animate-spin" /> : "Test"}
                         </Button>
                       </div>
-                      <div className="space-y-2 text-xs text-gray-400 mt-1 bg-game-panel p-3 rounded-md border border-gray-700">
-                        <p className="font-medium mb-1">How to create your API key:</p>
-                        <ol className="list-decimal list-inside space-y-1">
-                          <li>Go to <a 
-                            href="https://www.torn.com/preferences.php#tab=api" 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="text-primary hover:underline"
-                          >
-                            Torn API Settings
-                          </a></li>
-                          <li>Click on "Create New" button</li>
-                          <li>Name: <span className="font-mono bg-gray-800 px-1 rounded">Byte-Core Vault</span></li>
-                          <li>Type: <span className="font-mono bg-gray-800 px-1 rounded">Limited</span></li>
-                          <li>Check the following permissions:
-                            <ul className="list-disc list-inside ml-4 mt-1">
-                              <li>Basic information</li>
-                              <li>Battlestats</li>
-                              <li>Personal stats</li>
-                              <li>Basic profile info</li>
-                              <li>Company details</li>
-                              <li>Faction information</li>
-                              <li>Market data</li>
-                            </ul>
-                          </li>
-                          <li>Click "Create Key" and copy the generated key</li>
-                        </ol>
-                      </div>
+                      <p className="text-xs text-gray-400 mt-1">
+                        You can find your API key on the <a href="https://www.torn.com/preferences.php#tab=api" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Torn API settings page</a>
+                      </p>
                     </div>
                     
                     {testKeyResult && (
