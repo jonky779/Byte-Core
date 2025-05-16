@@ -117,21 +117,30 @@ export default function PlayerStats() {
               {/* Try different Torn API image formats */}
               <div className="relative w-14 h-14 mr-3">
                 <img 
-                  src={playerStats.profile_image || `https://profileimages.torn.com/p${playerStats.player_id}.png`}
+                  src={playerStats.profile_image}
                   alt={playerStats.name || "Player"}
                   className="w-14 h-14 rounded-lg object-cover bg-primary bg-opacity-20"
                   onError={(e) => {
-                    // Try alternate URL format with jpg
+                    // If the direct API profile image fails, try Torn's directory format
                     const target = e.target as HTMLImageElement;
                     target.onerror = null;
-                    target.src = `https://profileimages.torn.com/p${playerStats.player_id}.jpg`;
-                    const handleFinalError = () => {
-                      // If all image sources fail, fallback to initial
+                    // Try the format with "p" prefix
+                    target.src = `https://profileimages.torn.com/p${playerStats.player_id}.png`;
+                    
+                    const handleSecondFallback = () => {
+                      // Try jpg format
                       target.onerror = null;
-                      target.style.display = 'none';
-                      document.getElementById('profileFallback')?.classList.remove('hidden');
+                      target.src = `https://profileimages.torn.com/p${playerStats.player_id}.jpg`;
+                      
+                      const handleFinalError = () => {
+                        // If all image sources fail, show the letter fallback
+                        target.onerror = null;
+                        target.style.display = 'none';
+                        document.getElementById('profileFallback')?.classList.remove('hidden');
+                      };
+                      target.onerror = handleFinalError;
                     };
-                    target.onerror = handleFinalError;
+                    target.onerror = handleSecondFallback;
                   }}
                 />
                 <div id="profileFallback" className="hidden absolute inset-0 w-14 h-14 rounded-lg bg-primary bg-opacity-20 flex items-center justify-center text-2xl font-bold text-primary">
