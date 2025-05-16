@@ -429,8 +429,32 @@ export class TornAPI {
           console.log("Employee data structure example:", JSON.stringify(employeeExample, null, 2));
         }
         
-        // Extract employees data
-        const employeesList = Object.values(companyData.employees || {});
+        // Get the detailed employee data with effectiveness values from company_employees
+        const companyEmployeesData = companyResponse.company_employees || {};
+        
+        // Log the first detailed employee data to see its structure
+        if (Object.keys(companyEmployeesData).length > 0) {
+          const firstKey = Object.keys(companyEmployeesData)[0];
+          console.log("Detailed employee data example:", JSON.stringify(companyEmployeesData[firstKey], null, 2));
+          console.log("Effectiveness example:", JSON.stringify(companyEmployeesData[firstKey].effectiveness, null, 2));
+        }
+        
+        // Extract employees data, but merge with effectiveness data from company_employees
+        const employeesList = Object.entries(companyData.employees || {}).map(([id, emp]: [string, any]) => {
+          const detailedData = companyEmployeesData[id] || {};
+          const effectiveness = detailedData.effectiveness?.total || 0;
+          
+          // Debug log
+          if (detailedData.name) {
+            console.log(`Employee ${detailedData.name}: effectiveness = ${effectiveness}`);
+          }
+          
+          return {
+            ...emp,
+            id,
+            effectiveness: effectiveness
+          };
+        });
         const employeeCount = employeesList.length;
         
         return {
@@ -443,9 +467,7 @@ export class TornAPI {
           employees: {
             current: employeeCount,
             max: companyData.employees_capacity || 10,
-            list: employeesList.map((emp: any, index: number) => {
-              // Generate some test effectiveness values for different employees
-              const testEffectiveness = [156, 140, 135, 125, 110, 105, 100, 95, 90, 85];
+            list: employeesList.map((emp: any) => {
               return {
                 id: emp.id || 0,
                 name: emp.name || "Unknown",
@@ -453,7 +475,7 @@ export class TornAPI {
                 status: emp.status?.state || "Okay",
                 last_action: emp.last_action?.relative || "Unknown",
                 days_in_company: emp.days_in_company || 0,
-                effectiveness: emp.position?.toLowerCase().includes("director") ? 0 : emp.effectiveness?.working_stats || 0
+                effectiveness: emp.position?.toLowerCase().includes("director") ? 0 : emp.effectiveness || 0
               };
             })
           },
