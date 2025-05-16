@@ -468,67 +468,145 @@ export class TornAPI {
   }
   
   public async getCompanyDetailedData(apiKey: string): Promise<any> {
-    // Mock data for demonstration
-    return {
-      id: 54321,
-      name: "CompanyName",
-      type: "Logistics",
-      rating: 8,
-      employees: {
-        current: 8,
-        max: 10,
-        list: [
-          {
-            id: 1111111,
-            name: "Employee1",
-            position: "Manager",
-            status: "Online",
-            last_action: "2 minutes ago",
-            days_in_company: 200,
-            effectiveness: 85,
-            wage: 50000,
-            nerve: {
-              current: 20,
-              maximum: 50
-            },
-            energy: {
-              current: 80,
-              maximum: 150
-            },
-            activity: {
-              working: true,
-              training: false,
-              traveling: false
+    try {
+      // First check if the user is in a company
+      const userData = await this.makeRequest("user?selections=basic,profile", apiKey);
+      
+      // If the user has a company
+      if (userData.job && userData.job.company_id) {
+        const companyId = userData.job.company_id;
+        console.log(`Fetching detailed company data for company ID: ${companyId}`);
+        
+        try {
+          // Use the company endpoint with the company ID
+          const companyData = await this.makeRequest(`company/${companyId}?selections=profile,detailed`, apiKey);
+          
+          if (!companyData) {
+            throw new Error("Failed to fetch company data");
+          }
+          
+          // Process employees data if available
+          const employees = [];
+          if (companyData.employees) {
+            for (const [id, data] of Object.entries(companyData.employees)) {
+              const employee = data as any;
+              employees.push({
+                id: parseInt(id, 10),
+                name: employee.name || "Unknown",
+                position: employee.position || "Employee",
+                status: employee.status || "Unknown",
+                last_action: employee.last_action || "Unknown",
+                days_in_company: employee.days_in_company || 0,
+                effectiveness: employee.effectiveness || 0,
+                wage: employee.wage || 0
+              });
             }
-          },
-          // Additional employees would be listed here
-        ]
-      },
-      positions: [
-        {
-          id: 1,
-          name: "Manager",
-          description: "Manages company operations",
-          required_stats: {
-            intelligence: 3000,
-            endurance: 2000,
-            manual_labor: 1000
-          },
-          employees_count: 1,
-          max_employees: 1
+          }
+          
+          // Build the positions data
+          const positions = [];
+          if (companyData.positions) {
+            for (const [id, data] of Object.entries(companyData.positions)) {
+              const position = data as any;
+              positions.push({
+                id: parseInt(id, 10),
+                name: position.name || "Unknown",
+                description: position.description || "",
+                required_stats: {
+                  intelligence: position.int_required || 0,
+                  endurance: position.end_required || 0,
+                  manual_labor: position.man_required || 0
+                },
+                employees_count: position.employees_count || 0,
+                max_employees: position.max_employees || 0
+              });
+            }
+          }
+          
+          // Process stock data if available
+          const stockItems = [];
+          if (companyData.stock) {
+            for (const [name, data] of Object.entries(companyData.stock)) {
+              const stock = data as any;
+              stockItems.push({
+                name: name,
+                in_stock: stock.in_stock || 0,
+                daily_usage: stock.daily_usage || 0
+              });
+            }
+          }
+          
+          // Return the full company detail data
+          return {
+            id: companyData.ID || companyId,
+            name: companyData.name || userData.job.company_name,
+            type: companyData.company_type || this.getCompanyTypeName(userData.job.company_type),
+            rating: companyData.rating || 0,
+            employees: {
+              current: companyData.employees_hired || employees.length,
+              max: companyData.employees_max || 0,
+              list: employees
+            },
+            positions: positions,
+            stats: {
+              popularity: companyData.popularity || 0,
+              efficiency: companyData.efficiency || 0,
+              environment: companyData.environment || 0,
+              profitability: companyData.profitability || 0,
+              days_old: companyData.days_old || 0,
+              daily_revenue: companyData.daily_customers || 0,
+              weekly_profit: companyData.weekly_profit || 0
+            },
+            stock: stockItems,
+            last_updated: new Date().toISOString()
+          };
+        } catch (companyError) {
+          console.error("Error fetching company data:", companyError);
+          
+          // Fallback to basic company info from user profile
+          return {
+            id: userData.job.company_id,
+            name: userData.job.company_name,
+            type: this.getCompanyTypeName(userData.job.company_type),
+            rating: 0,
+            employees: {
+              current: 1,
+              max: 0,
+              list: [
+                {
+                  id: userData.player_id,
+                  name: userData.name,
+                  position: userData.job.position,
+                  status: "Unknown",
+                  last_action: "Unknown",
+                  days_in_company: 0,
+                  effectiveness: 0,
+                  wage: 0
+                }
+              ]
+            },
+            positions: [],
+            stats: {
+              popularity: 0,
+              efficiency: 0,
+              environment: 0,
+              profitability: 0,
+              days_old: 0,
+              daily_revenue: 0,
+              weekly_profit: 0
+            },
+            stock: [],
+            last_updated: new Date().toISOString()
+          };
         }
-      ],
-      stats: {
-        popularity: 75,
-        efficiency: 80,
-        environment: 70,
-        profitability: 90,
-        days_old: 730,
-        daily_revenue: 8000000,
-        weekly_profit: 50000000,
-        production_rate: 95
+      } else {
+        // User is not in a company
+        throw new Error("User is not in a company");
       }
-    };
+    } catch (error) {
+      console.error("Error fetching detailed company data:", error);
+      throw error;
+    }
   }
   
   public async getFactionData(apiKey: string): Promise<FactionData> {
