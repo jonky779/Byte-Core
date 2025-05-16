@@ -45,46 +45,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "API key not configured. Please add your Torn API key in settings." });
       }
       
-      console.log(`Fetching player stats for user ${user.username} (ID: ${user.id})`);
+      console.log(`EMERGENCY FIX: Direct API call for user ${user.username} (ID: ${user.id}) with API key ${user.apiKey.substring(0, 8)}...`);
       
-      // Create a completely new TornAPI instance for this specific request
-      const userAPI = new TornAPI();
-      // Force a fresh data fetch by including a timestamp to avoid any caching
-      const playerStats = await userAPI.getPlayerStats(user.apiKey);
+      // BYPASS ALL SHARED CODE - Make a completely direct request to Torn API
+      // This should fix the data isolation issue by avoiding any shared state
+      const directUrl = `https://api.torn.com/user/?selections=basic,profile,battlestats,bars,money,travel&key=${user.apiKey}`;
+      const apiResponse = await fetch(directUrl);
       
-      console.log(`API returned data for: ${playerStats.name}`);
-      
-      // If the username from API doesn't match our stored username, update it
-      if (playerStats.name !== user.username) {
-        console.log(`Username mismatch detected: API shows ${playerStats.name}, user logged in as ${user.username}`);
-        
-        try {
-          // Update the username in storage
-          await storage.updateUsername(user.id, playerStats.name);
-          
-          // Update the session user object with the new username
-          user.username = playerStats.name;
-          
-          // Force complete session refresh
-          req.session.regenerate((err) => {
-            if (err) {
-              console.error("Error regenerating session:", err);
-            } else {
-              // Re-login user with updated data
-              req.login(user, (loginErr) => {
-                if (loginErr) {
-                  console.error("Error logging in after session regeneration:", loginErr);
-                }
-              });
-            }
-          });
-        } catch (err) {
-          console.error("Failed to update username:", err);
-        }
+      if (!apiResponse.ok) {
+        throw new Error(`Torn API error: ${apiResponse.status} ${apiResponse.statusText}`);
       }
+      
+      const data = await apiResponse.json() as any;
+      
+      // Check for API errors
+      if (data.error) {
+        throw new Error(`Torn API Error: ${data.error.code || 0} - ${data.error.error || 'Unknown error'}`);
+      }
+      
+      console.log(`DIRECT VERIFICATION: API key ${user.apiKey.substring(0, 8)}... belongs to: ${data.name} (ID: ${data.player_id})`);
+      
+      // Update username if it doesn't match what's in the API
+      if (data.name !== user.username) {
+        console.log(`Username mismatch: API shows ${data.name}, user logged in as ${user.username} - updating...`);
+        await storage.updateUsername(user.id, data.name);
+        user.username = data.name;
+      }
+      
+      // Format the data into PlayerStats object
+      const playerStats = {
+        player_id: data.player_id || 0,
+        name: data.name || "Unknown",
+        level: data.level || 1,
+        rank: data.rank || "Unknown",
+        status: data.status?.state || "Offline",
+        last_action: data.last_action?.relative || "Unknown",
+        energy: {
+          current: data.energy?.current || 0,
+          maximum: data.energy?.maximum || 0
+        },
+        nerve: {
+          current: data.nerve?.current || 0,
+          maximum: data.nerve?.maximum || 0
+        },
+        happy: {
+          current: data.happy?.current || 0,
+          maximum: data.happy?.maximum || 0
+        },
+        life: {
+          current: data.life?.current || 0,
+          maximum: data.life?.maximum || 0
+        },
+        stats: {
+          strength: data.strength || 0,
+          defense: data.defense || 0,
+          speed: data.speed || 0,
+          dexterity: data.dexterity || 0,
+          total: (data.strength || 0) + (data.defense || 0) + (data.speed || 0) + (data.dexterity || 0)
+        },
+        money: {
+          current: data.money_onhand || 0,
+          bank: data.money_inbank || 0,
+          points: data.points || 0
+        },
+        faction: data.faction ? {
+          id: data.faction.faction_id || 0,
+          name: data.faction.faction_name || "Unknown",
+          position: data.faction.position || "Member",
+          days_in_faction: data.faction.days_in_faction || 0
+        } : null,
+        company: data.job ? {
+          id: data.job.company_id || 0,
+          name: data.job.company_name || "Unknown",
+          position: data.job.position || "Employee",
+          days_in_company: data.job.days_in_company || 0
+        } : null,
+        travel: {
+          status: data.status?.state === "Traveling" ? "Traveling" : "Home",
+          destination: data.travel?.destination || undefined,
+          return_time: data.travel?.timestamp ? new Date(data.travel.timestamp * 1000).toISOString() : undefined,
+        },
+        profile_image: `https://www.torn.com/images/v2/main/profile/${data.player_id}.jpg`,
+        last_updated: new Date().toISOString(),
+        job: data.job?.job || "None",
+      };
       
       res.json(playerStats);
     } catch (error) {
+      console.error("Error in /api/player/stats:", error);
       res.status(500).json({
         message: error instanceof Error ? error.message : "Failed to fetch player stats",
       });
@@ -99,11 +147,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "API key not configured. Please add your Torn API key in settings." });
       }
       
-      // Create a fresh instance of TornAPI for each request to avoid sharing data
-      const userAPI = new TornAPI();
-      const companyData = await userAPI.getCompanyData(user.apiKey);
+      // DIRECT API CALL: completely bypass any shared state
+      console.log(`EMERGENCY FIX: Direct company API call for user ${user.username} with key ${user.apiKey.substring(0, 8)}...`);
+      
+      const directUrl = `https://api.torn.com/company/?selections=profile&key=${user.apiKey}`;
+      const apiResponse = await fetch(directUrl);
+      
+      if (!apiResponse.ok) {
+        throw new Error(`Torn API error: ${apiResponse.status} ${apiResponse.statusText}`);
+      }
+      
+      const data = await apiResponse.json() as any;
+      
+      // Check for API errors
+      if (data.error) {
+        // No company message is common and not an error
+        if (data.error.code === 11) {
+          return res.json({
+            id: 0,
+            name: "No Company",
+            type: "Unknown",
+            rating: 0,
+            days_old: 0,
+            weekly_profit: 0,
+            employees: { current: 0, max: 0 },
+            last_updated: new Date().toISOString()
+          });
+        }
+        throw new Error(`Torn API Error: ${data.error.code || 0} - ${data.error.error || 'Unknown error'}`);
+      }
+      
+      const companyData = {
+        id: data.ID || 0,
+        name: data.name || "No Company",
+        type: data.company_type || "Unknown",
+        rating: data.rating || 0,
+        days_old: data.days_old || 0,
+        weekly_profit: data.weekly_profit || 0,
+        employees: {
+          current: data.employees_hired || 0,
+          max: data.employees_max || 0
+        },
+        last_updated: new Date().toISOString()
+      };
+      
       res.json(companyData);
     } catch (error) {
+      console.error("Error in company data:", error);
       res.status(500).json({
         message: error instanceof Error ? error.message : "Failed to fetch company data",
       });
@@ -136,11 +226,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "API key not configured. Please add your Torn API key in settings." });
       }
       
-      // Create a fresh instance of TornAPI for each request
-      const userAPI = new TornAPI();
-      const factionData = await userAPI.getFactionData(user.apiKey);
+      // DIRECT API CALL: completely bypass any shared state
+      console.log(`EMERGENCY FIX: Direct faction API call for user ${user.username} with key ${user.apiKey.substring(0, 8)}...`);
+      
+      const directUrl = `https://api.torn.com/faction/?selections=basic&key=${user.apiKey}`;
+      const apiResponse = await fetch(directUrl);
+      
+      if (!apiResponse.ok) {
+        throw new Error(`Torn API error: ${apiResponse.status} ${apiResponse.statusText}`);
+      }
+      
+      const data = await apiResponse.json() as any;
+      
+      // Check for API errors
+      if (data.error) {
+        // No faction message is common and not an error
+        if (data.error.code === 7) {
+          return res.json({
+            id: 0,
+            name: "No Faction",
+            tag: "",
+            leader: { id: 0, name: "Unknown" },
+            members_count: 0,
+            respect: 0,
+            territories: 0,
+            last_updated: new Date().toISOString()
+          });
+        }
+        throw new Error(`Torn API Error: ${data.error.code || 0} - ${data.error.error || 'Unknown error'}`);
+      }
+      
+      console.log(`Processing faction data for ${data.name || "Unknown faction"}`);
+      
+      const factionData = {
+        id: data.ID || 0,
+        name: data.name || "No Faction",
+        tag: data.tag || "",
+        leader: {
+          id: data.leader || 0,
+          name: data.leader_name || "Unknown"
+        },
+        members_count: data.members ? Object.keys(data.members).length : 0,
+        respect: data.respect || 0,
+        territories: data.territory ? Object.keys(data.territory).length : 0,
+        last_updated: new Date().toISOString()
+      };
+      
       res.json(factionData);
     } catch (error) {
+      console.error("Error in faction data:", error);
       res.status(500).json({
         message: error instanceof Error ? error.message : "Failed to fetch faction data",
       });
