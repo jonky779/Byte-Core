@@ -321,8 +321,8 @@ export default function CompanyPage() {
                   <TableHead className="w-[250px]">Employee</TableHead>
                   <TableHead>Position</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Working</TableHead>
                   <TableHead className="text-right">Effectiveness</TableHead>
+                  <TableHead className="text-right">Days</TableHead>
                   <TableHead className="text-right">Wage</TableHead>
                 </TableRow>
               </TableHeader>

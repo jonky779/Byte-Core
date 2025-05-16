@@ -478,16 +478,17 @@ export class TornAPI {
         console.log(`Fetching detailed company data for company ID: ${companyId}`);
         
         try {
-          // Use the company endpoint with the company ID
-          const response = await this.makeRequest(`company/${companyId}?selections=profile,detailed`, apiKey);
+          // Use the company endpoint with the ID and employees selection
+          const response = await this.makeRequest(`company/?selections=Profile,Employees,detailed`, apiKey);
           
           if (!response) {
             throw new Error("Failed to fetch company data");
           }
           
           // The Torn API returns data in a nested structure
-          // Extract the main company data and detailed data
+          // Extract the main company data, employees data and detailed data
           const companyData = response.company || {};
+          const companyEmployeesData = response.company_employees || {};
           const companyDetailedData = response.company_detailed || {};
           
           console.log("Company data structure:", Object.keys(companyData).join(', '));
@@ -495,7 +496,28 @@ export class TornAPI {
           
           // Process employees data if available
           const employees = [];
-          if (companyData.employees) {
+          if (companyEmployeesData && Object.keys(companyEmployeesData).length > 0) {
+            // Company_employees has more detailed data
+            for (const [id, data] of Object.entries(companyEmployeesData)) {
+              const employee = data as any;
+              employees.push({
+                id: parseInt(id, 10),
+                name: employee.name || "Unknown",
+                position: employee.position || "Employee",
+                status: employee.status?.state || "Unknown",
+                last_action: employee.last_action?.relative || "Unknown",
+                days_in_company: employee.days_in_company || 0,
+                effectiveness: employee.effectiveness?.total || 0,
+                wage: employee.wage || 0,
+                stats: {
+                  manual_labor: employee.manual_labor || 0,
+                  intelligence: employee.intelligence || 0,
+                  endurance: employee.endurance || 0
+                }
+              });
+            }
+          } else if (companyData.employees) {
+            // Fallback to basic employee data if detailed not available
             for (const [id, data] of Object.entries(companyData.employees)) {
               const employee = data as any;
               employees.push({
@@ -505,8 +527,8 @@ export class TornAPI {
                 status: employee.status?.state || "Unknown",
                 last_action: employee.last_action?.relative || "Unknown",
                 days_in_company: employee.days_in_company || 0,
-                effectiveness: 100, // Not directly available
-                wage: 0 // Not directly available
+                effectiveness: 0,
+                wage: 0
               });
             }
           }
