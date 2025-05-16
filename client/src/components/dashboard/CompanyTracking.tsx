@@ -214,9 +214,9 @@ export default function CompanyTracking() {
                 })
               }
             </div>
-            {/* Sort by effectiveness, exclude director, only show high effectiveness (>120%) employees, up to 3 */}
+            {/* Sort by effectiveness, exclude directors, take the top 3 highest effectiveness */}
             {[...companyData.employees.list]
-              .filter(emp => !emp.position.toLowerCase().includes("director") && (emp.effectiveness || 0) >= 120)
+              .filter(emp => !emp.position.toLowerCase().includes("director"))
               .sort((a, b) => (b.effectiveness || 0) - (a.effectiveness || 0))
               .slice(0, 3)
               .map((employee) => (
