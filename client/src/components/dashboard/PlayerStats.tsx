@@ -121,10 +121,9 @@ export default function PlayerStats() {
               <div>
                 <h4 className="font-rajdhani font-semibold">{safeObj(playerStats, 'name', 'Player')}</h4>
                 <div className="text-xs text-gray-400 mt-1">Player #{safeObj(playerStats, 'player_id', '-')}</div>
-                <div className="text-xs font-medium bg-gray-800 bg-opacity-70 px-2 py-0.5 rounded text-white mt-1">
-                  {safeObj(playerStats, 'company.position', 
-                    safeObj(playerStats, 'faction.position') === "None" ? "Not in a faction" : 
-                    safeObj(playerStats, 'faction.position', "Civilian"))}
+                <div className="text-xs font-medium bg-gray-800 bg-opacity-70 px-2 py-0.5 rounded text-white mt-1 max-w-full truncate">
+                  {safeObj(playerStats, 'faction.position') === "None" ? "Not in a faction" : 
+                   safeObj(playerStats, 'faction.position', "Civilian")}
                 </div>
               </div>
             </div>
@@ -167,8 +166,8 @@ export default function PlayerStats() {
             <div className="grid grid-cols-2 gap-x-4 gap-y-6">
               <div>
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="font-medium">Strength</span>
-                  <span className="font-mono">{formatNumber(safeObj(playerStats, 'stats.strength', 0))}</span>
+                  <span className="font-medium truncate">Strength</span>
+                  <span className="font-mono truncate ml-1">{formatNumber(safeObj(playerStats, 'stats.strength', 0))}</span>
                 </div>
                 <div className="relative">
                   <div className="h-1 w-full bg-gray-700 rounded-full overflow-hidden">
@@ -184,8 +183,8 @@ export default function PlayerStats() {
               
               <div>
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="font-medium">Defense</span>
-                  <span className="font-mono">{formatNumber(playerStats.stats?.defense || 0)}</span>
+                  <span className="font-medium truncate">Defense</span>
+                  <span className="font-mono truncate ml-1">{formatNumber(safeObj(playerStats, 'stats.defense', 0))}</span>
                 </div>
                 <div className="relative">
                   <div className="h-1 w-full bg-gray-700 rounded-full overflow-hidden">
@@ -201,8 +200,8 @@ export default function PlayerStats() {
               
               <div>
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="font-medium">Speed</span>
-                  <span className="font-mono">{formatNumber(playerStats.stats?.speed || 0)}</span>
+                  <span className="font-medium truncate">Speed</span>
+                  <span className="font-mono truncate ml-1">{formatNumber(safeObj(playerStats, 'stats.speed', 0))}</span>
                 </div>
                 <div className="relative">
                   <div className="h-1 w-full bg-gray-700 rounded-full overflow-hidden">
@@ -218,8 +217,8 @@ export default function PlayerStats() {
               
               <div>
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="font-medium">Dexterity</span>
-                  <span className="font-mono">{formatNumber(playerStats.stats?.dexterity || 0)}</span>
+                  <span className="font-medium truncate">Dexterity</span>
+                  <span className="font-mono truncate ml-1">{formatNumber(safeObj(playerStats, 'stats.dexterity', 0))}</span>
                 </div>
                 <div className="relative">
                   <div className="h-1 w-full bg-gray-700 rounded-full overflow-hidden">
