@@ -1,6 +1,6 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import { Express } from "express";
+import { Express, Request, Response, NextFunction } from "express";
 import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
@@ -84,7 +84,7 @@ export function setupAuth(app: Express) {
     }
   });
 
-  app.post("/api/register", async (req, res) => {
+  app.post("/api/register", async (req: Request, res: Response) => {
     try {
       const { username, apiKey } = req.body;
       
@@ -99,13 +99,16 @@ export function setupAuth(app: Express) {
         return res.status(400).json({ message: "Username already exists" });
       }
       
-      // Verify the API key with Torn API
-      const tornAPI = new TornAPI();
+      // Verify the API key with Torn API by making a direct request
       try {
-        const apiKeyData = await tornAPI.checkApiKey(apiKey);
+        const response = await fetch(`https://api.torn.com/user/?selections=basic&key=${apiKey}`);
+        const userData = await response.json() as any;
         
-        if (apiKeyData.status === "invalid") {
-          return res.status(401).json({ message: "Invalid Torn API key" });
+        if (userData.error) {
+          return res.status(401).json({ 
+            message: "Invalid Torn API key", 
+            details: userData.error.error || "The API key could not be validated" 
+          });
         }
       } catch (error) {
         return res.status(401).json({ message: "Invalid Torn API key or API service unavailable" });
@@ -137,8 +140,8 @@ export function setupAuth(app: Express) {
     }
   });
 
-  // API key login
-  app.post("/api/login", async (req, res) => {
+  // API key login with direct verification to prevent data leakage between users
+  app.post("/api/login", async (req: Request, res: Response) => {
     try {
       const { apiKey, rememberMe = false } = req.body;
       
@@ -146,8 +149,7 @@ export function setupAuth(app: Express) {
         return res.status(400).json({ message: "API key is required" });
       }
       
-      // FIRST: Make a direct request to the Torn API to verify the API key and get user data
-      // This ensures we're operating with fresh data directly from the source
+      // Make a direct request to the Torn API to verify the key and get user data
       const response = await fetch(`https://api.torn.com/user/?selections=basic&key=${apiKey}`);
       const userData = await response.json() as any;
       
@@ -169,30 +171,6 @@ export function setupAuth(app: Express) {
       
       console.log(`Verified Torn API key belongs to: ${playerName} (ID: ${playerId})`);
       
-      // Clear any existing session completely
-      await new Promise<void>((resolve) => {
-        if (req.session) {
-          req.session.destroy((err) => {
-            if (err) console.error("Error destroying session:", err);
-            resolve();
-          });
-        } else {
-          resolve();
-        }
-      });
-      
-      // Create a completely new session
-      await new Promise<void>((resolve, reject) => {
-        req.session.regenerate((err) => {
-          if (err) {
-            console.error("Error regenerating session:", err);
-            reject(err);
-          } else {
-            resolve();
-          }
-        });
-      });
-      
       // Look for existing user with this API key or create a new one
       let user = await storage.getUserByApiKey(apiKey);
       
@@ -213,45 +191,50 @@ export function setupAuth(app: Express) {
         });
       }
       
-      // Set session cookie expiration based on Remember Me option
-      if (rememberMe) {
-        // Extended session (30 days)
-        req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000;
-      } else {
-        // Default session (expires when browser closes)
-        req.session.cookie.maxAge = null;
-      }
+      // Create a special login handler that destroys any previous session
+      const loginUser = () => {
+        return new Promise<void>((resolve, reject) => {
+          req.login(user, (loginErr) => {
+            if (loginErr) {
+              reject(loginErr);
+              return;
+            }
+            
+            // Set session cookie expiration based on Remember Me option
+            if (rememberMe) {
+              // Extended session (30 days)
+              req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000;
+            } else {
+              // Default session (expires when browser closes)
+              req.session.cookie.maxAge = undefined;
+            }
+            
+            resolve();
+          });
+        });
+      };
       
-      // Complete the login process
-      req.login(user, (err) => {
-        if (err) {
-          return res.status(500).json({ message: "Error during login" });
-        }
-        
-        return res.json({
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          apiKey: true, // Don't send the actual API key
-          role: user.role || "user"
-        });
-      });
-        return res.json({
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          apiKey: true,
-          role: user.role || "user",
-          rememberMe: rememberMe
-        });
+      // Perform login
+      await loginUser();
+      
+      // Return user data
+      return res.json({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        apiKey: true, // Don't send the actual API key
+        role: user.role || "user"
       });
     } catch (error) {
       console.error("Login error:", error);
-      res.status(500).json({ message: "Failed to authenticate with API key" });
+      return res.status(500).json({ 
+        message: "An error occurred during login", 
+        details: error instanceof Error ? error.message : "Unknown error" 
+      });
     }
   });
 
-  app.post("/api/logout", (req, res) => {
+  app.post("/api/logout", (req: Request, res: Response) => {
     req.logout((err) => {
       if (err) {
         return res.status(500).json({ message: "Error during logout" });
@@ -260,7 +243,7 @@ export function setupAuth(app: Express) {
     });
   });
 
-  app.get("/api/user", (req, res) => {
+  app.get("/api/user", (req: Request, res: Response) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }
@@ -275,7 +258,7 @@ export function setupAuth(app: Express) {
   });
   
   // Admin endpoint - check if current user is an admin
-  app.get("/api/user/is-admin", (req, res) => {
+  app.get("/api/user/is-admin", (req: Request, res: Response) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }
