@@ -12,13 +12,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Helmet } from "react-helmet";
 
 const loginSchema = z.object({
-  username: z.string().min(1, "Username is required"),
-  password: z.string().min(1, "Password is required"),
+  apiKey: z.string().min(16, "Torn API Key should be 16 characters"),
 });
 
 const registerSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  apiKey: z.string().min(16, "Torn API Key should be 16 characters"),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -39,8 +38,7 @@ export default function AuthPage() {
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: "",
-      password: "",
+      apiKey: "",
     },
   });
 
@@ -48,7 +46,7 @@ export default function AuthPage() {
     resolver: zodResolver(registerSchema),
     defaultValues: {
       username: "",
-      password: "",
+      apiKey: "",
     },
   });
 
