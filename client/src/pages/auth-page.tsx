@@ -9,10 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Helmet } from "react-helmet";
 
 const loginSchema = z.object({
   apiKey: z.string().min(16, "Torn API Key should be 16 characters"),
+  rememberMe: z.boolean().optional().default(false),
 });
 
 const registerSchema = z.object({
@@ -39,6 +41,7 @@ export default function AuthPage() {
     resolver: zodResolver(loginSchema),
     defaultValues: {
       apiKey: "",
+      rememberMe: true,
     },
   });
 
@@ -165,9 +168,28 @@ export default function AuthPage() {
                             </FormItem>
                           )}
                         />
+                        <FormField
+                          control={loginForm.control}
+                          name="rememberMe"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center space-x-2 space-y-0 mt-2">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                  id="rememberMe"
+                                  className="data-[state=checked]:bg-primary"
+                                />
+                              </FormControl>
+                              <div className="leading-none">
+                                <FormLabel className="text-sm">Remember me</FormLabel>
+                              </div>
+                            </FormItem>
+                          )}
+                        />
                         <Button 
                           type="submit" 
-                          className="w-full bg-primary hover:bg-primary-dark"
+                          className="w-full bg-primary hover:bg-primary-dark mt-4"
                           disabled={loginMutation.isPending}
                         >
                           {loginMutation.isPending ? "Logging in..." : "Login"}
