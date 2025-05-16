@@ -188,24 +188,39 @@ export class TornAPI {
   }
   
   private async makeRequest(endpoint: string, apiKey: string): Promise<any> {
-    // Torn API requires the format: https://api.torn.com/user?key=YOUR_API_KEY
-    // So we need to carefully construct the right URL
+    // Torn API requires the format: https://api.torn.com/user?selections=profile&key=YOUR_API_KEY
+    // Make sure we're constructing the URL correctly
     let url = `${this.baseUrl}/${endpoint}`;
     
     // Add the API key
     url = url.includes('?') ? `${url}&key=${apiKey}` : `${url}?key=${apiKey}`;
     
-    console.log(`Making API request to: ${url.replace(apiKey, '***')}`);
+    // For debugging, log the request URL (hiding the API key)
+    const logUrl = url.replace(apiKey, apiKey.substring(0, 4) + '...');
+    console.log(`Making Torn API request to: ${logUrl}`);
     
     return this.enqueueRequest(async () => {
-      const response = await fetch(url);
-      const data = await response.json();
-      
-      if ((data as ApiResponse).error) {
-        throw new Error((data as ApiResponse).error?.error || "API request failed");
+      try {
+        const response = await fetch(url);
+        
+        // Handle HTTP errors
+        if (!response.ok) {
+          throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        // Check for Torn API error responses
+        if (data && data.error) {
+          console.error("Torn API Error:", data.error);
+          throw new Error(data.error.error || "API request failed");
+        }
+        
+        return data;
+      } catch (error) {
+        console.error(`API request failed for ${logUrl}:`, error);
+        throw error;
       }
-      
-      return data;
     });
   }
   
@@ -379,8 +394,8 @@ export class TornAPI {
 
   public async getCompanyData(apiKey: string): Promise<CompanyData> {
     try {
-      // The correct way to get user's company info is through the user endpoint with profile selection
-      const userData = await this.makeRequest("user?selections=profile", apiKey);
+      // First try to get user's company info through basic profile data
+      const userData = await this.makeRequest("user?selections=basic,profile", apiKey);
       
       // If the user doesn't have a job or company, return a "Not in a company" response
       if (!userData.job || !userData.job.company_id) {
@@ -400,28 +415,25 @@ export class TornAPI {
         };
       }
       
-      // User is in a company, but we can't directly access company data in detail
-      // Instead, we use the data from the user profile which contains basic company info
-      
-      // For the user's own company, we only have limited data
+      // User is in a company, construct basic data from their profile
       return {
         id: userData.job.company_id,
         name: userData.job.company_name,
         type: this.getCompanyTypeName(userData.job.company_type),
-        rating: 5, // Not available in profile, using placeholder
-        days_old: 0, // Not available in profile
-        weekly_profit: 0, // Not available in profile
+        rating: 5, // Not directly available
+        days_old: 0, // Not directly available
+        weekly_profit: 0, // Not directly available
         employees: {
           current: 1, // We at least know the user is an employee
-          max: 10, // Not available in profile, using placeholder
+          max: 10, // Assuming default max
           list: [
             {
               id: userData.player_id,
               name: userData.name,
-              position: userData.job.position,
-              status: userData.status.state,
+              position: userData.job.position || "Employee",
+              status: userData.status?.state || "Unknown",
               last_action: userData.last_action?.relative || "Unknown",
-              days_in_company: 0 // Not available in profile
+              days_in_company: 0 // Not directly available
             }
           ]
         },
