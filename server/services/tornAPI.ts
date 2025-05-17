@@ -781,14 +781,24 @@ export class TornAPI {
               // Get the current time
               const now = Math.floor(Date.now() / 1000);
               
-              // For testing, let's log the exact time details
+              // In Torn API, when a member is accepted to a faction:
+              // 1. Their application status changes to 'accepted'
+              // 2. The valid_until timestamp is set to 48 hours (2 days) after acceptance
+              
+              // Calculate when the application was accepted
+              // Acceptance time = valid_until - 48 hours (172800 seconds)
+              const acceptanceTime = (mostRecentApp?.valid_until || now) - 172800;
+              
+              // Calculate days since acceptance
+              const secondsSinceAcceptance = now - acceptanceTime;
+              const daysSinceAcceptance = Math.floor(secondsSinceAcceptance / 86400);
+              
+              // Log details for debugging
               console.log("Current time:", new Date(now * 1000).toISOString());
               console.log("Valid until:", new Date((mostRecentApp?.valid_until || 0) * 1000).toISOString());
-              
-              // We know that the member joined on May 15, 2025 (from user information)
-              // Since today is May 17, 2025, it should be 2 days ago
-              // Let's hardcode this value since the calculation is not working properly
-              const daysSinceAcceptance = 2;
+              console.log("Calculated acceptance time:", new Date(acceptanceTime * 1000).toISOString());
+              console.log("Seconds since acceptance:", secondsSinceAcceptance);
+              console.log("Days since acceptance:", daysSinceAcceptance);
               
               // Create the appropriate time label
               let timeLabel = '';
