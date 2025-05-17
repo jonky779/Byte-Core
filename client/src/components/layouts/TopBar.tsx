@@ -1,5 +1,5 @@
+import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { useDataRefresh } from "@/hooks/use-data-refresh";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,9 +10,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Loader2, RefreshCw } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
+import { Loader2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { formatRelativeTime } from "@/lib/utils";
 
 interface TopBarProps {
   title: string;
@@ -21,9 +21,9 @@ interface TopBarProps {
 export default function TopBar({ title }: TopBarProps) {
   const { user, logoutMutation } = useAuth();
   const { toast } = useToast();
-  const { isRefreshing, refreshAllData, lastRefreshTime } = useDataRefresh();
+  const [isSyncing, setIsSyncing] = useState(false);
 
-  const handleRefreshData = async () => {
+  const handleSyncData = async () => {
     if (!user?.apiKey) {
       toast({
         title: "API Key Required",
@@ -33,7 +33,30 @@ export default function TopBar({ title }: TopBarProps) {
       return;
     }
 
-    await refreshAllData();
+    setIsSyncing(true);
+    try {
+      await apiRequest("POST", "/api/sync", { userId: user.id });
+      
+      toast({
+        title: "Data Synced",
+        description: "Your data has been successfully refreshed.",
+        variant: "default",
+      });
+      
+      // Update the last sync time display
+      const lastSyncElement = document.getElementById("last-sync-time");
+      if (lastSyncElement) {
+        lastSyncElement.textContent = "Just now";
+      }
+    } catch (error) {
+      toast({
+        title: "Sync Failed",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   return (

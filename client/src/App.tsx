@@ -4,7 +4,6 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/use-auth";
-import { DataRefreshProvider } from "@/hooks/use-data-refresh";
 import { ThemeProvider } from "next-themes";
 
 import HomePage from "@/pages/home-page";
@@ -43,12 +42,10 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="dark">
         <AuthProvider>
-          <DataRefreshProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Router />
-            </TooltipProvider>
-          </DataRefreshProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
