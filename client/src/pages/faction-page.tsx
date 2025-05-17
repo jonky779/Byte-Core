@@ -3,7 +3,7 @@ import MainLayout from "@/components/layouts/MainLayout";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { Helmet } from "react-helmet";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Loader2, AlertCircle, Users, RefreshCw, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -133,14 +133,6 @@ export default function FactionPage() {
     }
   };
   
-  const filteredMembers = data?.members.filter(member => {
-    return (statusFilter === "all" || member.status === statusFilter) &&
-           (positionFilter === "all" || member.position === positionFilter) &&
-           (searchQuery === "" || 
-            member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            member.position.toLowerCase().includes(searchQuery.toLowerCase()));
-  });
-  
   if (isLoading) {
     return (
       <MainLayout title="Faction Tracking">
@@ -183,6 +175,15 @@ export default function FactionPage() {
     );
   }
   
+  // Calculate member statistics 
+  const filteredMembers = data.members.filter(member => {
+    return (statusFilter === "all" || member.status === statusFilter) &&
+           (positionFilter === "all" || member.position === positionFilter) &&
+           (searchQuery === "" || 
+            member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            member.position.toLowerCase().includes(searchQuery.toLowerCase()));
+  });
+  
   const onlineCount = data.members.filter(m => m.status === "Online").length;
   const idleCount = data.members.filter(m => m.status === "Idle").length;
   const offlineCount = data.members.filter(m => m.status === "Offline").length;
@@ -200,6 +201,7 @@ export default function FactionPage() {
         <meta name="description" content="Track your Torn RPG faction members and performance with Byte-Core Vault." />
       </Helmet>
       
+      {/* Faction Overview Card */}
       <div className="mb-6">
         <Card className="border-gray-700 bg-game-dark shadow-game">
           <CardHeader className="pb-2">
@@ -297,11 +299,10 @@ export default function FactionPage() {
         </Card>
       </div>
       
+      {/* Faction Details Card with Tabs */}
       <Card className="border-gray-700 bg-game-dark shadow-game">
         <CardHeader>
-          <div className="flex justify-between items-center">
-            <h3 className="font-bold text-lg">Faction Details</h3>
-          </div>
+          <h3 className="font-bold text-lg">Faction Details</h3>
         </CardHeader>
         
         <CardContent>
@@ -312,243 +313,263 @@ export default function FactionPage() {
               <TabsTrigger value="wars">Wars</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="members" className="mt-0">
-            <div className="flex flex-col md:flex-row justify-between space-y-2 md:space-y-0 md:space-x-2 mb-4">
-              <div className="flex-1">
-                <Input
-                  placeholder="Search by name or position..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-game-panel border-gray-700"
-                />
+            {/* Members Tab */}
+            <TabsContent value="members">
+              <div className="flex flex-col md:flex-row justify-between space-y-2 md:space-y-0 md:space-x-2 mb-4">
+                <div className="flex-1">
+                  <Input
+                    placeholder="Search by name or position..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-game-panel border-gray-700"
+                  />
+                </div>
+                
+                <div className="flex space-x-2">
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-[150px] bg-game-panel border-gray-700">
+                      <SelectValue placeholder="Filter by status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Statuses</SelectItem>
+                      <SelectItem value="Online">Online</SelectItem>
+                      <SelectItem value="Idle">Idle</SelectItem>
+                      <SelectItem value="Offline">Offline</SelectItem>
+                      <SelectItem value="Hospital">Hospital</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <Select value={positionFilter} onValueChange={setPositionFilter}>
+                    <SelectTrigger className="w-[150px] bg-game-panel border-gray-700">
+                      <SelectValue placeholder="Filter by position" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Positions</SelectItem>
+                      <SelectItem value="Leader">Leader</SelectItem>
+                      <SelectItem value="Co-leader">Co-leader</SelectItem>
+                      <SelectItem value="Officer">Officer</SelectItem>
+                      <SelectItem value="Member">Member</SelectItem>
+                      <SelectItem value="Recruit">Recruit</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               
-              <div className="flex space-x-2">
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-[150px] bg-game-panel border-gray-700">
-                    <SelectValue placeholder="Filter by status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
-                    <SelectItem value="Online">Online</SelectItem>
-                    <SelectItem value="Idle">Idle</SelectItem>
-                    <SelectItem value="Offline">Offline</SelectItem>
-                    <SelectItem value="Hospital">Hospital</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="rounded-md border border-gray-700">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent border-gray-700">
+                      <TableHead className="w-[250px]">Member</TableHead>
+                      <TableHead>Position</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Level</TableHead>
+                      <TableHead className="text-right">Stats</TableHead>
+                      <TableHead className="text-right">Days in Faction</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredMembers && filteredMembers.length > 0 ? (
+                      filteredMembers.map((member) => (
+                        <TableRow key={member.id} className="border-gray-700">
+                          <TableCell className="font-medium">
+                            <div className="flex items-center">
+                              <div className="w-8 h-8 rounded-full bg-primary bg-opacity-30 flex items-center justify-center mr-2">
+                                <span className="text-primary-light font-bold">{member.name[0]}</span>
+                              </div>
+                              <div>
+                                <div>{member.name}</div>
+                                <div className="text-xs text-gray-400">#{member.id}</div>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {member.position}
+                          </TableCell>
+                          <TableCell>{getStatusBadge(member.status)}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="bg-blue-500/10 text-blue-400 border-blue-500/30">
+                              {member.level}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="text-sm font-medium">
+                              {member.stats.total.toLocaleString()}
+                            </div>
+                            <div className="text-xs text-gray-400">
+                              STR: {member.stats.strength.toLocaleString()}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <span className="font-medium">{member.days_in_faction}</span>
+                            <span className="text-xs text-gray-400 ml-1">days</span>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8 text-gray-400">
+                          No members match your filters.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
+            
+            {/* Territories Tab */}
+            <TabsContent value="territories">
+              <div className="mb-4">
+                <p className="text-sm text-gray-400 mb-3">
+                  Your faction controls {data.territories.length} territories with a total value of ${data.territories.reduce((sum, t) => sum + t.value, 0).toLocaleString()}.
+                </p>
                 
-                <Select value={positionFilter} onValueChange={setPositionFilter}>
-                  <SelectTrigger className="w-[150px] bg-game-panel border-gray-700">
-                    <SelectValue placeholder="Filter by position" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Positions</SelectItem>
-                    <SelectItem value="Leader">Leader</SelectItem>
-                    <SelectItem value="Co-leader">Co-leader</SelectItem>
-                    <SelectItem value="Officer">Officer</SelectItem>
-                    <SelectItem value="Member">Member</SelectItem>
-                    <SelectItem value="Recruit">Recruit</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            <div className="rounded-md border border-gray-700">
-              <Table>
-                <TableHeader>
-                  <TableRow className="hover:bg-transparent border-gray-700">
-                    <TableHead className="w-[250px]">Member</TableHead>
-                    <TableHead>Position</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Level</TableHead>
-                    <TableHead className="text-right">Stats</TableHead>
-                    <TableHead className="text-right">Days in Faction</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredMembers && filteredMembers.length > 0 ? (
-                    filteredMembers.map((member) => (
-                      <TableRow key={member.id} className="border-gray-700">
-                        <TableCell className="font-medium">
-                          <div className="flex items-center">
-                            <div className="w-8 h-8 rounded-full bg-primary bg-opacity-30 flex items-center justify-center mr-2">
-                              <span className="text-primary-light font-bold">{member.name[0]}</span>
-                            </div>
-                            <div>
-                              <div>{member.name}</div>
-                              <div className="text-xs text-gray-400">#{member.id}</div>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {member.position}
-                        </TableCell>
-                        <TableCell>{getStatusBadge(member.status)}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="bg-blue-500/10 text-blue-400 border-blue-500/30">
-                            {member.level}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="text-sm font-medium">
-                            {member.stats.total.toLocaleString()}
-                          </div>
-                          <div className="text-xs text-gray-400">
-                            S: {member.stats.strength.toLocaleString()} | 
-                            D: {member.stats.defense.toLocaleString()}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">{member.days_in_faction}</TableCell>
+                <div className="rounded-md border border-gray-700">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="hover:bg-transparent border-gray-700">
+                        <TableHead>Territory</TableHead>
+                        <TableHead>Value</TableHead>
+                        <TableHead className="text-right">Controlled Since</TableHead>
                       </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-gray-400">
-                        {searchQuery || statusFilter !== 'all' || positionFilter !== 'all' 
-                          ? "No members match your filters."
-                          : "No members found in your faction."}
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-            
-            <div className="text-xs text-gray-400 mt-2 text-right">
-              Showing {filteredMembers?.length || 0} of {data.members.length} members
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="territories" className="mt-0">
-            <div className="rounded-md border border-gray-700">
-              <Table>
-                <TableHeader>
-                  <TableRow className="hover:bg-transparent border-gray-700">
-                    <TableHead>Territory ID</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead className="text-right">Value</TableHead>
-                    <TableHead className="text-right">Controlled Since</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {data.territories && data.territories.length > 0 ? (
-                    data.territories.map((territory) => (
-                      <TableRow key={territory.id} className="border-gray-700">
-                        <TableCell className="font-medium">{territory.id}</TableCell>
-                        <TableCell>{territory.name}</TableCell>
-                        <TableCell className="text-right">${territory.value.toLocaleString()}</TableCell>
-                        <TableCell className="text-right">{territory.controlled_since}</TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center py-8 text-gray-400">
-                        No territories controlled by your faction.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="wars" className="mt-0">
-            <div className="mb-4">
-              <h3 className="text-lg font-medium mb-2">Active Wars</h3>
-              <div className="rounded-md border border-gray-700">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="hover:bg-transparent border-gray-700">
-                      <TableHead>Opposing Faction</TableHead>
-                      <TableHead>Started</TableHead>
-                      <TableHead>Score</TableHead>
-                      <TableHead className="text-right">Territories</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {data.wars.active && data.wars.active.length > 0 ? (
-                      data.wars.active.map((war) => (
-                        <TableRow key={war.faction_id} className="border-gray-700">
-                          <TableCell className="font-medium">{war.faction_name}</TableCell>
-                          <TableCell>{war.start_time}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center">
-                              <span className={`font-semibold ${war.score.us > war.score.them ? 'text-green-400' : 'text-red-400'}`}>
-                                {war.score.us}
-                              </span>
-                              <span className="mx-2">-</span>
-                              <span className={`font-semibold ${war.score.them > war.score.us ? 'text-green-400' : 'text-red-400'}`}>
-                                {war.score.them}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <span className="text-green-400">+{war.territories_gained}</span>
-                            <span className="mx-1">/</span>
-                            <span className="text-red-400">-{war.territories_lost}</span>
+                    </TableHeader>
+                    <TableBody>
+                      {data.territories.length > 0 ? (
+                        data.territories.map((territory) => (
+                          <TableRow key={territory.id} className="border-gray-700">
+                            <TableCell className="font-medium">
+                              <div className="flex items-center">
+                                <Badge variant="outline" className="mr-2 bg-primary/10 text-primary border-primary/20">
+                                  {territory.id}
+                                </Badge>
+                                {territory.name}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              ${territory.value.toLocaleString()}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {territory.controlled_since}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={3} className="text-center py-8 text-gray-400">
+                            Your faction does not control any territories.
                           </TableCell>
                         </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={4} className="text-center py-8 text-gray-400">
-                          No active wars.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
-            </div>
+            </TabsContent>
             
-            <div>
-              <h3 className="text-lg font-medium mb-2">Past Wars (Recent)</h3>
-              <div className="rounded-md border border-gray-700">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="hover:bg-transparent border-gray-700">
-                      <TableHead>Opposing Faction</TableHead>
-                      <TableHead>Started</TableHead>
-                      <TableHead>Score</TableHead>
-                      <TableHead className="text-right">Territories</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {data.wars.past && data.wars.past.length > 0 ? (
-                      data.wars.past.map((war) => (
-                        <TableRow key={war.faction_id} className="border-gray-700">
-                          <TableCell className="font-medium">{war.faction_name}</TableCell>
-                          <TableCell>{war.start_time}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center">
-                              <span className={`font-semibold ${war.score.us > war.score.them ? 'text-green-400' : 'text-red-400'}`}>
-                                {war.score.us}
-                              </span>
-                              <span className="mx-2">-</span>
-                              <span className={`font-semibold ${war.score.them > war.score.us ? 'text-green-400' : 'text-red-400'}`}>
-                                {war.score.them}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <span className="text-green-400">+{war.territories_gained}</span>
-                            <span className="mx-1">/</span>
-                            <span className="text-red-400">-{war.territories_lost}</span>
+            {/* Wars Tab */}
+            <TabsContent value="wars">
+              <div className="mb-6">
+                <h4 className="text-lg font-medium mb-3">Active Wars ({data.wars.active.length})</h4>
+                
+                <div className="rounded-md border border-gray-700">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="hover:bg-transparent border-gray-700">
+                        <TableHead>Enemy Faction</TableHead>
+                        <TableHead>Start Time</TableHead>
+                        <TableHead>Score</TableHead>
+                        <TableHead className="text-right">Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {data.wars.active.length > 0 ? (
+                        data.wars.active.map((war) => (
+                          <TableRow key={war.faction_id} className="border-gray-700">
+                            <TableCell className="font-medium">
+                              {war.faction_name}
+                            </TableCell>
+                            <TableCell>{war.start_time}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center">
+                                <span className="font-medium text-green-400 mr-1">{war.score.us}</span>
+                                <span className="mx-1">:</span>
+                                <span className="font-medium text-red-400 ml-1">{war.score.them}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {war.score.us > war.score.them ? (
+                                <Badge className="bg-green-500/20 text-green-400">Winning</Badge>
+                              ) : war.score.us < war.score.them ? (
+                                <Badge className="bg-red-500/20 text-red-400">Losing</Badge>
+                              ) : (
+                                <Badge variant="outline">Tied</Badge>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center py-8 text-gray-400">
+                            Your faction is not currently engaged in any wars.
                           </TableCell>
                         </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={4} className="text-center py-8 text-gray-400">
-                          No past wars recorded.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
-            </div>
-          </TabsContent>
+              
+              <div>
+                <h4 className="text-lg font-medium mb-3">Past Wars ({data.wars.past.length})</h4>
+                
+                <div className="rounded-md border border-gray-700">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="hover:bg-transparent border-gray-700">
+                        <TableHead>Enemy Faction</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Final Score</TableHead>
+                        <TableHead className="text-right">Result</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {data.wars.past.length > 0 ? (
+                        data.wars.past.map((war) => (
+                          <TableRow key={`past-${war.faction_id}`} className="border-gray-700">
+                            <TableCell className="font-medium">
+                              {war.faction_name}
+                            </TableCell>
+                            <TableCell>{war.start_time}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center">
+                                <span className="font-medium text-blue-400 mr-1">{war.score.us}</span>
+                                <span className="mx-1">:</span>
+                                <span className="font-medium text-blue-400 ml-1">{war.score.them}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {war.score.us > war.score.them ? (
+                                <Badge className="bg-green-500/20 text-green-400">Won</Badge>
+                              ) : war.score.us < war.score.them ? (
+                                <Badge className="bg-red-500/20 text-red-400">Lost</Badge>
+                              ) : (
+                                <Badge variant="outline">Draw</Badge>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center py-8 text-gray-400">
+                            No past wars recorded.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
