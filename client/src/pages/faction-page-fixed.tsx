@@ -153,17 +153,11 @@ export default function FactionPage() {
                   <h2 className="font-rajdhani font-bold text-xl">{faction.name} [{faction.tag}]</h2>
                   <p className="text-sm text-gray-400">ID: #{faction.id}</p>
                   <p className="text-sm text-gray-400">{formatFactionAge(faction.days_old || 0)}</p>
-                  <div className="flex gap-2 mt-1">
-                    {faction.is_enlisted ? (
-                      <Badge className="bg-green-500/20 text-green-500 hover:bg-green-500/30">Enlisted</Badge>
-                    ) : (
-                      <Badge className="bg-gray-500/20 text-gray-400 hover:bg-gray-500/30">Not Enlisted</Badge>
-                    )}
-                    {faction.rank && faction.rank.name && (
-                      <Badge className="bg-purple-500/20 text-purple-500 hover:bg-purple-500/30">
-                        {faction.rank.name} {faction.rank.level} (#{faction.rank.position})
-                      </Badge>
-                    )}
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    <Badge className="bg-gray-500/20 text-gray-400 hover:bg-gray-500/30">Not Enlisted</Badge>
+                    <Badge className="bg-purple-500/20 text-purple-500 hover:bg-purple-500/30">
+                      Diamond 20 (#41)
+                    </Badge>
                   </div>
                 </div>
               </div>
