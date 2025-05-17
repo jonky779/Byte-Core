@@ -152,7 +152,7 @@ export default function FactionPage() {
                 <div>
                   <h2 className="font-rajdhani font-bold text-xl">{faction.name} [{faction.tag}]</h2>
                   <p className="text-sm text-gray-400">ID: #{faction.id}</p>
-                  <p className="text-sm text-gray-400">{formatFactionAge(faction.age_days || 0)}</p>
+                  <p className="text-sm text-gray-400">{formatFactionAge(faction.days_old || 0)}</p>
                 </div>
               </div>
               
