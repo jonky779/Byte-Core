@@ -348,6 +348,9 @@ export class TornAPI {
   }
   
   private getCompanyTypeName(typeId: number): string {
+    // Log the incoming company type ID for debugging
+    console.log(`Getting company type name for type ID: ${typeId}`);
+    
     const companyTypes: Record<number, string> = {
       1: "Hair Salon",
       2: "Law Firm",
@@ -389,6 +392,12 @@ export class TornAPI {
       38: "Mining Corporation",
       39: "Detective Agency"
     };
+    
+    // Make sure we return correct type for Empire Broker
+    if (typeId === 19) {
+      return "Property Broker";
+    }
+    
     return companyTypes[typeId] || "Unknown";
   }
 
