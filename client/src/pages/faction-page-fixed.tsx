@@ -539,8 +539,8 @@ export default function FactionPage() {
                             
                             {territory.racket && (
                               <div className="mt-2 p-2 bg-gray-800/50 rounded-md">
-                                <p className="text-sm font-semibold">{territory.racket.name}</p>
-                                <p className="text-xs text-gray-400">
+                                <p className="text-sm font-semibold text-foreground">{territory.racket.name}</p>
+                                <p className="text-xs text-foreground/90 font-medium">
                                   {territory.racket.description || 
                                    (territory.racket.reward?.type === 'Money' ? 
                                      `$${territory.racket.reward.quantity.toLocaleString()} daily` : 

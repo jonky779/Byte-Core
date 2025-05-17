@@ -76,13 +76,20 @@ export default function AuthPage() {
         <div className="hidden md:flex md:w-1/2 bg-card flex-col justify-center items-center px-8 border-r border-border">
           <div className="max-w-md text-center">
             <div className="mb-6 inline-block">
-              <div className="w-20 h-20 flex items-center justify-center rounded-lg bg-primary bg-opacity-30 mx-auto">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="text-primary-light">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
-                </svg>
+              <div className="w-24 h-24 relative mx-auto">
+                {/* Animated outer ring */}
+                <div className="absolute inset-0 bg-blue-500 rounded-2xl animate-pulse opacity-20"></div>
+                {/* Logo background */}
+                <div className="absolute inset-1 bg-background dark:bg-gray-800 rounded-xl"></div>
+                {/* Logo content */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="text-blue-500">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+                  </svg>
+                </div>
               </div>
             </div>
-            <h1 className="font-bold text-4xl mb-2 tracking-wide bg-gradient-to-r from-primary-light to-primary text-transparent bg-clip-text">BYTE-CORE VAULT</h1>
+            <h1 className="font-bold text-4xl mb-2 tracking-wide bg-gradient-to-r from-blue-400 to-blue-600 text-transparent bg-clip-text">BYTE-CORE VAULT</h1>
             <h2 className="text-lg text-foreground mb-6">Your Ultimate Torn RPG Dashboard</h2>
             <div className="space-y-4 mb-8 text-left text-foreground">
               <div className="flex items-start">

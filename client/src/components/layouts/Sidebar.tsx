@@ -28,7 +28,7 @@ function NavItem({ href, icon, label, isActive }: NavItemProps) {
       "block px-4 py-3.5 text-sm font-medium flex items-center rounded-md mx-1",
       isActive 
         ? "text-white bg-primary bg-opacity-20 border-l-2 border-primary shadow" 
-        : "text-gray-300 hover:bg-black/40 active:bg-black/60"
+        : "text-foreground hover:bg-black/40 active:bg-black/60"
     )}>
       <div className="w-7 flex justify-center items-center mr-3 text-primary-light">{icon}</div> 
       <span className="font-medium">{label}</span>
