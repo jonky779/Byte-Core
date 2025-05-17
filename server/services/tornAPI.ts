@@ -772,6 +772,26 @@ export class TornAPI {
           const activeWars = recentWars.filter(war => !war.end || war.end > now);
           console.log("Active wars count:", activeWars.length);
           
+          // First, always show information about the last completed war
+          const lastCompletedWar = recentWars.find(war => war.end);
+          
+          if (lastCompletedWar && lastCompletedWar.end) {
+            const timeSinceEnd = Math.floor((now - lastCompletedWar.end) / 3600);
+            const timeLabel = timeSinceEnd <= 24 ? `${timeSinceEnd}h ago` : `${Math.floor(timeSinceEnd / 24)}d ago`;
+            
+            console.log("Last war ended:", timeLabel);
+            
+            // Always show days since last war
+            recentActivity.push({
+              type: 'info',
+              description: 'Days since last war',
+              time: activeWars.length > 0 ? 'War in progress' : timeLabel,
+              icon: 'clock',
+              color: 'blue'
+            });
+          }
+          
+          // Then, show information about active wars (or lack thereof)
           if (activeWars.length > 0) {
             // We have an active war - show when it started
             const mostRecentActiveWar = activeWars[0];
@@ -788,23 +808,14 @@ export class TornAPI {
               color: 'red'
             });
           } else {
-            // No active wars - show time since last war ended
-            const lastWar = recentWars.find(war => war.end);
-            
-            if (lastWar && lastWar.end) {
-              const timeSinceEnd = Math.floor((now - lastWar.end) / 3600);
-              const timeLabel = timeSinceEnd <= 24 ? `${timeSinceEnd}h ago` : `${Math.floor(timeSinceEnd / 24)}d ago`;
-              
-              console.log("No active wars, last war ended:", timeLabel);
-              
-              recentActivity.push({
-                type: 'info',
-                description: 'Days since last war',
-                time: timeLabel,
-                icon: 'clock',
-                color: 'blue'
-              });
-            }
+            // No active wars
+            recentActivity.push({
+              type: 'war',
+              description: 'Faction war started',
+              time: 'No active wars',
+              icon: 'swords',
+              color: 'gray'
+            });
           }
         }
       }
