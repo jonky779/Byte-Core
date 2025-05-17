@@ -185,28 +185,15 @@ export default function FactionTracking() {
   }
   
   // Set up recent activity if it doesn't exist
-  if (!factionData.recent_activity) {
+  if (!factionData.recent_activity || factionData.recent_activity.length === 0) {
+    // The API didn't return any activity, so let's create a placeholder message
     factionData.recent_activity = [
       {
-        type: 'join',
-        description: 'New member joined the faction',
-        time: '1h ago',
-        icon: 'user-plus',
-        color: 'green'
-      },
-      {
-        type: 'war',
-        description: 'Faction war started',
-        time: '5h ago',
-        icon: 'fist-raised',
-        color: 'red'
-      },
-      {
-        type: 'achievement',
-        description: 'Territory captured',
-        time: '1d ago',
-        icon: 'trophy',
-        color: 'yellow'
+        type: 'info',
+        description: 'No recent faction activity',
+        time: 'N/A',
+        icon: 'info',
+        color: 'gray'
       }
     ];
   }
