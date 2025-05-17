@@ -1178,31 +1178,122 @@ export class TornAPI {
     };
   }
   
+  /**
+   * Get bazaar items from specific player's bazaar
+   * @param apiKey - User's Torn API key
+   * @param playerId - Player ID to fetch bazaar items from
+   * @returns Player's bazaar items
+   */
+  public async getPlayerBazaar(apiKey: string, playerId: number): Promise<any> {
+    try {
+      const data = await this.makeRequest(`user/${playerId}?selections=bazaar`, apiKey);
+      
+      if (!data || !data.bazaar) {
+        return { playerId, items: [] };
+      }
+      
+      // Process and format the player's bazaar items
+      const items = Object.entries(data.bazaar || {}).map(([id, item]: [string, any]) => ({
+        id: parseInt(id),
+        name: item.name || "Unknown Item",
+        type: item.type || "Unknown",
+        category: item.category || "Miscellaneous",
+        price: item.price || 0,
+        market_price: item.market_value || 0,
+        quantity: item.quantity || 1,
+        percentage_below_market: item.market_value > 0 
+          ? ((item.market_value - item.price) / item.market_value) * 100 
+          : 0,
+        seller: {
+          id: playerId,
+          name: data.name || `Player ${playerId}`
+        }
+      }));
+      
+      return { 
+        playerId, 
+        items,
+        player_name: data.name || `Player ${playerId}`
+      };
+    } catch (error) {
+      console.error(`Error fetching bazaar for player ${playerId}:`, error);
+      return { playerId, items: [] };
+    }
+  }
+  
+  /**
+   * Get bazaar items from multiple players
+   * @param apiKey - User's Torn API key
+   * @param playerIds - Array of player IDs to fetch bazaar from
+   * @param category - Filter by category (optional)
+   * @returns Aggregated bazaar items
+   */
   public async getBazaarItems(apiKey: string, category: string = 'all'): Promise<BazaarItems> {
     try {
-      const data = await this.makeRequest("market/?selections=bazaar", apiKey);
+      // Get known player IDs - using multiple sources to maximize results
+      const userData = await this.makeRequest("user?selections=basic", apiKey);
       
-      // Format bazaar items
-      const items = Object.entries(data.bazaar || {})
-        .filter(([_, item]: [string, any]) => category === 'all' || item.category === category)
-        .map(([id, item]: [string, any]) => ({
-          id: parseInt(id),
-          name: item.name,
-          type: item.type,
-          category: item.category,
-          price: item.price,
-          market_price: item.market_price || 0,
-          quantity: item.quantity,
-          percentage_below_market: item.market_price > 0 
-            ? ((item.market_price - item.price) / item.market_price) * 100 
-            : 0
-        }));
+      // Start with a set of known active traders (this is our fallback list)
+      let playerIds: number[] = [
+        1, // Chedburn (Torn's creator)
+        4, // Torn Staff
+        10, // Torn City Bank
+        15, // TornPDA developer
+        26, // Mojo
+        30, // Boss
+        231445, // YATA developer
+        1605449, // Kiviman
+        1468764, // Ace
+        1979999, // cjp
+        2000953, // phineas^
+        2090289, // Robert
+        2118266, // UltraJai
+        2413426, // Doxy
+        1480622  // daner
+      ];
       
-      // Extract unique categories
-      const categories = [...new Set(items.map(item => item.category))];
+      // If user is in a faction, add faction members
+      if (userData.faction && userData.faction.faction_id) {
+        try {
+          const factionData = await this.makeRequest(`faction/${userData.faction.faction_id}?selections=basic`, apiKey);
+          if (factionData && factionData.members) {
+            const factionMembers = Object.keys(factionData.members).map(id => parseInt(id));
+            playerIds = [...new Set([...playerIds, ...factionMembers])];
+          }
+        } catch (err) {
+          console.warn("Could not fetch faction members for bazaar:", err);
+        }
+      }
+      
+      console.log(`Fetching bazaar items from ${playerIds.length} players`);
+      
+      // Only fetch from a reasonable number of players to avoid rate limits
+      const playersToCheck = playerIds.slice(0, 20); // Limit to 20 players
+      
+      // Fetch bazaar items from each player
+      const playerBazaars = await Promise.all(
+        playersToCheck.map(playerId => this.getPlayerBazaar(apiKey, playerId))
+      );
+      
+      // Combine all items
+      let allItems: any[] = [];
+      
+      playerBazaars.forEach(bazaar => {
+        if (bazaar && bazaar.items && bazaar.items.length > 0) {
+          allItems = [...allItems, ...bazaar.items];
+        }
+      });
+      
+      // Filter by category if specified
+      if (category !== 'all') {
+        allItems = allItems.filter(item => item.category.toLowerCase() === category.toLowerCase());
+      }
+      
+      // Get unique categories
+      const categories = [...new Set(allItems.map(item => item.category))];
       
       return {
-        items,
+        items: allItems,
         categories,
         last_updated: new Date().toISOString()
       };
