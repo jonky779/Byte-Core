@@ -456,17 +456,27 @@ export default function BazaarPage() {
               <Pagination>
                 <PaginationContent>
                   <PaginationItem>
-                    <PaginationPrevious 
-                      onClick={() => setPage(p => Math.max(1, p - 1))} 
+                    <button
+                      onClick={() => setPage(p => Math.max(1, p - 1))}
                       disabled={page === 1}
-                      className={page === 1 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                    />
+                      className={`flex items-center gap-1 ${page === 1 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m15 18-6-6 6-6" />
+                      </svg>
+                      Previous
+                    </button>
                   </PaginationItem>
                   
                   {/* First page */}
                   {page > 3 && (
                     <PaginationItem>
-                      <PaginationLink onClick={() => setPage(1)}>1</PaginationLink>
+                      <button 
+                        onClick={() => setPage(1)}
+                        className="text-white hover:bg-game-panel px-3 py-1.5 rounded-md text-sm font-medium"
+                      >
+                        1
+                      </button>
                     </PaginationItem>
                   )}
                   
@@ -488,15 +498,20 @@ export default function BazaarPage() {
                   
                   {/* Current page */}
                   <PaginationItem>
-                    <PaginationLink isActive>{page}</PaginationLink>
+                    <div className="bg-primary text-primary-foreground px-3 py-1.5 rounded-md text-sm font-medium">
+                      {page}
+                    </div>
                   </PaginationItem>
                   
                   {/* Page after current if not last page */}
                   {page < data.meta.total_pages && (
                     <PaginationItem>
-                      <PaginationLink onClick={() => setPage(page + 1)}>
+                      <button
+                        onClick={() => setPage(page + 1)}
+                        className="text-white hover:bg-game-panel px-3 py-1.5 rounded-md text-sm font-medium"
+                      >
                         {page + 1}
-                      </PaginationLink>
+                      </button>
                     </PaginationItem>
                   )}
                   
@@ -510,18 +525,26 @@ export default function BazaarPage() {
                   {/* Last page if not close to current */}
                   {page < data.meta.total_pages - 2 && (
                     <PaginationItem>
-                      <PaginationLink onClick={() => setPage(data.meta.total_pages)}>
+                      <button
+                        onClick={() => setPage(data.meta.total_pages)}
+                        className="text-white hover:bg-game-panel px-3 py-1.5 rounded-md text-sm font-medium"
+                      >
                         {data.meta.total_pages}
-                      </PaginationLink>
+                      </button>
                     </PaginationItem>
                   )}
                   
                   <PaginationItem>
-                    <PaginationNext 
-                      onClick={() => setPage(p => Math.min(data.meta.total_pages, p + 1))} 
+                    <button
+                      onClick={() => setPage(p => Math.min(data.meta.total_pages, p + 1))}
                       disabled={page === data.meta.total_pages}
-                      className={page === data.meta.total_pages ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                    />
+                      className={`flex items-center gap-1 ${page === data.meta.total_pages ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                    >
+                      Next
+                      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m9 18 6-6-6-6" />
+                      </svg>
+                    </button>
                   </PaginationItem>
                 </PaginationContent>
               </Pagination>
