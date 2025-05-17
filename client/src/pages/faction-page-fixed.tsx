@@ -297,11 +297,25 @@ export default function FactionPage() {
                       className="w-full p-2 bg-game-panel border border-gray-700 rounded-md"
                     >
                       <option value="all">All Positions</option>
-                      <option value="Leader">Leader</option>
-                      <option value="Co-leader">Co-leader</option>
-                      <option value="Officer">Officer</option>
-                      <option value="Member">Member</option>
-                      <option value="Recruit">Recruit</option>
+                      {faction.members && (
+                        (() => {
+                          try {
+                            // Extract and sort unique positions from actual data
+                            const positions = new Set<string>();
+                            Object.values(faction.members).forEach((member: any) => {
+                              if (member && member.position) {
+                                positions.add(member.position);
+                              }
+                            });
+                            return Array.from(positions).sort().map(position => (
+                              <option key={position} value={position}>{position}</option>
+                            ));
+                          } catch (err) {
+                            console.error("Error rendering position options:", err);
+                            return null;
+                          }
+                        })()
+                      )}
                     </select>
                   </div>
                 </div>
