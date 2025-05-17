@@ -11,14 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Pagination, 
-  PaginationContent, 
-  PaginationItem, 
-  PaginationLink, 
-  PaginationNext, 
-  PaginationPrevious 
-} from "@/components/ui/pagination";
+// Using custom pagination implementation instead of Radix UI
 
 interface BazaarItem {
   id: number;
@@ -257,7 +250,7 @@ export default function BazaarPage() {
                     >
                       All Types
                     </div>
-                    {data.meta.types.map((t) => (
+                    {data?.meta?.types?.map((t) => (
                       <div 
                         key={t}
                         className="p-2 hover:bg-gray-800 cursor-pointer"
@@ -537,31 +530,41 @@ export default function BazaarPage() {
             )}
           </TabsContent>
           
-          {data.meta.total_pages > 1 && (
+          {data?.meta?.total_pages > 1 && (
             <div className="mt-6">
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious 
-                      onClick={() => setPage(p => Math.max(1, p - 1))} 
-                      disabled={page === 1}
-                      className={page === 1 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                    />
-                  </PaginationItem>
-                  
-                  {/* First page */}
-                  {page > 3 && (
-                    <PaginationItem>
-                      <PaginationLink onClick={() => setPage(1)}>1</PaginationLink>
-                    </PaginationItem>
-                  )}
-                  
-                  {/* Ellipsis if needed */}
-                  {page > 4 && (
-                    <PaginationItem>
-                      <span className="px-4">...</span>
-                    </PaginationItem>
-                  )}
+              <div className="flex justify-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(p => Math.max(1, p - 1))} 
+                  disabled={page === 1}
+                  className={page === 1 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                >
+                  Previous
+                </Button>
+                
+                {/* First page */}
+                {page > 3 && (
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(1)}
+                  >
+                    1
+                  </Button>
+                )}
+                
+                {/* Ellipsis if needed */}
+                {page > 4 && (
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    disabled
+                    className="pointer-events-none"
+                  >
+                    ...
+                  </Button>
+                )}
                   
                   {/* Page before current if not first page */}
                   {page > 1 && (
@@ -596,9 +599,13 @@ export default function BazaarPage() {
                   {/* Last page if not close to current */}
                   {page < data.meta.total_pages - 2 && (
                     <PaginationItem>
-                      <PaginationLink onClick={() => setPage(data.meta.total_pages)}>
-                        {data.meta.total_pages}
-                      </PaginationLink>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage(data?.meta?.total_pages || 1)}
+                      >
+                        {data?.meta?.total_pages}
+                      </Button>
                     </PaginationItem>
                   )}
                   
