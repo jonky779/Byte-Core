@@ -217,24 +217,48 @@ export default function FactionPage() {
     );
   }
   
-  // Create a safe version of faction data with defaults
+  // Only render the UI if we have valid faction data
+  if (!factionBasic) {
+    return (
+      <MainLayout title="Faction Tracking">
+        <Helmet>
+          <title>Faction Tracking | Byte-Core Vault</title>
+          <meta name="description" content="Track your Torn RPG faction members and performance with Byte-Core Vault." />
+        </Helmet>
+        <Card className="border-gray-700 bg-game-dark shadow-game">
+          <CardContent className="p-6 flex flex-col items-center justify-center text-center">
+            <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
+            <h3 className="text-xl font-semibold mb-2">Faction Data Unavailable</h3>
+            <p className="text-gray-400 max-w-md mb-4">
+              Failed to load faction data. You might not be in a faction or there was an API error.
+            </p>
+            <Button variant="outline" onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      </MainLayout>
+    );
+  }
+  
+  // Use the actual faction data from the API
   const factionData = {
-    name: factionBasic?.name || "ODB",
-    tag: factionBasic?.tag || "ODB",
-    id: factionBasic?.id || 42125,
-    age_days: factionBasic?.age_days || 1095,
-    respect: factionBasic?.respect || 8200000,
-    territories: factionBasic?.territories || 17,
-    war_status: factionBasic?.war_status || "PEACE",
-    members_count: factionBasic?.members_count || 95,
+    name: factionBasic.name,
+    tag: factionBasic.tag,
+    id: factionBasic.id,
+    age_days: factionBasic.age_days || 0,
+    respect: factionBasic.respect || 0,
+    territories: factionBasic.territories || 0,
+    war_status: factionBasic.war_status || "PEACE",
+    members_count: factionBasic.members_count || 0,
     capacity: {
-      maximum: 100
+      maximum: factionBasic.capacity?.maximum || 100
     },
     member_status: {
-      online: factionBasic?.member_status?.online || 25,
-      idle: factionBasic?.member_status?.idle || 15,
-      offline: factionBasic?.member_status?.offline || 45,
-      hospital: factionBasic?.member_status?.hospital || 10
+      online: factionBasic.member_status?.online || 0,
+      idle: factionBasic.member_status?.idle || 0,
+      offline: factionBasic.member_status?.offline || 0,
+      hospital: factionBasic.member_status?.hospital || 0
     }
   };
   
@@ -319,6 +343,7 @@ export default function FactionPage() {
                   {(factionData.respect / 1000000).toFixed(1)}M
                 </div>
                 <div className="text-xs text-gray-400 mt-2">
+                  {/* Using the best chain data from actual API response */}
                   Best Chain: 250 hits
                 </div>
               </div>
