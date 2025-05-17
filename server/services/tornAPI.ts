@@ -945,6 +945,7 @@ export class TornAPI {
         members_count: totalMembers || 1,
         respect: factionRespect,
         territories: factionData.territory ? Object.keys(factionData.territory).length : 0,
+        territory: factionData.territory || [], // Include the full territory data
         war_status: warStatus,
         best_chain: bestChain,
         days_old: daysOld,
