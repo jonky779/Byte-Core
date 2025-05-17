@@ -394,6 +394,10 @@ export class TornAPI {
     };
     
     // Make sure we return correct type for Empire Broker
+    if (typeId === 20) {
+      return "Empire Broker";
+    }
+    
     if (typeId === 19) {
       return "Property Broker";
     }
