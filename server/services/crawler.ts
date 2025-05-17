@@ -306,23 +306,57 @@ export class Crawler {
   
   private async processSinglePlayer(playerId: number): Promise<void> {
     try {
-      // Use first available API key with admin access
-      // In a real implementation, you'd have a pool of API keys or a special crawler key
-      const apiKey = process.env.TORN_ADMIN_API_KEY || process.env.TORN_API_KEY;
+      // Use admin's personal API key for crawler operations
+      // Using your personal API key: fvgfbmJ3IT7ksiMm
+      const apiKey = "fvgfbmJ3IT7ksiMm";
       
       if (!apiKey) {
         throw new Error("No API key available for crawler");
       }
       
-      // Get player data from the API, passing the player ID to fetch a specific player
+      // Step 1: Get player data from the API
       const playerData = await this.tornAPI.getPlayerStats(apiKey, playerId);
       
       // Store the player data for future use
       await this.storage.storePlayerData(playerId, playerData);
       
-      // Log the action
-      this.addLog("Process", `Processed player ID ${playerId}: ${playerData.name} (Level ${playerData.level})`, true);
+      // Step 2: Check if player is in a faction, if yes, collect faction data
+      if (playerData.faction && playerData.faction.faction_id) {
+        try {
+          // Get basic faction data including members list
+          const factionData = await this.tornAPI.getFactionData(apiKey, false, playerData.faction.faction_id);
+          this.addLog("Process", `Collected faction data for ID ${playerData.faction.faction_id}: ${factionData.name}`, true);
+          
+          // Step 3: Process faction members to get more player IDs
+          if (factionData.members) {
+            this.addLog("Process", `Found ${Object.keys(factionData.members).length} members in faction ${factionData.name}`, true);
+            
+            // We don't need to process them now, they will be picked up in the crawler's normal sequence
+          }
+        } catch (factionError) {
+          this.addLog("Warning", `Failed to process faction ID ${playerData.faction.faction_id}: ${factionError.message}`, false);
+        }
+      }
       
+      // Step 4: Check if player is in a company, if yes, collect company data
+      if (playerData.job && playerData.job.company_id) {
+        try {
+          // Get company data including employees
+          const companyData = await this.tornAPI.getCompanyDetailedData(apiKey, playerData.job.company_id);
+          this.addLog("Process", `Collected company data for ID ${playerData.job.company_id}: ${companyData.name}`, true);
+          
+          // Process employees to get more player IDs
+          if (companyData.employees) {
+            this.addLog("Process", `Found ${Object.keys(companyData.employees).length} employees in company ${companyData.name}`, true);
+            
+            // We don't need to process them now, they will be picked up in the crawler's normal sequence
+          }
+        } catch (companyError) {
+          this.addLog("Warning", `Failed to process company ID ${playerData.job.company_id}: ${companyError.message}`, false);
+        }
+      }
+      
+      this.addLog("Process", `Completed processing player ID ${playerId}: ${playerData.name} (Level ${playerData.level})`, true);
       return Promise.resolve();
     } catch (error) {
       this.addLog("Error", `Failed to process player ID ${playerId}: ${error instanceof Error ? error.message : "Unknown error"}`, false);
