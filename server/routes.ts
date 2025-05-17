@@ -29,8 +29,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const tornAPI = new TornAPI();
   const crawler = new Crawler(tornAPI, storage);
   
-  // Initialize the crawler with demo mode - we'll activate real mode for administrators
+  // Initialize the crawler in demo mode
   await crawler.initialize();
+  
+  // Hook into the login process to capture user data
+  app.use((req, res, next) => {
+    // Check if user just logged in and is an admin
+    if (req.isAuthenticated() && req.user && (req.user as any).role === "admin") {
+      // Get the user's API key from their session
+      const apiKey = (req.user as any).apiKey;
+      
+      if (apiKey) {
+        console.log("Found admin user with API key, updating crawler with latest data");
+        
+        // Update the crawler with the user's API key data (don't auto-start)
+        crawler.updateUserData(req.user!.id, apiKey).catch(error => {
+          console.error("Error updating crawler data:", error);
+        });
+      }
+    }
+    next();
+  });
 
   // Before initializing the crawler, let's make sure we setup the initialization later
   // This will only be accessible to admin users
