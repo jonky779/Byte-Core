@@ -313,7 +313,6 @@ export class Crawler {
   private async processSinglePlayer(playerId: number): Promise<void> {
     try {
       // Use admin's personal API key for crawler operations
-      // Using your personal API key: fvgfbmJ3IT7ksiMm
       const apiKey = "fvgfbmJ3IT7ksiMm";
       
       if (!apiKey) {
@@ -322,39 +321,29 @@ export class Crawler {
       
       try {
         // Step 1: Get player data from the API
+        // Fetch basic profile and stats data for indexing
         const playerData = await this.tornAPI.getPlayerStats(apiKey, playerId);
+        
+        if (!playerData || !playerData.name) {
+          // This happens with non-existent player IDs
+          this.addLog("Info", `Player ID ${playerId} not found, skipping`, true);
+          return;
+        }
         
         // Store the player data for future use
         await this.storage.storePlayerData(playerId, playerData);
         
-        this.addLog("Process", `Successfully processed player ID ${playerId}: ${playerData.name} (Level ${playerData.level})`, true);
+        // Log successful processing
+        this.addLog("Process", `Player ${playerId}: ${playerData.name} (Level ${playerData.level})`, true);
         
-        // Step 2: Check if player is in a faction
-        if (playerData.faction && playerData.faction.id) {
-          try {
-            // Log that we found faction data
-            this.addLog("Process", `Found player ${playerData.name} in faction ID ${playerData.faction.id}`, true);
-            
-            // We don't need to make additional API calls here
-            // The relationships are already stored in the player data
-          } catch (factionError: any) {
-            // Just log the error but don't let it stop processing
-            this.addLog("Warning", `Error processing faction relationship: ${factionError?.message || 'API error'}`, false);
-          }
+        // Check for faction relationship
+        if (playerData.faction) {
+          this.addLog("Process", `Found player in faction: ${playerData.faction.name || "Unknown"}`, true);
         }
         
-        // Step 3: Check if player is in a company
-        if (playerData.company && playerData.company.id) {
-          try {
-            // Log that we found company data
-            this.addLog("Process", `Found player ${playerData.name} in company ID ${playerData.company.id}`, true);
-            
-            // We don't need to make additional API calls here
-            // The relationships are already stored in the player data
-          } catch (companyError: any) {
-            // Just log the error but don't let it stop processing
-            this.addLog("Warning", `Error processing company relationship: ${companyError?.message || 'API error'}`, false);
-          }
+        // Check for company relationship
+        if (playerData.company) {
+          this.addLog("Process", `Found player in company: ${playerData.company.name || "Unknown"}`, true);
         }
         
         // Success - player fully processed
