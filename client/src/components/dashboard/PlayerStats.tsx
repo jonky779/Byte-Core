@@ -129,12 +129,12 @@ export default function PlayerStats() {
             </div>
             
             <div className="mt-auto grid grid-cols-2 gap-2 text-sm">
-              <div className="bg-game-black bg-opacity-50 rounded p-2">
+              <div className="bg-muted rounded p-2">
                 <div className="text-xs text-gray-400">RANK</div>
                 <div className="font-medium text-primary-focus">{safeObj(playerStats, 'rank', "Unknown")}</div>
               </div>
               
-              <div className="bg-game-black bg-opacity-50 rounded p-2">
+              <div className="bg-muted rounded p-2">
                 <div className="text-xs text-gray-400">STATUS</div>
                 <div 
                   className={`font-medium ${
