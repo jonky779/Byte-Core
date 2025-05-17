@@ -41,8 +41,8 @@ export default function Sidebar() {
   const { user, logoutMutation } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // API key status indicator
-  const hasApiKey = !!user?.apiKey;
+  // API key status indicator - checking if the actual apiKey string exists in user data
+  const hasApiKey = !!user && typeof user.apiKey === 'string' && user.apiKey.length > 0;
 
   return (
     <>
@@ -68,9 +68,9 @@ export default function Sidebar() {
       )}
 
       <aside className={cn(
-        "md:w-64 bg-black/95 backdrop-blur-sm md:min-h-screen border-r border-gray-700 flex flex-col",
+        "md:w-64 bg-game-dark md:min-h-screen border-r border-gray-700 flex flex-col",
         mobileOpen 
-          ? "fixed top-0 left-0 w-4/5 max-w-xs h-full z-50 shadow-lg animate-slide-in" 
+          ? "fixed top-0 left-0 w-4/5 max-w-xs h-full z-50 shadow-lg animate-slide-in bg-black/95 backdrop-blur-sm" 
           : "hidden md:flex"
       )}>
         {/* Logo & App Title */}

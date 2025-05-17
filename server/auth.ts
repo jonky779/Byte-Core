@@ -228,11 +228,12 @@ export function setupAuth(app: Express) {
       return res.status(401).json({ message: "Not authenticated" });
     }
     const user = req.user as Express.User;
+    // Return the actual API key string instead of just a boolean
     res.json({
       id: user.id,
       username: user.username,
       email: user.email,
-      apiKey: user.apiKey ? true : false,
+      apiKey: user.apiKey || null,
       role: user.role || "user"
     });
   });
