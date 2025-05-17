@@ -441,33 +441,56 @@ export class Crawler {
   }
   
   // Method for updating user data when an admin logs in
-  public async updateUserData(userId: number, apiKey: string): Promise<void> {
-    if (!apiKey) {
+  /**
+   * Auto-start the crawler with a specific user's API key and Torn ID
+   * This immediately begins processing player relationships
+   */
+  public async autoStart(apiKey: string, tornPlayerId: number): Promise<void> {
+    if (this.status.status === "running") {
+      // Already running - don't restart
       return;
     }
     
-    try {
-      // Get the user's data to add to our discovery queue
-      const userData = await this.tornAPI.getPlayerStats(apiKey);
-      
-      if (userData && userData.player_id) {
-        // Add user to our processing queue
-        this.queuePlayer(userData.player_id);
-        
-        // Add faction and company relationships if available
-        if (userData.faction && userData.faction.id) {
-          this.discoveredFactions.add(userData.faction.id);
-        }
-        
-        if (userData.company && userData.company.id) {
-          this.discoveredCompanies.add(userData.company.id);
-        }
-        
-        this.addLog("Update", `Added user ${userData.name} (ID: ${userData.player_id}) to discovery queue`, true);
-      }
-    } catch (error) {
-      console.error("Error updating user data:", error);
+    if (!apiKey) {
+      throw new Error("No API key provided for crawler");
     }
+    
+    // Setup crawler for intelligent relationship discovery
+    this.config.enabled = true;
+    this.status.status = "running";
+    this.abortCrawl = false;
+    
+    // Reset tracking data
+    this.status.indexedPlayers = 0;
+    this.status.totalPlayers = 1; // Start with just your ID, will increase as we discover relationships
+    this.status.crawlSpeed = 0;
+    this.currentApiKey = apiKey;
+    
+    // Clear previous data
+    this.playerQueue.clear();
+    this.processedPlayers.clear();
+    this.discoveredFactions.clear();
+    this.discoveredCompanies.clear();
+        
+    // Add the specified Torn player ID as our starting point
+    this.queuePlayer(tornPlayerId);
+    
+    this.addLog("Control", `Crawler auto-started with player ID ${tornPlayerId}`, true);
+    
+    // Begin processing immediately in the background
+    setImmediate(async () => {
+      try {
+        // Start processing right away
+        await this.processPlayerQueue();
+      } catch (error) {
+        console.error("Crawler processing error:", error);
+        this.status.status = "error";
+        this.status.error = error instanceof Error ? error.message : "Unknown error during crawl";
+        this.addLog("Error", `Crawler error: ${this.status.error}`, false);
+      }
+    });
+    
+    return Promise.resolve();
   }
   
   // Real API key to use for all crawler operations - set during start()
@@ -475,7 +498,7 @@ export class Crawler {
 
   private async processSinglePlayer(playerId: number): Promise<void> {
     try {
-      // Use the API key set during start()
+      // Use the API key set during autoStart()
       const apiKey = this.currentApiKey;
       
       if (!apiKey) {
@@ -499,60 +522,69 @@ export class Crawler {
         // Log successful processing
         this.addLog("Process", `Processed player ${playerId}: ${playerData.name} (Level ${playerData.level})`, true);
         
-        // Extract and queue faction relationships
+        // Update the total players count as we discover relationships
+        this.status.totalPlayers = this.processedPlayers.size + this.playerQueue.size;
+        
+        // Extract and queue faction relationships if the player has a faction
         if (playerData.faction && typeof playerData.faction === 'object' && playerData.faction !== null) {
           const factionId = playerData.faction.id;
           if (factionId && !this.discoveredFactions.has(factionId)) {
             this.addLog("Discover", `Found new faction: ${playerData.faction.name} (ID: ${factionId})`, true);
             this.discoveredFactions.add(factionId);
             
-            // Try to get the faction members, but don't stop if it fails
+            // Try to get the faction's member list
             try {
-              // Get faction members data from a separate endpoint
+              // Use the FactionData endpoint to get members
               const factionData = await this.tornAPI.getFactionData(apiKey, false);
-              if (factionData && factionData.members) {
-                this.addLog("Process", `Processing ${Object.keys(factionData.members).length} faction members`, true);
-                
-                // Queue all faction members for processing
-                for (const memberId in factionData.members) {
-                  const memberIdNum = parseInt(memberId, 10);
-                  if (!isNaN(memberIdNum) && memberIdNum > 0) {
-                    this.queuePlayer(memberIdNum);
-                  }
+              
+              // Extract faction members (need to handle different API response formats)
+              const members = factionData.members || {};
+              
+              // Queue all faction members for processing
+              const memberCount = Object.keys(members).length;
+              this.addLog("Process", `Adding ${memberCount} faction members to queue`, true);
+              
+              for (const memberId in members) {
+                const memberIdNum = parseInt(memberId, 10);
+                if (!isNaN(memberIdNum) && memberIdNum > 0) {
+                  this.queuePlayer(memberIdNum);
                 }
               }
             } catch (factionError) {
-              // Just log the error and continue
-              this.addLog("Warning", `Couldn't get faction members: ${factionError}`, false);
+              // Just log the error and continue - don't stop the entire crawler for one faction
+              this.addLog("Warning", `Couldn't process faction ${factionId}: ${factionError}`, false);
             }
           }
         }
         
-        // Extract and queue company relationships
+        // Extract and queue company relationships if the player has a company
         if (playerData.company && typeof playerData.company === 'object' && playerData.company !== null) {
           const companyId = playerData.company.id;
           if (companyId && !this.discoveredCompanies.has(companyId)) {
             this.addLog("Discover", `Found new company: ${playerData.company.name} (ID: ${companyId})`, true);
             this.discoveredCompanies.add(companyId);
             
-            // Try to get the company employees, but don't stop if it fails
+            // Try to get the company's employee list
             try {
-              // Get company data from a separate endpoint
+              // Use the CompanyData endpoint to get employees
               const companyData = await this.tornAPI.getCompanyData(apiKey);
-              if (companyData && companyData.employees) {
-                this.addLog("Process", `Processing company employees`, true);
-                
-                // Queue all company employees for processing
-                for (const employeeId in companyData.employees) {
-                  const employeeIdNum = parseInt(employeeId, 10);
-                  if (!isNaN(employeeIdNum) && employeeIdNum > 0) {
-                    this.queuePlayer(employeeIdNum);
-                  }
+              
+              // Extract company employees
+              const employees = companyData.employees || {};
+              
+              // Queue all employees for processing
+              const employeeCount = Object.keys(employees).length;
+              this.addLog("Process", `Adding ${employeeCount} company employees to queue`, true);
+              
+              for (const employeeId in employees) {
+                const employeeIdNum = parseInt(employeeId, 10);
+                if (!isNaN(employeeIdNum) && employeeIdNum > 0) {
+                  this.queuePlayer(employeeIdNum);
                 }
               }
             } catch (companyError) {
-              // Just log the error and continue
-              this.addLog("Warning", `Couldn't get company employees: ${companyError}`, false);
+              // Just log the error and continue - don't stop the entire crawler
+              this.addLog("Warning", `Couldn't process company ${companyId}: ${companyError}`, false);
             }
           }
         }
