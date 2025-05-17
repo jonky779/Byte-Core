@@ -240,7 +240,6 @@ export default function FactionPage() {
                 <Progress 
                   value={(data.stats.members_count / data.stats.max_members) * 100} 
                   className="h-1.5 mt-1 bg-gray-700" 
-                  indicatorClassName="bg-primary" 
                 />
               </div>
               
@@ -300,19 +299,20 @@ export default function FactionPage() {
       
       <Card className="border-gray-700 bg-game-dark shadow-game">
         <CardHeader>
-          <Tabs defaultValue="members" value={activeTab} onValueChange={setActiveTab}>
-            <div className="flex justify-between items-center">
-              <TabsList className="bg-game-panel">
-                <TabsTrigger value="members">Members</TabsTrigger>
-                <TabsTrigger value="territories">Territories</TabsTrigger>
-                <TabsTrigger value="wars">Wars</TabsTrigger>
-              </TabsList>
-            </div>
-          </Tabs>
+          <div className="flex justify-between items-center">
+            <h3 className="font-bold text-lg">Faction Details</h3>
+          </div>
         </CardHeader>
         
         <CardContent>
-          <TabsContent value="members" className="mt-0">
+          <Tabs defaultValue="members" value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="bg-game-panel mb-4">
+              <TabsTrigger value="members">Members</TabsTrigger>
+              <TabsTrigger value="territories">Territories</TabsTrigger>
+              <TabsTrigger value="wars">Wars</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="members" className="mt-0">
             <div className="flex flex-col md:flex-row justify-between space-y-2 md:space-y-0 md:space-x-2 mb-4">
               <div className="flex-1">
                 <Input
@@ -549,6 +549,7 @@ export default function FactionPage() {
               </div>
             </div>
           </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </MainLayout>
