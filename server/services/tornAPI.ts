@@ -348,75 +348,20 @@ export class TornAPI {
   }
   
   private getCompanyTypeName(typeId: number, companyName?: string): string {
-    // Log the incoming company type ID for debugging
+    // Log the incoming company type for debugging only
     console.log(`Getting company type name for type ID: ${typeId}, company name: ${companyName || 'N/A'}`);
     
-    // Use the company name as the primary source of truth
+    // Just return the company name as the source of truth
+    // This ensures we're not hardcoding anything and displaying what the API returns
+    // If we have a company name from the API, use the company name directly
     if (companyName) {
-      // Check if this is a named broker company
-      if (companyName.includes("Empire Broker")) {
-        return "Empire Broker";
-      }
-      
-      // Check for other company type patterns in the name
-      if (companyName.includes("Property Broker")) {
-        return "Property Broker";
-      }
+      // Extract the company type from the name (before any '$' character)
+      const nameParts = companyName.split('$');
+      return nameParts[0].trim();
     }
     
-    // The official Torn company types (taken from the API docs)
-    const companyTypes: Record<number, string> = {
-      1: "Hair Salon",
-      2: "Law Firm",
-      3: "Flower Shop",
-      4: "Car Dealership",
-      5: "Clothing Store",
-      6: "Gun Shop",
-      7: "Game Shop",
-      8: "Candle Shop",
-      9: "Toy Shop",
-      10: "Adult Novelties",
-      11: "Cyber Cafe",
-      12: "Grocery Store",
-      13: "Theater",
-      14: "Sweet Shop",
-      15: "Cruise Line",
-      16: "Television Network",
-      17: "Zoo",
-      18: "Firework Stand",
-      19: "Property Broker",
-      20: "Property Broker", // Updated this based on in-game observation
-      21: "Gas Station",
-      22: "Music Store",
-      23: "Nightclub",
-      24: "Pub",
-      25: "Casino",
-      26: "Restaurant",
-      27: "Lingerie Store",
-      28: "Hotel",
-      29: "Motel",
-      30: "Men's Strip Club",
-      31: "Women's Strip Club",
-      32: "Farm",
-      33: "Software Corporation",
-      34: "Ladies Gym",
-      35: "Men's Gym",
-      36: "Restaurant Supply Store",
-      37: "Logistics Management",
-      38: "Mining Corporation",
-      39: "Detective Agency"
-    };
-    
-    // Now check the current company type against the official listing
-    const companyType = companyTypes[typeId];
-    
-    // If we couldn't determine the company type, log a warning and return Unknown
-    if (!companyType) {
-      console.warn(`Unknown company type ID: ${typeId} for company: ${companyName || 'Unknown'}`);
-      return "Unknown";
-    }
-    
-    return companyType;
+    // If we don't have a name, return the type ID as a fallback
+    return `Company Type ${typeId}`;
   }
 
   public async getCompanyData(apiKey: string): Promise<CompanyData> {
