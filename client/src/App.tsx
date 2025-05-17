@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ThemeProvider } from "next-themes";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 import HomePage from "@/pages/home-page";
 import NotFound from "@/pages/not-found";
@@ -18,6 +19,20 @@ import CrawlerStatusPage from "@/pages/crawler-status-page";
 import ItemDatabasePage from "@/pages/item-database-page";
 import SettingsPage from "@/pages/settings-page";
 import { ProtectedRoute } from "./lib/protected-route";
+
+// Hide the Vite error overlay by inserting CSS
+// This is a workaround since we can't modify vite.config.ts directly
+const hideErrorOverlay = document.createElement('style');
+hideErrorOverlay.textContent = `
+  .vite-error-overlay, [data-plugin="runtime-error-modal"], [plugin="runtime-error-plugin"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    z-index: -9999 !important;
+    pointer-events: none !important;
+  }
+`;
+document.head.appendChild(hideErrorOverlay);
 
 function Router() {
   return (
@@ -39,16 +54,18 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="dark">
-        <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-          </TooltipProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider attribute="class" defaultTheme="dark">
+          <AuthProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Router />
+            </TooltipProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
