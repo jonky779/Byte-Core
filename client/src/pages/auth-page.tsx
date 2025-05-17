@@ -229,64 +229,53 @@ export default function AuthPage() {
       </div>
       {/* Terms of Service Modal */}
       <Dialog open={showTosModal} onOpenChange={setShowTosModal}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-background">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Terms Of Service</DialogTitle>
+            <DialogTitle className="text-xl font-bold text-foreground">Terms Of Service</DialogTitle>
+            <DialogDescription>
+              Please review our terms before using Byte-Core Vault
+            </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4 mt-4">
-            <div className="bg-muted rounded-md p-3">
-              <p className="text-sm font-medium text-center">
-                Disclaimer: Byte-Core Vault is not affiliated with Torn City or Torn.com. 
-                We are an independent third-party tool.
+          <div className="space-y-6 mt-4">
+            <div className="bg-muted/30 rounded-md p-4">
+              <p className="font-medium text-center text-foreground">
+                Disclaimer: Byte-Core Vault is not affiliated with Torn City or Torn.com. We are an independent third-party tool.
               </p>
             </div>
             
-            <div className="bg-card border border-border rounded-md p-3">
-              <p className="text-sm text-center">
-                By using / logging into / providing your API key to
-                Byte-Core Vault, you agree to the Terms Of Service as
-                outlined below.
-              </p>
-            </div>
-
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-medium text-primary">Data Storage</h3>
-                <p className="text-sm">Your data will be persistent - until account deletion.</p>
+                <h3 className="text-xl font-medium text-blue-500 dark:text-blue-400">Data Storage</h3>
+                <p className="mt-1 text-foreground">We store only the minimum data needed to provide our services. Your information is retained until you request account deletion.</p>
               </div>
               
               <div>
-                <h3 className="text-lg font-medium text-primary">Data Sharing</h3>
-                <p className="text-sm">Your data will be viewable only by authorized users with appropriate permissions.</p>
+                <h3 className="text-xl font-medium text-blue-500 dark:text-blue-400">Data Sharing</h3>
+                <p className="mt-1 text-foreground">Your data remains private and is only accessible to authorized users with appropriate permissions. We do not sell or share your data with third parties.</p>
               </div>
               
               <div>
-                <h3 className="text-lg font-medium text-primary">Purpose of Use</h3>
-                <p className="text-sm">Your data & API key will be used for the following purposes:</p>
-                <ul className="list-disc ml-5 mt-1 text-sm">
-                  <li>Ensure you are an active, real player on Torn.com</li>
-                  <li>To display your username and unique ID</li>
-                  <li>To carry out item lookups on Torn.com</li>
-                  <li>To analyze market values and player statistics</li>
+                <h3 className="text-xl font-medium text-blue-500 dark:text-blue-400">Purpose of Use</h3>
+                <p className="mt-1 text-foreground">The data we collect is used exclusively to provide and improve our services, including:</p>
+                <ul className="list-disc ml-5 mt-2 text-foreground">
+                  <li>Verifying your Torn.com player status</li>
+                  <li>Displaying relevant game information and statistics</li>
+                  <li>Analyzing market data and player metrics</li>
+                  <li>Enhancing your experience with personalized features</li>
                 </ul>
               </div>
               
               <div>
-                <h3 className="text-lg font-medium text-primary">Key Storage & Sharing</h3>
-                <p className="text-sm">Your API key will be stored in a secure database. It will not be shared with any third parties without your consent.</p>
-              </div>
-              
-              <div>
-                <h3 className="text-lg font-medium text-primary">Key Access Level</h3>
-                <p className="text-sm">Limited Access - we request only the minimum permissions required for the application to function.</p>
+                <h3 className="text-xl font-medium text-blue-500 dark:text-blue-400">API Key Security</h3>
+                <p className="mt-1 text-foreground">Your API key is securely stored using industry-standard encryption practices. We never share your key with anyone and implement strict access controls to protect your information.</p>
               </div>
             </div>
             
             <div className="pt-4">
               <Button 
                 onClick={() => setShowTosModal(false)} 
-                className="w-full"
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white"
               >
                 I Understand
               </Button>
