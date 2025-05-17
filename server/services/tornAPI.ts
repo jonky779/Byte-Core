@@ -918,7 +918,12 @@ export class TornAPI {
             position: memberData.position,
             days_in_faction: memberData.days_in_faction,
             last_action: memberData.last_action,
-            status: memberData.status
+            status: memberData.status,
+            revive_setting: memberData.revive_setting || "Unknown",
+            life: memberData.life || { current: 0, maximum: 0 },
+            is_revivable: memberData.is_revivable || false,
+            is_on_wall: memberData.is_on_wall || false,
+            is_in_oc: memberData.is_in_oc || false
           };
         });
       }

@@ -312,6 +312,9 @@ export default function FactionPage() {
                       <TableHead className="w-[200px]">Name</TableHead>
                       <TableHead>Position</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead>Revive Setting</TableHead>
+                      <TableHead>OC</TableHead>
                       <TableHead className="text-right">Days in Faction</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -345,6 +348,14 @@ export default function FactionPage() {
                               }>
                                 {displayStatus}
                               </Badge>
+                            </TableCell>
+                            <TableCell>{member.status?.description || "Unknown"}</TableCell>
+                            <TableCell>{member.revive_setting || "Unknown"}</TableCell>
+                            <TableCell>
+                              {member.is_in_oc ? 
+                                <Badge className="bg-green-500/20 text-green-500">Yes</Badge> : 
+                                <Badge className="bg-gray-500/20 text-gray-400">No</Badge>
+                              }
                             </TableCell>
                             <TableCell className="text-right">{member.days_in_faction}</TableCell>
                           </TableRow>
