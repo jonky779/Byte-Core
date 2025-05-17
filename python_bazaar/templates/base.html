@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Torn Bazaar Scanner{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+            color: #343a40;
+            padding-bottom: 40px;
+        }
+        
+        .navbar {
+            background-color: #343a40;
+        }
+        
+        .price-good {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .price-normal {
+            color: #6c757d;
+        }
+        
+        .price-bad {
+            color: #dc3545;
+        }
+        
+        .category-header {
+            background-color: #343a40;
+            color: white;
+            padding: 10px 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        
+        .table-responsive {
+            margin-bottom: 20px;
+        }
+        
+        .search-container {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .stats-box {
+            background-color: #343a40;
+            color: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .torn-link {
+            color: #17a2b8;
+            text-decoration: none;
+        }
+        
+        .torn-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* Mobile optimization */
+        @media (max-width: 768px) {
+            .table th, .table td {
+                font-size: 0.85rem;
+            }
+            
+            .search-container .btn {
+                margin-top: 10px;
+            }
+        }
+    </style>
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="/">Torn Bazaar Scanner</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/bazaar">Bazaar</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+    
+    <!-- Footer -->
+    <footer class="container mt-5">
+        <hr>
+        <p class="text-center text-muted">
+            Torn Bazaar Scanner - Not affiliated with Torn City
+        </p>
+    </footer>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>
