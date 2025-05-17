@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { Helmet } from "react-helmet";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Loader2, AlertCircle, Users, RefreshCw, Shield } from "lucide-react";
+import { Loader2, AlertCircle, Users, RefreshCw, Shield, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -32,8 +32,8 @@ export default function FactionPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [positionFilter, setPositionFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  
-
+  const [warPage, setWarPage] = useState(1);
+  const WARS_PER_PAGE = 10;
   
   // Fetch faction data from the API
   const { 
@@ -581,64 +581,190 @@ export default function FactionPage() {
             {/* Wars Tab */}
             <TabsContent value="wars">
               {faction.recent_wars && faction.recent_wars.length > 0 ? (
-                <div className="rounded-md border border-gray-700 overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-gray-800 hover:bg-gray-800">
-                        <TableHead className="text-gray-300">War ID</TableHead>
-                        <TableHead className="text-gray-300">Opponent</TableHead>
-                        <TableHead className="text-gray-300">Start Date</TableHead>
-                        <TableHead className="text-gray-300">End Date</TableHead>
-                        <TableHead className="text-gray-300">Outcome</TableHead>
-                        <TableHead className="text-gray-300">Score</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {faction.recent_wars.map((war, index) => {
-                        const startDate = new Date(war.start * 1000);
-                        const endDate = war.end ? new Date(war.end * 1000) : null;
-                        const isWinner = war.winner === faction.id;
-                        const ourFaction = war.factions.find(f => f.id === faction.id);
-                        const opposingFaction = war.factions.find(f => f.id !== faction.id);
+                <>
+                  {/* Active Wars Section */}
+                  {(() => {
+                    // Identify active wars (those without an end date or end date is in the future)
+                    const activeWars = faction.recent_wars.filter(war => !war.end);
+                    
+                    if (activeWars.length > 0) {
+                      return (
+                        <div className="mb-6">
+                          <h3 className="text-lg font-medium mb-3 text-foreground">Active Wars ({activeWars.length})</h3>
+                          <div className="rounded-md border border-gray-700 overflow-hidden mb-4">
+                            <Table>
+                              <TableHeader>
+                                <TableRow className="bg-gray-800 hover:bg-gray-800">
+                                  <TableHead className="text-gray-300">War ID</TableHead>
+                                  <TableHead className="text-gray-300">Opponent</TableHead>
+                                  <TableHead className="text-gray-300">Start Date</TableHead>
+                                  <TableHead className="text-gray-300">End Date</TableHead>
+                                  <TableHead className="text-gray-300">Status</TableHead>
+                                  <TableHead className="text-gray-300">Score</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {activeWars.map((war, index) => {
+                                  const startDate = new Date(war.start * 1000);
+                                  const ourFaction = war.factions.find(f => f.id === faction.id);
+                                  const opposingFaction = war.factions.find(f => f.id !== faction.id);
+                                  const ourScore = ourFaction ? ourFaction.score : 0;
+                                  const theirScore = opposingFaction ? opposingFaction.score : 0;
+                                  const isWinning = ourScore > theirScore;
+                                  const isLosing = ourScore < theirScore;
+                                  
+                                  return (
+                                    <TableRow key={`active-${index}`} className="hover:bg-blue-900/20">
+                                      <TableCell className="font-medium">#{war.id}</TableCell>
+                                      <TableCell>
+                                        {opposingFaction ? (
+                                          <span className="text-blue-400">{opposingFaction.name}</span>
+                                        ) : (
+                                          <span className="text-gray-400">Unknown</span>
+                                        )}
+                                      </TableCell>
+                                      <TableCell>{startDate.toLocaleDateString()}</TableCell>
+                                      <TableCell>
+                                        <span className="text-yellow-400">In Progress</span>
+                                      </TableCell>
+                                      <TableCell>
+                                        {isWinning ? (
+                                          <Badge className="bg-green-500/20 text-green-400">Winning</Badge>
+                                        ) : isLosing ? (
+                                          <Badge className="bg-red-500/20 text-red-400">Losing</Badge>
+                                        ) : (
+                                          <Badge className="bg-yellow-500/20 text-yellow-400">Tied</Badge>
+                                        )}
+                                      </TableCell>
+                                      <TableCell>
+                                        <div className="font-bold">
+                                          <span className={isWinning ? "text-green-400" : "text-foreground"}>{ourScore.toLocaleString()}</span>
+                                          <span className="text-gray-400 mx-1">vs</span>
+                                          <span className={isLosing ? "text-red-400" : "text-foreground"}>{theirScore.toLocaleString()}</span>
+                                        </div>
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                })}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+                  
+                  {/* Completed Wars Section */}
+                  {(() => {
+                    // Filter completed wars (those with an end date)
+                    const completedWars = faction.recent_wars.filter(war => war.end);
+                    
+                    // Calculate total pages
+                    const totalPages = Math.ceil(completedWars.length / WARS_PER_PAGE);
+                    
+                    // Get wars for current page
+                    const startIndex = (warPage - 1) * WARS_PER_PAGE;
+                    const paginatedWars = completedWars.slice(startIndex, startIndex + WARS_PER_PAGE);
+                    
+                    return (
+                      <div>
+                        <h3 className="text-lg font-medium mb-3 text-foreground">
+                          War History ({completedWars.length})
+                        </h3>
+                        <div className="rounded-md border border-gray-700 overflow-hidden">
+                          <Table>
+                            <TableHeader>
+                              <TableRow className="bg-gray-800 hover:bg-gray-800">
+                                <TableHead className="text-gray-300">War ID</TableHead>
+                                <TableHead className="text-gray-300">Opponent</TableHead>
+                                <TableHead className="text-gray-300">Start Date</TableHead>
+                                <TableHead className="text-gray-300">End Date</TableHead>
+                                <TableHead className="text-gray-300">Outcome</TableHead>
+                                <TableHead className="text-gray-300">Score</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {paginatedWars.length > 0 ? (
+                                paginatedWars.map((war, index) => {
+                                  const startDate = new Date(war.start * 1000);
+                                  const endDate = war.end ? new Date(war.end * 1000) : null;
+                                  const isWinner = war.winner === faction.id;
+                                  const ourFaction = war.factions.find(f => f.id === faction.id);
+                                  const opposingFaction = war.factions.find(f => f.id !== faction.id);
+                                  
+                                  return (
+                                    <TableRow key={`completed-${index}`} className="hover:bg-game-panel/40">
+                                      <TableCell className="font-medium">#{war.id}</TableCell>
+                                      <TableCell>
+                                        {opposingFaction ? (
+                                          <span className="text-primary">{opposingFaction.name}</span>
+                                        ) : (
+                                          <span className="text-gray-400">Unknown</span>
+                                        )}
+                                      </TableCell>
+                                      <TableCell>{startDate.toLocaleDateString()}</TableCell>
+                                      <TableCell>
+                                        {endDate ? endDate.toLocaleDateString() : "Ongoing"}
+                                      </TableCell>
+                                      <TableCell>
+                                        {isWinner ? (
+                                          <Badge className="bg-green-500/20 text-green-500">Victory</Badge>
+                                        ) : (
+                                          <Badge className="bg-red-500/20 text-red-500">Defeat</Badge>
+                                        )}
+                                      </TableCell>
+                                      <TableCell>
+                                        <div className="font-bold">
+                                          {ourFaction ? ourFaction.score.toLocaleString() : "0"} 
+                                          <span className="text-gray-400 mx-1">vs</span> 
+                                          {opposingFaction ? opposingFaction.score.toLocaleString() : "0"}
+                                        </div>
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                })
+                              ) : (
+                                <TableRow>
+                                  <TableCell colSpan={6} className="text-center py-6 text-gray-400">
+                                    No completed wars found.
+                                  </TableCell>
+                                </TableRow>
+                              )}
+                            </TableBody>
+                          </Table>
+                        </div>
                         
-                        return (
-                          <TableRow key={index} className="hover:bg-game-panel/40">
-                            <TableCell className="font-medium">#{war.id}</TableCell>
-                            <TableCell>
-                              {opposingFaction ? (
-                                <span className="text-primary">{opposingFaction.name}</span>
-                              ) : (
-                                <span className="text-gray-400">Unknown</span>
-                              )}
-                            </TableCell>
-                            <TableCell>{startDate.toLocaleDateString()}</TableCell>
-                            <TableCell>
-                              {endDate ? endDate.toLocaleDateString() : "Ongoing"}
-                            </TableCell>
-                            <TableCell>
-                              {endDate ? (
-                                isWinner ? (
-                                  <Badge className="bg-green-500/20 text-green-500">Victory</Badge>
-                                ) : (
-                                  <Badge className="bg-red-500/20 text-red-500">Defeat</Badge>
-                                )
-                              ) : (
-                                <Badge className="bg-yellow-500/20 text-yellow-500">In Progress</Badge>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-bold">
-                                {ourFaction ? ourFaction.score.toLocaleString() : "0"} 
-                                <span className="text-gray-400 mx-1">vs</span> 
-                                {opposingFaction ? opposingFaction.score.toLocaleString() : "0"}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </div>
+                        {/* Pagination Controls */}
+                        {totalPages > 1 && (
+                          <div className="flex justify-between items-center mt-4">
+                            <div className="text-sm text-muted-foreground">
+                              Page {warPage} of {totalPages}
+                            </div>
+                            <div className="flex space-x-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => setWarPage(p => Math.max(1, p - 1))}
+                                disabled={warPage === 1}
+                              >
+                                <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => setWarPage(p => Math.min(totalPages, p + 1))}
+                                disabled={warPage === totalPages}
+                              >
+                                Next <ChevronRight className="h-4 w-4 ml-1" />
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </>
               ) : (
                 <div className="rounded-md border border-gray-700 bg-game-dark p-6">
                   <div className="flex flex-col justify-center items-center py-8 text-gray-400">
