@@ -155,17 +155,6 @@ export default function AuthPage() {
                   <div>SIGN IN TO</div>
                   <div>BYTE-CORE VAULT</div>
                 </CardTitle>
-                <CardDescription className="text-muted-foreground">Enter your Torn API key to access your dashboard</CardDescription>
-                <div className="text-xs text-muted-foreground text-center mt-2">
-                  First time users: Your account will be created automatically when you sign in.<br />
-                  By entering your key and using this site, you agree to the <button 
-                    type="button" 
-                    onClick={() => setShowTosModal(true)}
-                    className="text-primary hover:underline"
-                  >
-                    Terms Of Service
-                  </button>
-                </div>
               </CardHeader>
               <CardContent>
                 <Form {...loginForm}>
@@ -220,7 +209,14 @@ export default function AuthPage() {
                   </form>
                 </Form>
                 <div className="mt-6 text-center text-sm text-muted-foreground">
-                  <p>First time users: Your account will be created automatically when you sign in</p>
+                  <p>First time users: Your account will be created automatically when you sign in.<br />
+                  By entering your key and using this site, you agree to the <button 
+                    type="button" 
+                    onClick={() => setShowTosModal(true)}
+                    className="text-primary hover:underline"
+                  >
+                    Terms Of Service
+                  </button></p>
                 </div>
               </CardContent>
             </Card>
