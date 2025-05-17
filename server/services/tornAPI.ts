@@ -347,21 +347,49 @@ export class TornAPI {
     }
   }
   
-  private getCompanyTypeName(typeId: number, companyName?: string): string {
-    // Log the incoming company type for debugging only
-    console.log(`Getting company type name for type ID: ${typeId}, company name: ${companyName || 'N/A'}`);
-    
-    // Just return the company name as the source of truth
-    // This ensures we're not hardcoding anything and displaying what the API returns
-    // If we have a company name from the API, use the company name directly
-    if (companyName) {
-      // Extract the company type from the name (before any '$' character)
-      const nameParts = companyName.split('$');
-      return nameParts[0].trim();
-    }
-    
-    // If we don't have a name, return the type ID as a fallback
-    return `Company Type ${typeId}`;
+  private getCompanyTypeName(typeId: number): string {
+    const companyTypes: Record<number, string> = {
+      1: "Hair Salon",
+      2: "Law Firm",
+      3: "Flower Shop",
+      4: "Car Dealership",
+      5: "Clothing Store",
+      6: "Gun Shop",
+      7: "Game Shop",
+      8: "Candle Shop",
+      9: "Toy Shop",
+      10: "Adult Novelties",
+      11: "Cyber Cafe",
+      12: "Grocery Store",
+      13: "Theater",
+      14: "Sweet Shop",
+      15: "Cruise Line",
+      16: "Television Network",
+      17: "Zoo",
+      18: "Firework Stand",
+      19: "Property Broker",
+      20: "Furniture Store",
+      21: "Gas Station",
+      22: "Music Store",
+      23: "Nightclub",
+      24: "Pub",
+      25: "Casino",
+      26: "Restaurant",
+      27: "Lingerie Store",
+      28: "Hotel",
+      29: "Motel",
+      30: "Gents Strip Club",
+      31: "Ladies Strip Club",
+      32: "Farm",
+      33: "Software Corporation",
+      34: "Ladies Gym",
+      35: "Gents Gym",
+      36: "Restaurant Supply Store",
+      37: "Logistics Management",
+      38: "Mining Corporation",
+      39: "Detective Agency"
+    };
+    return companyTypes[typeId] || "Unknown";
   }
 
   public async getCompanyData(apiKey: string): Promise<CompanyData> {
@@ -432,7 +460,7 @@ export class TornAPI {
         return {
           id: companyData.ID,
           name: companyData.name,
-          type: this.getCompanyTypeName(companyData.company_type, companyData.name),
+          type: this.getCompanyTypeName(companyData.company_type),
           rating: companyData.rating || 0,
           days_old: companyData.days_old || 0,
           weekly_profit: companyData.weekly_income || 0,
@@ -460,7 +488,7 @@ export class TornAPI {
         return {
           id: userData.job.company_id,
           name: userData.job.company_name,
-          type: this.getCompanyTypeName(userData.job.company_type, userData.job.company_name),
+          type: this.getCompanyTypeName(userData.job.company_type),
           rating: 0,
           days_old: 0,
           weekly_profit: 0,
@@ -580,7 +608,7 @@ export class TornAPI {
           return {
             id: companyData.ID || companyId,
             name: companyData.name || userData.job.company_name,
-            type: this.getCompanyTypeName(companyData.company_type || userData.job.company_type, companyData.name || userData.job.company_name),
+            type: this.getCompanyTypeName(companyData.company_type || userData.job.company_type),
             rating: companyData.rating || 0,
             employees: {
               current: companyData.employees_hired || 0,
