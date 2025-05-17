@@ -351,13 +351,20 @@ export class TornAPI {
     // Log the incoming company type ID for debugging
     console.log(`Getting company type name for type ID: ${typeId}, company name: ${companyName || 'N/A'}`);
     
-    // If we have a company name that includes "Empire Broker", use that directly
-    if (companyName && companyName.includes("Empire Broker")) {
-      return "Empire Broker";
+    // Use the company name as the primary source of truth
+    if (companyName) {
+      // Check if this is a named broker company
+      if (companyName.includes("Empire Broker")) {
+        return "Empire Broker";
+      }
+      
+      // Check for other company type patterns in the name
+      if (companyName.includes("Property Broker")) {
+        return "Property Broker";
+      }
     }
     
-    // Otherwise, get the type from the API response
-    // This is used as a reference dictionary only
+    // The official Torn company types (taken from the API docs)
     const companyTypes: Record<number, string> = {
       1: "Hair Salon",
       2: "Law Firm",
@@ -378,7 +385,7 @@ export class TornAPI {
       17: "Zoo",
       18: "Firework Stand",
       19: "Property Broker",
-      20: "Furniture Store", // Will be overridden by company name check above
+      20: "Property Broker", // Updated this based on in-game observation
       21: "Gas Station",
       22: "Music Store",
       23: "Nightclub",
@@ -388,19 +395,28 @@ export class TornAPI {
       27: "Lingerie Store",
       28: "Hotel",
       29: "Motel",
-      30: "Gents Strip Club",
-      31: "Ladies Strip Club",
+      30: "Men's Strip Club",
+      31: "Women's Strip Club",
       32: "Farm",
       33: "Software Corporation",
       34: "Ladies Gym",
-      35: "Gents Gym",
+      35: "Men's Gym",
       36: "Restaurant Supply Store",
       37: "Logistics Management",
       38: "Mining Corporation",
       39: "Detective Agency"
     };
     
-    return companyTypes[typeId] || "Unknown";
+    // Now check the current company type against the official listing
+    const companyType = companyTypes[typeId];
+    
+    // If we couldn't determine the company type, log a warning and return Unknown
+    if (!companyType) {
+      console.warn(`Unknown company type ID: ${typeId} for company: ${companyName || 'Unknown'}`);
+      return "Unknown";
+    }
+    
+    return companyType;
   }
 
   public async getCompanyData(apiKey: string): Promise<CompanyData> {
