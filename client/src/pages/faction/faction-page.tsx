@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Helmet } from "react-helmet";
 import { useAuth } from "@/hooks/use-auth";
-import MainLayout from "@/components/layouts/MainLayout";
+import { MainLayout } from "@/components/layouts/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -96,7 +96,7 @@ export default function FactionDetailPage() {
 
   if (isLoading) {
     return (
-      <MainLayout title="Faction Details">
+      <MainLayout>
         <Helmet>
           <title>Faction Details | Loading... | Byte-Core Vault</title>
         </Helmet>
@@ -120,7 +120,7 @@ export default function FactionDetailPage() {
 
   if (isError || !factionDetailedData) {
     return (
-      <MainLayout title="Faction Details">
+      <MainLayout>
         <Helmet>
           <title>Faction Details | Error | Byte-Core Vault</title>
         </Helmet>
@@ -145,7 +145,7 @@ export default function FactionDetailPage() {
   // If user is not in a faction
   if (factionDetailedData.id === 0) {
     return (
-      <MainLayout title="Not in a Faction">
+      <MainLayout>
         <Helmet>
           <title>Not in a Faction | Byte-Core Vault</title>
         </Helmet>
@@ -193,25 +193,7 @@ export default function FactionDetailPage() {
   }
 
   // Member positions
-  const positions: {
-    [key: string]: Array<{
-      id: number;
-      name: string;
-      level: number;
-      days_in_faction: number;
-      last_action: {
-        status: string;
-        timestamp: number;
-        relative: string;
-      };
-      position: string;
-      status: {
-        description: string;
-        details: string;
-        state: string;
-      };
-    }>
-  } = {
+  const positions = {
     'Leader': [],
     'Co-leader': [],
     'Officer': [],
@@ -231,7 +213,7 @@ export default function FactionDetailPage() {
   }
 
   return (
-    <MainLayout title={`${factionDetailedData.name} - Faction Details`}>
+    <MainLayout>
       <Helmet>
         <title>{factionDetailedData.name} | Faction Details | Byte-Core Vault</title>
       </Helmet>
