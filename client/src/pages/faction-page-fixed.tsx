@@ -594,7 +594,7 @@ export default function FactionPage() {
                     const currentTime = Math.floor(Date.now() / 1000);
                     
                     // Identify active wars (those without an end date or end date is in the future)
-                    const activeWars = faction.recent_wars.filter(war => !war.end || (war.end && war.end > currentTime));
+                    const activeWars = faction.recent_wars.filter((war: any) => !war.end || (war.end && war.end > currentTime));
                     
                     if (activeWars.length > 0) {
                       return (
@@ -613,10 +613,10 @@ export default function FactionPage() {
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
-                                {activeWars.map((war, index) => {
+                                {activeWars.map((war: any, index: number) => {
                                   const startDate = new Date(war.start * 1000);
-                                  const ourFaction = war.factions.find(f => f.id === faction.id);
-                                  const opposingFaction = war.factions.find(f => f.id !== faction.id);
+                                  const ourFaction = war.factions.find((f: any) => f.id === faction.id);
+                                  const opposingFaction = war.factions.find((f: any) => f.id !== faction.id);
                                   const ourScore = ourFaction ? ourFaction.score : 0;
                                   const theirScore = opposingFaction ? opposingFaction.score : 0;
                                   const isWinning = ourScore > theirScore;
@@ -677,7 +677,7 @@ export default function FactionPage() {
                     const currentTime = Math.floor(Date.now() / 1000);
                     
                     // Filter completed wars (those with an end date in the past)
-                    const completedWars = faction.recent_wars.filter(war => war.end && war.end <= currentTime);
+                    const completedWars = faction.recent_wars.filter((war: any) => war.end && war.end <= currentTime);
                     
                     // Calculate total pages
                     const totalPages = Math.ceil(completedWars.length / WARS_PER_PAGE);
@@ -705,12 +705,12 @@ export default function FactionPage() {
                             </TableHeader>
                             <TableBody>
                               {paginatedWars.length > 0 ? (
-                                paginatedWars.map((war, index) => {
+                                paginatedWars.map((war: any, index: number) => {
                                   const startDate = new Date(war.start * 1000);
                                   const endDate = war.end ? new Date(war.end * 1000) : null;
                                   const isWinner = war.winner === faction.id;
-                                  const ourFaction = war.factions.find(f => f.id === faction.id);
-                                  const opposingFaction = war.factions.find(f => f.id !== faction.id);
+                                  const ourFaction = war.factions.find((f: any) => f.id === faction.id);
+                                  const opposingFaction = war.factions.find((f: any) => f.id !== faction.id);
                                   
                                   return (
                                     <TableRow key={`completed-${index}`} className="hover:bg-game-panel/40">
