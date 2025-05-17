@@ -195,9 +195,9 @@ export default function BazaarPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Categories</SelectItem>
-                    {data.meta.categories.map((cat) => (
+                    {data?.meta?.categories ? data.meta.categories.map((cat) => (
                       <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                    ))}
+                    )) : null}
                   </SelectContent>
                 </Select>
               </div>
@@ -213,9 +213,9 @@ export default function BazaarPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Types</SelectItem>
-                    {data.meta.types.map((t) => (
+                    {data?.meta?.types ? data.meta.types.map((t) => (
                       <SelectItem key={t} value={t}>{t}</SelectItem>
-                    ))}
+                    )) : null}
                   </SelectContent>
                 </Select>
               </div>
@@ -235,7 +235,7 @@ export default function BazaarPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Sub-Categories</SelectItem>
-                    {availableSubCategories.map((sub) => (
+                    {availableSubCategories && availableSubCategories.map((sub) => (
                       <SelectItem key={sub} value={sub}>{sub}</SelectItem>
                     ))}
                   </SelectContent>
