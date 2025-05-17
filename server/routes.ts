@@ -447,6 +447,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+  
+  // Company Types - Requires authentication and API key
+  app.get("/api/company/types", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (!user.apiKey) {
+        return res.status(400).json({ message: "API key not configured. Please add your Torn API key in settings." });
+      }
+      
+      // Fetch company types directly from the Torn API
+      const response = await tornAPI.makeRequest("v2/torn?selections=companies", user.apiKey);
+      
+      if (response?.companies) {
+        // Format the response for the client
+        const companyTypes = Object.entries(response.companies).map(([id, data]: [string, any]) => ({
+          id: parseInt(id),
+          name: data.name,
+          cost: data.cost || 0,
+          default_employees: data.default_employees || 0
+        }));
+        
+        res.json(companyTypes);
+      } else {
+        res.status(500).json({ message: "Failed to fetch company types from Torn API" });
+      }
+    } catch (error) {
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to fetch company types",
+      });
+    }
+  });
 
   // Password Update
   app.post("/api/user/password", async (req, res) => {

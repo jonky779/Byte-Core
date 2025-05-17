@@ -354,6 +354,7 @@ export class TornAPI {
   
   /**
    * Gets company type name from the API or cache
+   * Note: This method must be used with await as it returns a Promise<string>
    */
   private async getCompanyTypeName(typeId: number, apiKey?: string): Promise<string> {
     // If we have a recent cache, use it
@@ -477,6 +478,15 @@ export class TornAPI {
         };
       }
       
+      // Initialize the company types cache if this is the first API call
+      if (Object.keys(this.companyTypesCache).length === 0) {
+        try {
+          await this.fetchCompanyTypes(apiKey);
+        } catch (error) {
+          console.log("Could not fetch company types, using fallback mapping");
+        }
+      }
+      
       // Now fetch detailed company data
       try {
         console.log(`Fetching detailed company data for company ID: ${userData.job.company_id}`);
@@ -553,7 +563,7 @@ export class TornAPI {
         return {
           id: userData.job.company_id,
           name: userData.job.company_name,
-          type: this.getCompanyTypeName(userData.job.company_type),
+          type: await this.getCompanyTypeName(userData.job.company_type, apiKey),
           rating: 0,
           days_old: 0,
           weekly_profit: 0,
