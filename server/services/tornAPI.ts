@@ -680,7 +680,7 @@ export class TornAPI {
     }
   }
   
-  public async getFactionData(apiKey: string): Promise<FactionData> {
+  public async getFactionData(apiKey: string, includeFullWarHistory = false): Promise<FactionData> {
     try {
       // Get faction info through basic profile data
       const userData = await this.makeRequest("user?selections=basic,profile", apiKey);
@@ -719,7 +719,12 @@ export class TornAPI {
       console.log(`Fetching detailed faction data for faction ID: ${factionId}`);
       
       // Get detailed faction data using the v2 API with all needed selections
-      const factionData = await this.makeRequest(`v2/faction?selections=basic,applications,chains,rankedwars,stats,territory`, apiKey);
+      // If we're requesting full war history, include all ranked wars data
+      const selections = includeFullWarHistory 
+        ? `basic,applications,chains,rankedwars,stats,territory`
+        : `basic,applications,chains,rankedwars,stats,territory`;
+      
+      const factionData = await this.makeRequest(`v2/faction?selections=${selections}`, apiKey);
       
       // Log territory data details for debugging
       if (factionData.territory) {

@@ -2,6 +2,7 @@ import { useState } from "react";
 import MainLayout from "@/components/layouts/MainLayout";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
+import { apiRequest } from "@/lib/queryClient";
 import { Helmet } from "react-helmet";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Loader2, AlertCircle, Users, RefreshCw, Shield, ChevronLeft, ChevronRight } from "lucide-react";
@@ -43,7 +44,12 @@ export default function FactionPage() {
     refetch,
     isFetching 
   } = useQuery({
-    queryKey: ["/api/faction"],
+    queryKey: ["/api/faction", { fullWarHistory: true }],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/faction?fullWarHistory=true");
+      // Parse the JSON response
+      return await response.json();
+    },
     enabled: !!user?.apiKey,
     retry: 1,
     refetchOnWindowFocus: false
@@ -584,8 +590,11 @@ export default function FactionPage() {
                 <>
                   {/* Active Wars Section */}
                   {(() => {
+                    // Get current timestamp for comparison
+                    const currentTime = Math.floor(Date.now() / 1000);
+                    
                     // Identify active wars (those without an end date or end date is in the future)
-                    const activeWars = faction.recent_wars.filter(war => !war.end);
+                    const activeWars = faction.recent_wars.filter(war => !war.end || (war.end && war.end > currentTime));
                     
                     if (activeWars.length > 0) {
                       return (
