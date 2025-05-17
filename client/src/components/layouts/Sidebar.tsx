@@ -42,7 +42,7 @@ export default function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   // API key status indicator
-  const hasApiKey = user?.apiKey && user.apiKey.length > 0;
+  const hasApiKey = user?.apiKey && typeof user.apiKey === 'string' && user.apiKey.length > 0;
 
   return (
     <>
@@ -146,15 +146,10 @@ export default function Sidebar() {
         {/* Navigation Menu */}
         <nav className="flex-grow py-2 overflow-y-auto">
           <div className={cn(
-            "px-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center justify-between",
+            "px-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider",
             mobileOpen && "sticky top-0 pt-3 pb-2 bg-black/80 backdrop-blur-sm z-10 shadow-md"
           )}>
             <span>Dashboard</span>
-            {mobileOpen && (
-              <div className="text-xs font-normal text-gray-400 bg-primary/20 px-2 py-0.5 rounded border border-primary/30">
-                Tap an option
-              </div>
-            )}
           </div>
           
           <div className="space-y-0.5 mb-2">
