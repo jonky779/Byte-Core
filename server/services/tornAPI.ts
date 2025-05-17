@@ -852,13 +852,14 @@ export class TornAPI {
       
       // Determine war status based on ranked wars
       let warStatus = "PEACE";
-      const now = Math.floor(Date.now() / 1000);
+      // Calculate current timestamp for war status checks
+      const currentTime = Math.floor(Date.now() / 1000);
       
       if (factionData.rankedwars && factionData.rankedwars.some(war => {
         // A war is active if:
         // 1. Its status is 'active' AND
         // 2. Either it has no end time OR its end time is in the future
-        return war.status === 'active' && (!war.end || war.end > now);
+        return war.status === 'active' && (!war.end || war.end > currentTime);
       })) {
         warStatus = "WAR";
       }
@@ -938,6 +939,25 @@ export class TornAPI {
         });
       }
 
+      // Process recent wars data
+      const recentWars = factionData.rankedwars || [];
+      
+      // Sort wars by start time, newest first
+      const sortedWars = [...recentWars].sort((a, b) => b.start - a.start);
+      
+      // Calculate days since last war
+      // Using the already defined 'now' variable from above
+      const lastCompletedWar = sortedWars.find(war => war.end);
+      let lastWarEnded = null;
+      
+      if (lastCompletedWar && lastCompletedWar.end) {
+        const daysSinceEnd = Math.floor((now - lastCompletedWar.end) / 86400);
+        lastWarEnded = daysSinceEnd <= 1 ? "1d ago" : `${daysSinceEnd}d ago`;
+      }
+      
+      // Get active wars
+      const activeWars = sortedWars.filter(war => !war.end || war.end > now);
+      
       // Build the response object with real data
       return {
         id: factionData.ID || userData.faction.faction_id,
@@ -963,6 +983,9 @@ export class TornAPI {
         recent_activity: recentActivity,
         last_updated: new Date().toISOString(),
         is_enlisted: isEnlisted,
+        active_wars: activeWars.length,
+        last_war: lastWarEnded,
+        recent_wars: sortedWars.slice(0, 10), // Include up to 10 most recent wars
         rank: {
           level: rankLevel,
           name: rankName,
