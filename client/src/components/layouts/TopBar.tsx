@@ -98,7 +98,7 @@ export default function TopBar({ title }: TopBarProps) {
           
           <div 
             id="user-menu" 
-            className="hidden absolute right-0 z-10 mt-2 w-56 rounded-md bg-game-dark border border-gray-700 shadow-lg"
+            className="hidden absolute right-0 z-10 mt-2 w-56 rounded-md bg-black/90 backdrop-blur-sm border border-gray-700 shadow-lg"
           >
             <div className="px-4 py-2 text-sm text-gray-300 font-semibold border-b border-gray-700">
               My Account

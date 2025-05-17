@@ -17,7 +17,7 @@ export function ThemeToggle() {
     <div className="flex flex-col space-y-1">
       <button
         onClick={() => setTheme("light")}
-        className={`flex items-center justify-between px-2 py-1.5 rounded-md text-sm hover:bg-game-panel ${theme === "light" ? "bg-game-panel/50" : ""}`}
+        className={`flex items-center justify-between w-full px-2 py-1.5 rounded-md text-sm text-gray-200 hover:bg-gray-800 ${theme === "light" ? "bg-gray-800" : ""}`}
       >
         <div className="flex items-center">
           <Sun className="h-4 w-4 mr-2" />
@@ -28,7 +28,7 @@ export function ThemeToggle() {
       
       <button
         onClick={() => setTheme("dark")}
-        className={`flex items-center justify-between px-2 py-1.5 rounded-md text-sm hover:bg-game-panel ${theme === "dark" ? "bg-game-panel/50" : ""}`}
+        className={`flex items-center justify-between w-full px-2 py-1.5 rounded-md text-sm text-gray-200 hover:bg-gray-800 ${theme === "dark" ? "bg-gray-800" : ""}`}
       >
         <div className="flex items-center">
           <Moon className="h-4 w-4 mr-2" />
@@ -39,7 +39,7 @@ export function ThemeToggle() {
       
       <button
         onClick={() => setTheme("system")}
-        className={`flex items-center justify-between px-2 py-1.5 rounded-md text-sm hover:bg-game-panel ${theme === "system" ? "bg-game-panel/50" : ""}`}
+        className={`flex items-center justify-between w-full px-2 py-1.5 rounded-md text-sm text-gray-200 hover:bg-gray-800 ${theme === "system" ? "bg-gray-800" : ""}`}
       >
         <div className="flex items-center">
           <Monitor className="h-4 w-4 mr-2" />
