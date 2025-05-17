@@ -722,8 +722,8 @@ export class TornAPI {
       const factionData = await this.makeRequest(`v2/faction?selections=basic,applications,chains,rankedwars,stats,territory`, apiKey);
       
       // Parse member status - The v2 API doesn't provide member status in basic data
-      // We still need to fetch basic faction data for member status
-      const basicFactionData = await this.makeRequest(`faction/${factionId}?selections=basic`, apiKey);
+      // Fetch faction data with detailed member information
+      const basicFactionData = await this.makeRequest(`faction/${factionId}?selections=basic,members`, apiKey);
       
       // Extract member status
       const memberStatus = { online: 0, idle: 0, offline: 0, hospital: 0 };
