@@ -149,7 +149,10 @@ export default function AuthPage() {
               
             <Card className="border-border bg-card backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-2xl font-bold tracking-wider bg-gradient-to-r from-primary to-primary-light bg-clip-text text-transparent">Sign in to Byte-Core Vault</CardTitle>
+                <CardTitle className="text-2xl font-bold tracking-wider bg-gradient-to-r from-primary to-primary-light bg-clip-text text-transparent text-center">
+                  <div>SIGN IN TO</div>
+                  <div>BYTE-CORE VAULT</div>
+                </CardTitle>
                 <CardDescription className="text-muted-foreground">Enter your Torn API key to access your dashboard</CardDescription>
               </CardHeader>
               <CardContent>
