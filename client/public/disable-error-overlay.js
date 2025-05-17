@@ -1,14 +1,17 @@
-// This script disables the Vite runtime error overlay
+
+// This script completely disables Vite and React error overlays
 (function() {
-  // Create a style element to hide the error overlay
+  // Create a style element to aggressively hide all variations of error overlays
   const style = document.createElement('style');
   style.textContent = `
-    /* Hide all variations of the error overlay */
+    /* Hide all variations of error overlays */
     .vite-error-overlay,
     [data-plugin="runtime-error-modal"],
     [plugin="runtime-error-plugin"],
     #vite-error-overlay,
-    div[style*="position: fixed"][style*="z-index: 9999"] {
+    .error-overlay,
+    div[style*="position: fixed"][style*="z-index: 9999"],
+    div[style*="position: fixed"][style*="bottom: 0"] {
       display: none !important;
       visibility: hidden !important;
       opacity: 0 !important;
@@ -18,36 +21,24 @@
   `;
   document.head.appendChild(style);
 
-  // Attempt to intercept and disable the error overlay
-  const originalCreateElement = document.createElement;
-  document.createElement = function(tagName) {
-    const element = originalCreateElement.call(document, tagName);
-    if (element.tagName === 'DIV') {
-      // Add a mutation observer to catch error overlays when they're added to the DOM
-      setTimeout(() => {
-        if (element.className && 
-            (element.className.includes('error') || 
-             element.id === 'vite-error-overlay' || 
-             (element.style && element.style.zIndex === '9999'))) {
-          element.style.display = 'none';
-          element.style.visibility = 'hidden';
-          element.style.opacity = '0';
-          element.style.zIndex = '-9999';
-          element.style.pointerEvents = 'none';
-        }
-      }, 0);
-    }
-    return element;
-  };
-
   // Override window.onerror to prevent the overlay from showing up 
-  const originalOnError = window.onerror;
   window.onerror = function(message, source, lineno, colno, error) {
     // Log the error to console but don't display overlay
     console.error('Caught error:', message, error);
     // Prevent default error handlers
     return true;
   };
+  
+  // Disable React error overlay
+  if (typeof window !== 'undefined') {
+    window.__REACT_ERROR_OVERLAY_GLOBAL_HOOK__ = {
+      handleError: () => {},
+      dismissCompileError: () => {},
+      reportRuntimeError: () => {},
+      startReportingRuntimeErrors: () => {},
+      stopReportingRuntimeErrors: () => {}
+    };
+  }
 
-  console.log('Error overlay disabler initialized');
+  console.log('Enhanced error overlay disabler initialized');
 })();
