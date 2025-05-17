@@ -69,9 +69,9 @@ export default function AuthPage() {
         <meta name="description" content="Access comprehensive Torn RPG information and tracking tools with Byte-Core Vault." />
       </Helmet>
       
-      <div className="min-h-screen flex flex-col md:flex-row bg-game-black dark:bg-gray-950">
+      <div className="min-h-screen flex flex-col md:flex-row bg-background">
         {/* Hero Section */}
-        <div className="hidden md:flex md:w-1/2 bg-game-dark dark:bg-gray-900 flex-col justify-center items-center px-8 border-r border-gray-700">
+        <div className="hidden md:flex md:w-1/2 bg-card flex-col justify-center items-center px-8 border-r border-border">
           <div className="max-w-md text-center">
             <div className="mb-6 inline-block">
               <div className="w-20 h-20 flex items-center justify-center rounded-lg bg-primary bg-opacity-30 mx-auto">
@@ -112,7 +112,7 @@ export default function AuthPage() {
         </div>
       
         {/* Auth Form Section */}
-        <div className="flex-1 flex flex-col justify-center items-center p-4 md:p-8 bg-game-dark dark:bg-gray-900">
+        <div className="flex-1 flex flex-col justify-center items-center p-4 md:p-8 bg-background">
           <div className="w-full max-w-md">
             <div className="flex justify-between items-center mb-8">
               {/* Mobile Logo */}
@@ -147,7 +147,7 @@ export default function AuthPage() {
               </Button>
             </div>
               
-            <Card className="border-gray-700 bg-gray-900 bg-opacity-50 backdrop-blur-sm dark:bg-gray-800">
+            <Card className="border-border bg-card backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="text-xl text-gray-100">Sign in to Byte-Core Vault</CardTitle>
                 <CardDescription className="text-gray-400">Enter your Torn API key to access your dashboard</CardDescription>

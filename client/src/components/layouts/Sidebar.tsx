@@ -68,9 +68,9 @@ export default function Sidebar() {
       )}
 
       <aside className={cn(
-        "md:w-64 bg-game-dark md:min-h-screen border-r border-gray-700 flex flex-col",
+        "md:w-64 bg-background md:min-h-screen border-r border-gray-700 flex flex-col",
         mobileOpen 
-          ? "fixed top-0 left-0 w-4/5 max-w-xs h-full z-50 shadow-lg animate-slide-in bg-black/95 backdrop-blur-sm" 
+          ? "fixed top-0 left-0 w-4/5 max-w-xs h-full z-50 shadow-lg animate-slide-in bg-background backdrop-blur-sm" 
           : "hidden md:flex"
       )}>
         {/* Logo & App Title */}
