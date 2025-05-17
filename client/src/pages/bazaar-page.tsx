@@ -7,13 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, Store, RefreshCw, Search, FilterX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+// Using custom dropdown implementation instead of Radix UI Select
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -186,60 +180,152 @@ export default function BazaarPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="text-sm text-gray-400 mb-1 block">Category</label>
-                <Select value={category} onValueChange={(value) => {
-                  setCategory(value);
-                  setPage(1);
-                }}>
-                  <SelectTrigger className="bg-game-panel border-gray-700">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Categories</SelectItem>
-                    {data.meta.categories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                <div className="relative">
+                  <div 
+                    className="w-full p-2 bg-game-panel border border-gray-700 rounded-md flex items-center justify-between text-sm cursor-pointer hover:bg-gray-800"
+                    onClick={() => {
+                      const dropdown = document.getElementById("category-dropdown");
+                      if (dropdown) {
+                        dropdown.classList.toggle("hidden");
+                        document.getElementById("type-dropdown")?.classList.add("hidden");
+                        document.getElementById("subcategory-dropdown")?.classList.add("hidden");
+                      }
+                    }}
+                  >
+                    <span>{category === "all" ? "All Categories" : category}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="m6 9 6 6 6-6"/>
+                    </svg>
+                  </div>
+                  
+                  <div id="category-dropdown" className="absolute z-10 w-full mt-1 bg-gray-900 border border-gray-700 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
+                    <div 
+                      className="p-2 hover:bg-gray-800 cursor-pointer"
+                      onClick={() => {
+                        setCategory("all");
+                        setPage(1);
+                        document.getElementById("category-dropdown")?.classList.add("hidden");
+                      }}
+                    >
+                      All Categories
+                    </div>
+                    {data?.meta?.categories?.map((cat) => (
+                      <div 
+                        key={cat}
+                        className="p-2 hover:bg-gray-800 cursor-pointer"
+                        onClick={() => {
+                          setCategory(cat);
+                          setPage(1);
+                          document.getElementById("category-dropdown")?.classList.add("hidden");
+                        }}
+                      >
+                        {cat}
+                      </div>
                     ))}
-                  </SelectContent>
-                </Select>
+                  </div>
+                </div>
               </div>
               
               <div>
                 <label className="text-sm text-gray-400 mb-1 block">Type</label>
-                <Select value={type} onValueChange={(value) => {
-                  setType(value);
-                  setPage(1);
-                }}>
-                  <SelectTrigger className="bg-game-panel border-gray-700">
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
+                <div className="relative">
+                  <div 
+                    className="w-full p-2 bg-game-panel border border-gray-700 rounded-md flex items-center justify-between text-sm cursor-pointer hover:bg-gray-800"
+                    onClick={() => {
+                      const dropdown = document.getElementById("type-dropdown");
+                      if (dropdown) {
+                        dropdown.classList.toggle("hidden");
+                        document.getElementById("category-dropdown")?.classList.add("hidden");
+                        document.getElementById("subcategory-dropdown")?.classList.add("hidden");
+                      }
+                    }}
+                  >
+                    <span>{type === "all" ? "All Types" : type}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="m6 9 6 6 6-6"/>
+                    </svg>
+                  </div>
+                  
+                  <div id="type-dropdown" className="absolute z-10 w-full mt-1 bg-gray-900 border border-gray-700 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
+                    <div 
+                      className="p-2 hover:bg-gray-800 cursor-pointer"
+                      onClick={() => {
+                        setType("all");
+                        setPage(1);
+                        document.getElementById("type-dropdown")?.classList.add("hidden");
+                      }}
+                    >
+                      All Types
+                    </div>
                     {data.meta.types.map((t) => (
-                      <SelectItem key={t} value={t}>{t}</SelectItem>
+                      <div 
+                        key={t}
+                        className="p-2 hover:bg-gray-800 cursor-pointer"
+                        onClick={() => {
+                          setType(t);
+                          setPage(1);
+                          document.getElementById("type-dropdown")?.classList.add("hidden");
+                        }}
+                      >
+                        {t}
+                      </div>
                     ))}
-                  </SelectContent>
-                </Select>
+                  </div>
+                </div>
               </div>
               
               <div>
                 <label className="text-sm text-gray-400 mb-1 block">Sub-Category</label>
-                <Select 
-                  value={subCategory} 
-                  onValueChange={(value) => {
-                    setSubCategory(value);
-                    setPage(1);
-                  }}
-                  disabled={category === 'all' || availableSubCategories.length === 0}
-                >
-                  <SelectTrigger className="bg-game-panel border-gray-700">
-                    <SelectValue placeholder="Select sub-category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Sub-Categories</SelectItem>
+                <div className="relative">
+                  <div 
+                    className={`w-full p-2 border rounded-md flex items-center justify-between text-sm ${
+                      category === 'all' || availableSubCategories.length === 0
+                        ? 'bg-game-panel/50 border-gray-700/50 text-gray-500 cursor-not-allowed'
+                        : 'bg-game-panel border-gray-700 cursor-pointer hover:bg-gray-800'
+                    }`}
+                    onClick={() => {
+                      if (category !== 'all' && availableSubCategories.length > 0) {
+                        const dropdown = document.getElementById("subcategory-dropdown");
+                        if (dropdown) {
+                          dropdown.classList.toggle("hidden");
+                          document.getElementById("category-dropdown")?.classList.add("hidden");
+                          document.getElementById("type-dropdown")?.classList.add("hidden");
+                        }
+                      }
+                    }}
+                  >
+                    <span>{subCategory === "all" ? "All Sub-Categories" : subCategory}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="m6 9 6 6 6-6"/>
+                    </svg>
+                  </div>
+                  
+                  <div id="subcategory-dropdown" className="absolute z-10 w-full mt-1 bg-gray-900 border border-gray-700 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
+                    <div 
+                      className="p-2 hover:bg-gray-800 cursor-pointer"
+                      onClick={() => {
+                        setSubCategory("all");
+                        setPage(1);
+                        document.getElementById("subcategory-dropdown")?.classList.add("hidden");
+                      }}
+                    >
+                      All Sub-Categories
+                    </div>
                     {availableSubCategories.map((sub) => (
-                      <SelectItem key={sub} value={sub}>{sub}</SelectItem>
+                      <div 
+                        key={sub}
+                        className="p-2 hover:bg-gray-800 cursor-pointer"
+                        onClick={() => {
+                          setSubCategory(sub);
+                          setPage(1);
+                          document.getElementById("subcategory-dropdown")?.classList.add("hidden");
+                        }}
+                      >
+                        {sub}
+                      </div>
                     ))}
-                  </SelectContent>
-                </Select>
+                  </div>
+                </div>
               </div>
             </div>
             
