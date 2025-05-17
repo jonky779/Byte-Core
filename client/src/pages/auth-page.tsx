@@ -163,7 +163,7 @@ export default function AuthPage() {
                     onClick={() => setShowTosModal(true)}
                     className="text-primary hover:underline"
                   >
-                    ToS
+                    Terms Of Service
                   </button>
                 </div>
               </CardHeader>
@@ -231,7 +231,7 @@ export default function AuthPage() {
       <Dialog open={showTosModal} onOpenChange={setShowTosModal}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Terms of Service (ToS)</DialogTitle>
+            <DialogTitle className="text-xl font-bold">Terms Of Service</DialogTitle>
           </DialogHeader>
           
           <div className="space-y-4 mt-4">
