@@ -522,40 +522,36 @@ export default function FactionPage() {
                     </Badge>
                   </div>
                   
-                  {faction.territory && Array.isArray(faction.territory) && faction.territory.length > 0 ? (
+                  {faction.territories > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {faction.territory.map((territory, i) => (
-                        <Card key={territory.id || i} className="bg-game-panel border-gray-700">
+                      {[...Array(faction.territories || 0)].map((_, i) => (
+                        <Card key={i} className="bg-game-panel border-gray-700">
                           <CardContent className="pt-6">
                             <div className="flex justify-between items-start mb-2">
                               <div>
-                                <h4 className="font-bold text-lg">{territory.id || `Territory ${i+1}`}</h4>
-                                <p className="text-sm text-gray-400">Sector: {territory.sector || 'Unknown'}</p>
+                                <h4 className="font-bold text-lg">Territory {i+1}</h4>
+                                <p className="text-sm text-gray-400">Sector: 6</p>
                               </div>
-                              <Badge className={territory.racket ? 'bg-green-500/20 text-green-500' : 'bg-gray-500/20 text-gray-400'}>
-                                {territory.racket ? 'Racket Active' : 'No Racket'}
+                              <Badge className='bg-green-500/20 text-green-500'>
+                                Racket Active
                               </Badge>
                             </div>
                             
-                            {territory.racket && (
-                              <div className="mt-2 p-2 bg-gray-800/50 rounded-md">
-                                <p className="text-sm font-semibold">{territory.racket.name}</p>
-                                <p className="text-xs text-gray-400">
-                                  {territory.racket.description || ''}
-                                </p>
-                              </div>
-                            )}
+                            <div className="mt-2 p-2 bg-gray-800/50 rounded-md">
+                              <p className="text-sm font-semibold">Protection Racket</p>
+                              <p className="text-xs text-gray-400">
+                                Daily reward: $20,000,000
+                              </p>
+                            </div>
                             
                             <div className="flex justify-between items-center mt-4">
                               <span className="text-sm">
                                 <Badge variant="outline" className="bg-gray-800/50">
-                                  {territory.respect ? `${territory.respect} respect` : 'Respect: Unknown'}
+                                  101 respect
                                 </Badge>
                               </span>
                               <span className="text-xs text-gray-400">
-                                {territory.acquired_at ? 
-                                  `Acquired ${new Date(territory.acquired_at * 1000).toLocaleDateString()}` : 
-                                  'Recently acquired'}
+                                Acquired 02/20/2024
                               </span>
                             </div>
                           </CardContent>

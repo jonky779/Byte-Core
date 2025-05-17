@@ -720,6 +720,7 @@ export class TornAPI {
       
       // Get detailed faction data using the v2 API with all needed selections
       const factionData = await this.makeRequest(`v2/faction?selections=basic,applications,chains,rankedwars,stats,territory`, apiKey);
+      console.log("Territory data available:", !!factionData.territory);
       
       // Parse member status - The v2 API doesn't provide member status in basic data
       // Fetch faction data with detailed member information (must use v2 API)
