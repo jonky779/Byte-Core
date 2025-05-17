@@ -222,7 +222,7 @@ export default function FactionPage() {
                   {faction.war_status === "WAR" ? "At War" : "Peaceful"}
                 </div>
                 <div className="text-xs text-gray-400 mt-2">
-                  Active wars: 0
+                  Active wars: {faction.active_wars || 0}
                 </div>
               </div>
             </div>
