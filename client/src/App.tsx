@@ -18,6 +18,7 @@ import AuthPage from "@/pages/auth-page";
 import CompanyPage from "@/pages/company-page";
 import FactionPage from "@/pages/faction-page-fixed";
 import BazaarPage from "@/pages/bazaar-page";
+import BazaarCategoriesPage from "@/pages/bazaar-categories-page";
 import EmployeesSearchPage from "@/pages/employees-search-page";
 import FactionSearchPage from "@/pages/faction-search-page";
 import CrawlerStatusPage from "@/pages/crawler-status-page";
@@ -32,6 +33,7 @@ function Router() {
       <ProtectedRoute path="/company" component={CompanyPage} />
       <ProtectedRoute path="/faction" component={FactionPage} />
       <ProtectedRoute path="/bazaar" component={BazaarPage} />
+      <ProtectedRoute path="/bazaar/categories" component={BazaarCategoriesPage} />
       <ProtectedRoute path="/employees-search" component={EmployeesSearchPage} />
       <ProtectedRoute path="/faction-search" component={FactionSearchPage} />
       <ProtectedRoute path="/crawler-status" component={CrawlerStatusPage} />
