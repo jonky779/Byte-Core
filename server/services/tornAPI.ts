@@ -872,6 +872,22 @@ export class TornAPI {
         members: totalMembers
       });
       
+      // Get best chain from stats data
+      let bestChain = 0;
+      if (factionData.stats && factionData.stats.best_chain) {
+        bestChain = factionData.stats.best_chain;
+      } else if (factionData.chains && factionData.chains.best) {
+        bestChain = factionData.chains.best;
+      }
+
+      // Get faction age in days
+      let daysOld = 0;
+      if (factionData.age) {
+        daysOld = factionData.age;
+      } else if (basicFactionData && basicFactionData.age) {
+        daysOld = basicFactionData.age;
+      }
+      
       // Build the response object with real data
       return {
         id: factionData.ID || userData.faction.faction_id,
@@ -885,6 +901,8 @@ export class TornAPI {
         respect: factionRespect,
         territories: factionData.territory ? Object.keys(factionData.territory).length : 0,
         war_status: warStatus,
+        best_chain: bestChain,
+        days_old: daysOld,
         capacity: {
           current: totalMembers || 1,
           maximum: totalMembers + 5 // Not directly available from API
