@@ -347,8 +347,37 @@ export class TornAPI {
     }
   }
   
-  private getCompanyTypeName(typeId: number): string {
-    const companyTypes: Record<number, string> = {
+  // Cache for company types
+  private companyTypesCache: Record<number, string> = {};
+  private companyTypesLastFetched: number = 0;
+  private readonly CACHE_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
+  
+  /**
+   * Gets company type name from the API or cache
+   */
+  private async getCompanyTypeName(typeId: number, apiKey?: string): Promise<string> {
+    // If we have a recent cache, use it
+    const now = Date.now();
+    if (
+      Object.keys(this.companyTypesCache).length > 0 && 
+      now - this.companyTypesLastFetched < this.CACHE_EXPIRY_MS
+    ) {
+      return this.companyTypesCache[typeId] || "Unknown";
+    }
+    
+    // If we have an API key, try to fetch fresh data
+    if (apiKey) {
+      try {
+        await this.fetchCompanyTypes(apiKey);
+        return this.companyTypesCache[typeId] || "Unknown";
+      } catch (error) {
+        console.error("Error fetching company types:", error);
+        // Fall through to default fallback
+      }
+    }
+    
+    // Fallback to a basic mapping if we can't get data from API
+    const fallbackTypes: Record<number, string> = {
       1: "Hair Salon",
       2: "Law Firm",
       3: "Flower Shop",
@@ -367,7 +396,7 @@ export class TornAPI {
       16: "Television Network",
       17: "Zoo",
       18: "Firework Stand",
-      19: "Property Broker",
+      19: "Property Broker", 
       20: "Furniture Store",
       21: "Gas Station",
       22: "Music Store",
@@ -389,7 +418,40 @@ export class TornAPI {
       38: "Mining Corporation",
       39: "Detective Agency"
     };
-    return companyTypes[typeId] || "Unknown";
+    
+    // If cache is empty, initialize with fallback
+    if (Object.keys(this.companyTypesCache).length === 0) {
+      this.companyTypesCache = { ...fallbackTypes };
+    }
+    
+    return fallbackTypes[typeId] || "Unknown";
+  }
+  
+  /**
+   * Fetches company types from the API and updates the cache
+   */
+  private async fetchCompanyTypes(apiKey: string): Promise<void> {
+    try {
+      const response = await this.makeRequest("v2/torn?selections=companies", apiKey);
+      
+      if (response?.companies) {
+        // Clear the existing cache
+        this.companyTypesCache = {};
+        
+        // Update the cache with fresh data from API
+        Object.entries(response.companies).forEach(([id, data]: [string, any]) => {
+          this.companyTypesCache[parseInt(id)] = data.name;
+        });
+        
+        // Update the last fetched timestamp
+        this.companyTypesLastFetched = Date.now();
+        
+        console.log("Updated company types cache with", Object.keys(this.companyTypesCache).length, "types");
+      }
+    } catch (error) {
+      console.error("Failed to fetch company types:", error);
+      throw error;
+    }
   }
 
   public async getCompanyData(apiKey: string): Promise<CompanyData> {
@@ -457,10 +519,13 @@ export class TornAPI {
         });
         const employeeCount = employeesList.length;
         
+        // Get the company type name from API or cache
+        const companyTypeName = await this.getCompanyTypeName(companyData.company_type, apiKey);
+        
         return {
           id: companyData.ID,
           name: companyData.name,
-          type: this.getCompanyTypeName(companyData.company_type),
+          type: companyTypeName,
           rating: companyData.rating || 0,
           days_old: companyData.days_old || 0,
           weekly_profit: companyData.weekly_income || 0,
@@ -605,18 +670,16 @@ export class TornAPI {
           }
           
           // Determine the correct company type based on name and type ID
-          let companyTypeId = companyData.company_type || userData.job.company_type;
+          const companyTypeId = companyData.company_type || userData.job.company_type;
           
-          // Special handling for company names with "Broker" to correctly identify property brokers (type 19)
-          if (companyData.name && companyData.name.toLowerCase().includes("broker")) {
-            companyTypeId = 19; // Property Broker
-          }
+          // Get the company type name from the API or cache
+          const companyTypeName = await this.getCompanyTypeName(companyTypeId, apiKey);
           
           // Return the full company detail data
           return {
             id: companyData.ID || companyId,
             name: companyData.name || userData.job.company_name,
-            type: this.getCompanyTypeName(companyTypeId),
+            type: companyTypeName,
             rating: companyData.rating || 0,
             employees: {
               current: companyData.employees_hired || 0,
@@ -642,17 +705,15 @@ export class TornAPI {
         } catch (companyError) {
           console.error("Error fetching company data:", companyError);
           
-          // Determine company type, with special handling for brokers
-          let companyTypeId = userData.job.company_type;
-          if (userData.job.company_name && userData.job.company_name.toLowerCase().includes("broker")) {
-            companyTypeId = 19; // Set to Property Broker
-          }
+          // Get company type from API using user job type 
+          const companyTypeId = userData.job.company_type;
+          const companyTypeName = await this.getCompanyTypeName(companyTypeId, apiKey);
           
           // Fallback to basic company info from user profile
           return {
             id: userData.job.company_id,
             name: userData.job.company_name,
-            type: this.getCompanyTypeName(companyTypeId),
+            type: companyTypeName,
             rating: 0,
             employees: {
               current: 1,
