@@ -984,7 +984,7 @@ export class TornAPI {
         is_enlisted: isEnlisted,
         active_wars: activeWars.length,
         last_war: lastWarEnded,
-        recent_wars: sortedWars.slice(0, 10), // Include up to 10 most recent wars
+        recent_wars: sortedWars, // Include all wars for proper pagination
         rank: {
           level: rankLevel,
           name: rankName,
