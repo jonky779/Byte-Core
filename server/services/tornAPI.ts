@@ -714,11 +714,11 @@ export class TornAPI {
         };
       }
       
-      // User is in a faction - get more detailed data using v2 API with required selections
+      // User is in a faction - get more detailed data
       const factionId = userData.faction.faction_id;
       
       try {
-        // Use the v2 API endpoint as requested
+        // Use the v2 API with the proper selections as requested
         const factionData = await this.makeRequest(`v2/faction?selections=basic,applications,chains,rankedwars,stats,territory`, apiKey);
         
         // Parse member status from stats data
@@ -734,7 +734,7 @@ export class TornAPI {
                              memberStatus.offline + memberStatus.hospital) || 
                              factionData.members_count || 0;
         
-        // Get territory count from territory data
+        // Get territory count
         const territoriesCount = factionData.territory ? Object.keys(factionData.territory).length : 0;
         
         // Process real recent activities
@@ -759,7 +759,7 @@ export class TornAPI {
           }
         }
         
-        // 2. Check for recent wars from rankedwars data
+        // 2. Check for recent wars
         if (factionData.rankedwars && Array.isArray(factionData.rankedwars)) {
           const recentWars = factionData.rankedwars
             .sort((a: any, b: any) => b.start - a.start)
@@ -902,7 +902,29 @@ export class TornAPI {
       return 'Just now';
     }
   }
-
+      if (error instanceof Error && (
+          error.message.includes("not in a faction") || 
+          error.message.includes("Incorrect ID")
+        )) {
+        return {
+          id: 0,
+          name: "Not in a Faction",
+          tag: "N/A",
+          leader: {
+            id: 0,
+            name: "N/A"
+          },
+          members_count: 0,
+          respect: 0,
+          territories: 0,
+          last_updated: new Date().toISOString()
+        };
+      }
+      
+      throw error;
+    }
+  }
+  
   public async getFactionDetailedData(apiKey: string): Promise<any> {
     // Mock data for demonstration
     return {
