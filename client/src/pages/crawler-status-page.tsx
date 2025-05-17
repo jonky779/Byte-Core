@@ -211,6 +211,31 @@ export default function CrawlerStatusPage() {
   }
   
   if (isError || !data) {
+    // Check if this is an admin access error (403 Forbidden)
+    if (adminAccessError) {
+      return (
+        <MainLayout title="Crawler Status">
+          <Helmet>
+            <title>Crawler Status | Byte-Core Vault</title>
+            <meta name="description" content="Monitor and manage the Torn RPG data crawler system with Byte-Core Vault." />
+          </Helmet>
+          <Card className="border-gray-700 bg-game-dark shadow-game">
+            <CardContent className="p-6 flex flex-col items-center justify-center text-center">
+              <ShieldOff className="h-16 w-16 text-red-500 mb-4" />
+              <h3 className="text-xl font-semibold mb-2">Admin Access Required</h3>
+              <p className="text-gray-400 max-w-md mb-4">
+                This page is restricted to administrators only. You don't have sufficient permissions to access the crawler control panel.
+              </p>
+              <p className="text-sm text-gray-500 max-w-md">
+                The crawler system is used to index player data from the Torn API and requires administrative privileges to view and manage.
+              </p>
+            </CardContent>
+          </Card>
+        </MainLayout>
+      );
+    }
+    
+    // For other errors
     const errorMessage = user?.apiKey 
       ? "Failed to load crawler data. Please check your API key or try again later."
       : "Please add your Torn API key in settings to view crawler status.";
