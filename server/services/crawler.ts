@@ -22,15 +22,19 @@ interface CrawlerStatus {
 }
 
 export class Crawler {
+  // Crawler now completely disabled sequential scanning - only uses real players from relationships
   private config: CrawlerConfig = {
     enabled: false,
     crawl_interval_minutes: 60,
-    player_id_start: 0, // We will ONLY use player IDs from relationships, not sequential scanning
-    player_id_end: 0,   // We will ONLY use player IDs from relationships, not sequential scanning
-    request_delay_ms: 2000, // Slow down requests to respect API limits
-    batch_size: 20, // Process smaller batches for stability
-    max_concurrent_requests: 1 // Process sequentially to avoid overwhelming the API
+    player_id_start: 0, // Set to 0 to disable sequential scanning entirely
+    player_id_end: 0,   // Set to 0 to disable sequential scanning entirely
+    request_delay_ms: 2000, 
+    batch_size: 20, 
+    max_concurrent_requests: 1 
   };
+  
+  // Flag to only process real player data from relationships
+  private onlyUseRelationships: boolean = true;
   
   private status: CrawlerStatus = {
     status: "idle",
@@ -456,114 +460,192 @@ export class Crawler {
   
   // Method for updating user data when an admin logs in
   /**
-   * Auto-start the crawler with a specific user's API key and Torn ID
-   * This immediately begins processing player relationships
+   * Special crawler implementation that only uses 100% real player data
+   * from actual company employees and faction members
    */
-  public async autoStart(apiKey: string, tornPlayerId: number): Promise<void> {
+  public async realStart(apiKey: string, tornPlayerId: number): Promise<void> {
+    // Reset everything and stop any existing crawl
+    this.currentPosition = 0;
+    this.config.player_id_start = 0;
+    this.config.player_id_end = 0;
+    
     if (this.status.status === "running") {
-      // Already running - don't restart
-      return;
+      this.abortCrawl = true;
+      this.status.status = "idle";
+      this.addLog("Control", "Stopping any existing crawler operations", true);
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
     
-    if (!apiKey) {
-      throw new Error("No API key provided for crawler");
-    }
-    
-    // Setup crawler for intelligent relationship discovery
+    // Setup for real player data only
     this.config.enabled = true;
     this.status.status = "running";
     this.abortCrawl = false;
-    this.currentPosition = 0; // Completely reset the sequential scan position
     
-    // Reset tracking data
+    // Reset all tracking data
     this.status.indexedPlayers = 0;
-    this.status.totalPlayers = 1; // Start with just your ID, will increase as we discover relationships
+    this.status.totalPlayers = 0;
     this.status.crawlSpeed = 0;
     this.currentApiKey = apiKey;
     
-    // Clear previous data
+    // Clear ALL previous data
     this.playerQueue.clear();
     this.processedPlayers.clear();
     this.discoveredFactions.clear();
     this.discoveredCompanies.clear();
     
-    // Override the config to disable sequential scanning
-    this.config.player_id_start = 0;
-    this.config.player_id_end = 0;
-        
-    // Add the specified Torn player ID as our ONLY starting point
-    this.queuePlayer(tornPlayerId);
+    this.addLog("Control", `REAL DATA CRAWLER started with player ID ${tornPlayerId}`, true);
     
-    this.addLog("Control", `Crawler auto-started with YOUR player ID ${tornPlayerId}`, true);
-    
-    // Begin processing immediately in the background
+    // Use a background process to get real data
     setImmediate(async () => {
       try {
-        // First, let's get the player's data directly to ensure we have company/faction info
-        const userData = await this.tornAPI.getPlayerStats(apiKey, tornPlayerId);
+        const startTime = Date.now();
         
-        if (userData) {
-          this.addLog("Process", `Starting with ${userData.name} (ID: ${tornPlayerId})`, true);
+        // STEP 1: Get your player data
+        this.addLog("Process", `Getting YOUR player data (ID: ${tornPlayerId})`, true);
+        try {
+          const userData = await this.tornAPI.getPlayerStats(apiKey, tornPlayerId);
           
-          // Process company relationships if available
+          if (!userData) {
+            throw new Error("Could not get your player data from Torn API");
+          }
+          
+          // Save your player data
+          await this.storage.storePlayerData(tornPlayerId, userData);
+          this.processedPlayers.add(tornPlayerId);
+          this.status.indexedPlayers = 1;
+          
+          this.addLog("Success", `Got data for ${userData.name} (ID: ${tornPlayerId})`, true);
+          
+          // STEP 2: Get your REAL COMPANY EMPLOYEES
           if (userData.company && userData.company.id) {
             const companyId = userData.company.id;
-            this.addLog("Discover", `Found your company: ${userData.company.name} (ID: ${companyId})`, true);
+            this.discoveredCompanies.add(companyId);
+            
+            this.addLog("Discover", `Getting real employees from your company: ${userData.company.name} (ID: ${companyId})`, true);
             
             try {
-              // Get the company detailed data with real employee list
+              // Get REAL EMPLOYEES with detailed data
               const companyData = await this.tornAPI.getCompanyDetailedData(apiKey);
-              const employees = companyData?.employees || {};
               
-              // Queue all real company employees (not sequential IDs)
-              const employeeIds = Object.keys(employees);
-              this.addLog("Process", `Processing ${employeeIds.length} real company employees`, true);
-              
-              for (const empId of employeeIds) {
-                const realEmployeeId = parseInt(empId, 10);
-                if (!isNaN(realEmployeeId) && realEmployeeId > 0) {
-                  this.queuePlayer(realEmployeeId);
-                  this.addLog("Queue", `Added real employee ID ${realEmployeeId} (${employees[empId].name})`, true);
+              if (companyData && companyData.employees) {
+                const realEmployeeIds = Object.keys(companyData.employees);
+                
+                if (realEmployeeIds.length > 0) {
+                  this.addLog("Success", `Found ${realEmployeeIds.length} real company employees!`, true);
+                  this.status.totalPlayers += realEmployeeIds.length;
+                  
+                  // Process each real employee
+                  for (const empId of realEmployeeIds) {
+                    const realId = parseInt(empId, 10);
+                    if (!isNaN(realId) && realId > 0) {
+                      const empName = companyData.employees[empId]?.name || "Unknown";
+                      this.addLog("Process", `Getting data for employee ${empName} (ID: ${realId})`, true);
+                      
+                      try {
+                        // Get employee data from Torn API
+                        const empData = await this.tornAPI.getPlayerStats(apiKey, realId);
+                        
+                        if (empData) {
+                          // Store real employee data
+                          await this.storage.storePlayerData(realId, empData);
+                          this.processedPlayers.add(realId);
+                          this.status.indexedPlayers++;
+                          this.addLog("Success", `Stored data for ${empName} (ID: ${realId})`, true);
+                        }
+                      } catch (empErr) {
+                        this.addLog("Warning", `Couldn't get data for employee ${empName} (${realId}): ${empErr}`, false);
+                      }
+                      
+                      // Brief delay between requests
+                      await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                  }
+                } else {
+                  this.addLog("Warning", "No employees found in company data", false);
                 }
+              } else {
+                this.addLog("Warning", "Company data or employee list missing", false);
               }
-            } catch (compErr) {
-              this.addLog("Warning", `Error getting company data: ${compErr}`, false);
+            } catch (companyErr) {
+              this.addLog("Error", `Failed to get company data: ${companyErr}`, false);
             }
           }
           
-          // Process faction relationships if available
+          // STEP 3: Get your REAL FACTION MEMBERS
           if (userData.faction && userData.faction.id) {
             const factionId = userData.faction.id;
-            this.addLog("Discover", `Found your faction: ${userData.faction.name} (ID: ${factionId})`, true);
+            this.discoveredFactions.add(factionId);
+            
+            this.addLog("Discover", `Getting real members from your faction: ${userData.faction.name} (ID: ${factionId})`, true);
             
             try {
-              // Get faction data with real member list
+              // Get REAL FACTION MEMBERS with detailed data
               const factionData = await this.tornAPI.getFactionDetailedData(apiKey);
-              if (factionData?.members) {
-                const memberIds = Object.keys(factionData.members);
-                this.addLog("Process", `Processing ${memberIds.length} real faction members`, true);
+              
+              if (factionData && factionData.members) {
+                const realMemberIds = Object.keys(factionData.members);
                 
-                for (const memId of memberIds) {
-                  const realMemberId = parseInt(memId, 10);
-                  if (!isNaN(realMemberId) && realMemberId > 0) {
-                    this.queuePlayer(realMemberId);
-                    this.addLog("Queue", `Added real faction member ID ${realMemberId} (${factionData.members[memId].name})`, true);
+                if (realMemberIds.length > 0) {
+                  this.addLog("Success", `Found ${realMemberIds.length} real faction members!`, true);
+                  this.status.totalPlayers += realMemberIds.length;
+                  
+                  // Process each real faction member
+                  for (const memId of realMemberIds) {
+                    const realId = parseInt(memId, 10);
+                    if (!isNaN(realId) && realId > 0 && !this.processedPlayers.has(realId)) {
+                      const memName = factionData.members[memId]?.name || "Unknown";
+                      this.addLog("Process", `Getting data for faction member ${memName} (ID: ${realId})`, true);
+                      
+                      try {
+                        // Get member data from Torn API
+                        const memData = await this.tornAPI.getPlayerStats(apiKey, realId);
+                        
+                        if (memData) {
+                          // Store real member data
+                          await this.storage.storePlayerData(realId, memData);
+                          this.processedPlayers.add(realId);
+                          this.status.indexedPlayers++;
+                          this.addLog("Success", `Stored data for ${memName} (ID: ${realId})`, true);
+                        }
+                      } catch (memErr) {
+                        this.addLog("Warning", `Couldn't get data for member ${memName} (${realId}): ${memErr}`, false);
+                      }
+                      
+                      // Brief delay between requests
+                      await new Promise(resolve => setTimeout(resolve, 500));
+                    }
                   }
+                } else {
+                  this.addLog("Warning", "No members found in faction data", false);
                 }
+              } else {
+                this.addLog("Warning", "Faction data or member list missing", false);
               }
             } catch (factionErr) {
-              this.addLog("Warning", `Error getting faction data: ${factionErr}`, false);
+              this.addLog("Error", `Failed to get faction data: ${factionErr}`, false);
             }
           }
+          
+        } catch (userErr) {
+          this.addLog("Error", `Failed to get your player data: ${userErr}`, false);
+          throw userErr;
         }
         
-        // Now process the queue with real player IDs
-        await this.processPlayerQueue();
+        // Calculate stats and finish
+        const processingTime = (Date.now() - startTime) / 1000;
+        this.status.crawlSpeed = Math.round(this.status.indexedPlayers / (processingTime / 60) || 1);
+        
+        // Complete the crawl
+        this.status.status = "idle";
+        this.status.lastUpdated = Date.now();
+        
+        this.addLog("Completed", `REAL DATA processing finished. Processed ${this.status.indexedPlayers} real players from your relationships.`, true);
+        
       } catch (error) {
-        console.error("Crawler processing error:", error);
+        console.error("REAL DATA crawler error:", error);
         this.status.status = "error";
-        this.status.error = error instanceof Error ? error.message : "Unknown error during crawl";
-        this.addLog("Error", `Crawler error: ${this.status.error}`, false);
+        this.status.error = error instanceof Error ? error.message : "Unknown error processing real data";
+        this.addLog("Error", `REAL DATA crawler failed: ${this.status.error}`, false);
       }
     });
     
