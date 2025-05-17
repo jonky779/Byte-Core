@@ -765,14 +765,20 @@ export class TornAPI {
         const now = Math.floor(Date.now() / 1000);
         
         if (recentWars.length > 0) {
+          // Log the wars data for debugging
+          console.log("Recent wars data:", JSON.stringify(recentWars.slice(0, 2), null, 2));
+          
           // Check if there's an active war (no end time or end time in future)
           const activeWars = recentWars.filter(war => !war.end || war.end > now);
+          console.log("Active wars count:", activeWars.length);
           
           if (activeWars.length > 0) {
             // We have an active war - show when it started
             const mostRecentActiveWar = activeWars[0];
             const timeDiff = Math.floor((now - mostRecentActiveWar.start) / 3600);
             const timeLabel = timeDiff <= 24 ? `${timeDiff}h ago` : `${Math.floor(timeDiff / 24)}d ago`;
+            
+            console.log("Active war detected, started:", timeLabel);
             
             recentActivity.push({
               type: 'war',
@@ -788,6 +794,8 @@ export class TornAPI {
             if (lastWar && lastWar.end) {
               const timeSinceEnd = Math.floor((now - lastWar.end) / 3600);
               const timeLabel = timeSinceEnd <= 24 ? `${timeSinceEnd}h ago` : `${Math.floor(timeSinceEnd / 24)}d ago`;
+              
+              console.log("No active wars, last war ended:", timeLabel);
               
               recentActivity.push({
                 type: 'info',
