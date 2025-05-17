@@ -126,6 +126,23 @@ export default function FactionPage() {
     enabled: false // Temporarily disabled until real details API is implemented
   });
   
+  // Function to format age in years, months, and days
+  const formatFactionAge = (totalDays: number): string => {
+    if (totalDays <= 0) return "Age: Unknown";
+    
+    const years = Math.floor(totalDays / 365);
+    const remainingDays = totalDays % 365;
+    const months = Math.floor(remainingDays / 30);
+    const days = remainingDays % 30;
+    
+    let result = "Age: ";
+    if (years > 0) result += `${years} ${years === 1 ? 'year' : 'years'}, `;
+    if (months > 0) result += `${months} ${months === 1 ? 'month' : 'months'}, `;
+    if (days > 0 || (years === 0 && months === 0)) result += `${days} ${days === 1 ? 'day' : 'days'}`;
+    
+    return result;
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Online": 
@@ -237,7 +254,8 @@ export default function FactionPage() {
                 </div>
                 <div>
                   <h2 className="font-rajdhani font-bold text-xl">{factionBasic?.name || "Loading..."} [{factionBasic?.tag || ""}]</h2>
-                  <p className="text-sm text-gray-400">ID: #{factionBasic?.id || "?"} • Age: {data?.age_days || factionBasic?.age_days || "?"} days</p>
+                  <p className="text-sm text-gray-400">ID: #{factionBasic?.id || "?"}</p>
+                  <p className="text-sm text-gray-400">{formatFactionAge(data?.age_days || factionBasic?.age_days || 0)}</p>
                 </div>
               </div>
               
