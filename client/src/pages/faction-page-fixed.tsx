@@ -522,36 +522,43 @@ export default function FactionPage() {
                     </Badge>
                   </div>
                   
-                  {faction.territories > 0 ? (
+                  {faction.territory && Array.isArray(faction.territory) && faction.territory.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {[...Array(faction.territories || 0)].map((_, i) => (
-                        <Card key={i} className="bg-game-panel border-gray-700">
+                      {faction.territory.map((territory, i) => (
+                        <Card key={territory.id || i} className="bg-game-panel border-gray-700">
                           <CardContent className="pt-6">
                             <div className="flex justify-between items-start mb-2">
                               <div>
-                                <h4 className="font-bold text-lg">Territory {i+1}</h4>
-                                <p className="text-sm text-gray-400">Sector: 6</p>
+                                <h4 className="font-bold text-lg">{territory.id || `Territory ${i+1}`}</h4>
+                                <p className="text-sm text-gray-400">Sector: {territory.sector}</p>
                               </div>
-                              <Badge className='bg-green-500/20 text-green-500'>
-                                Racket Active
+                              <Badge className={territory.racket ? 'bg-green-500/20 text-green-500' : 'bg-gray-500/20 text-gray-400'}>
+                                {territory.racket ? 'Racket Active' : 'No Racket'}
                               </Badge>
                             </div>
                             
-                            <div className="mt-2 p-2 bg-gray-800/50 rounded-md">
-                              <p className="text-sm font-semibold">Protection Racket</p>
-                              <p className="text-xs text-gray-400">
-                                Daily reward: $20,000,000
-                              </p>
-                            </div>
+                            {territory.racket && (
+                              <div className="mt-2 p-2 bg-gray-800/50 rounded-md">
+                                <p className="text-sm font-semibold">{territory.racket.name}</p>
+                                <p className="text-xs text-gray-400">
+                                  {territory.racket.description || 
+                                   (territory.racket.reward?.type === 'Money' ? 
+                                     `$${territory.racket.reward.quantity.toLocaleString()} daily` : 
+                                     `${territory.racket.reward?.quantity}x ${territory.racket.reward?.type} daily`)}
+                                </p>
+                              </div>
+                            )}
                             
                             <div className="flex justify-between items-center mt-4">
                               <span className="text-sm">
                                 <Badge variant="outline" className="bg-gray-800/50">
-                                  101 respect
+                                  {territory.respect} respect
                                 </Badge>
                               </span>
                               <span className="text-xs text-gray-400">
-                                Acquired 02/20/2024
+                                {territory.acquired_at ? 
+                                  `Acquired ${new Date(territory.acquired_at * 1000).toLocaleDateString()}` : 
+                                  'Recently acquired'}
                               </span>
                             </div>
                           </CardContent>
