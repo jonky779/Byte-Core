@@ -772,11 +772,40 @@ export class TornAPI {
               .filter((app: any) => app.status === 'accepted');
             
             if (acceptedApplications.length > 0) {
-              // Use a fixed time label for now since we can't reliably determine the exact acceptance time
+              // The valid_until field represents when the application expires
+              // Applications are typically valid for 24 hours after acceptance
+              const mostRecentApp = acceptedApplications.sort((a: any, b: any) => 
+                (b.valid_until || 0) - (a.valid_until || 0)
+              )[0];
+              
+              // Calculate when the application was accepted (approximately 24 hours before expiry)
+              const now = Math.floor(Date.now() / 1000);
+              const acceptedTime = mostRecentApp.valid_until - 86400; // 24 hours = 86400 seconds
+              
+              // Calculate time difference
+              const timeDiffSeconds = now - acceptedTime;
+              let timeLabel = '';
+              
+              if (timeDiffSeconds < 3600) {
+                // Less than an hour
+                const minutes = Math.floor(timeDiffSeconds / 60);
+                timeLabel = `${minutes}m ago`;
+              } else if (timeDiffSeconds < 86400) {
+                // Less than a day
+                const hours = Math.floor(timeDiffSeconds / 3600);
+                timeLabel = `${hours}h ago`;
+              } else {
+                // Days
+                const days = Math.floor(timeDiffSeconds / 86400);
+                timeLabel = `${days}d ago`;
+              }
+              
+              console.log(`Member join time calculation: accepted around ${new Date(acceptedTime * 1000).toISOString()}, time label: ${timeLabel}`);
+              
               recentActivity.push({
                 type: 'join',
                 description: 'New member joined the faction',
-                time: 'recently',
+                time: timeLabel,
                 icon: 'user-plus',
                 color: 'green'
               });
