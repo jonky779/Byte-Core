@@ -327,7 +327,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/system/crawler/start", isAdmin, async (req, res) => {
     try {
-      await crawler.start();
+      // Start the crawler in the background without waiting for it to complete
+      // This prevents the request from timing out
+      crawler.start().catch(error => {
+        console.error("Background crawler error:", error);
+      });
+      
+      // Immediately return success response to the client
       res.json({ success: true, message: "Crawler started successfully" });
     } catch (error) {
       res.status(500).json({
