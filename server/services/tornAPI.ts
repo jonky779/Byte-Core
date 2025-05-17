@@ -803,7 +803,14 @@ export class TornAPI {
       
       // Determine war status based on ranked wars
       let warStatus = "PEACE";
-      if (factionData.rankedwars && factionData.rankedwars.some(war => war.status === 'active')) {
+      const now = Math.floor(Date.now() / 1000);
+      
+      if (factionData.rankedwars && factionData.rankedwars.some(war => {
+        // A war is active if:
+        // 1. Its status is 'active' AND
+        // 2. Either it has no end time OR its end time is in the future
+        return war.status === 'active' && (!war.end || war.end > now);
+      })) {
         warStatus = "WAR";
       }
       
