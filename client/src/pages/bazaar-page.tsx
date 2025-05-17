@@ -1,68 +1,36 @@
-import { useState, useEffect } from "react";
+import React from "react";
 import MainLayout from "@/components/layouts/MainLayout";
-import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/use-auth";
 import { Helmet } from "react-helmet";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, AlertCircle, Store, RefreshCw, Search, FilterX } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Slider } from "@/components/ui/slider";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Pagination, 
-  PaginationContent, 
-  PaginationItem, 
-  PaginationLink, 
-  PaginationNext, 
-  PaginationPrevious 
-} from "@/components/ui/pagination";
-
-interface BazaarItem {
-  id: number;
-  name: string;
-  type: string;
-  category: string;
-  sub_category: string;
-  price: number;
-  market_price: number;
-  quantity: number;
-  percentage_below_market: number;
-  seller: {
-    id: number;
-    name: string;
-  };
-  image_url?: string;
-}
-
-interface BazaarResponse {
-  items: BazaarItem[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    total_pages: number;
-    categories: string[];
-    types: string[];
-    sub_categories: Record<string, string[]>;
-  };
-}
+import { Link } from "wouter";
 
 export default function BazaarPage() {
-  const { user } = useAuth();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [category, setCategory] = useState("all");
-  const [type, setType] = useState("all");
-  const [subCategory, setSubCategory] = useState("all");
-  const [maxPricePercentage, setMaxPricePercentage] = useState(100);
+  return (
+    <MainLayout title="Torn Bazaar">
+      <Helmet>
+        <title>Torn Bazaar | Byte-Core Vault</title>
+        <meta name="description" content="Browse the Torn RPG Bazaar to find the best deals on items with Byte-Core Vault." />
+      </Helmet>
+      
+      <Card className="border-gray-700 bg-game-dark shadow-game">
+        <CardContent className="p-8 flex flex-col items-center justify-center text-center">
+          <Store className="h-16 w-16 text-primary mb-6" />
+          <h1 className="text-3xl font-semibold mb-4">Torn Bazaar</h1>
+          <p className="text-gray-300 text-xl mb-8 max-w-2xl">
+            Browse various Bazaar with items listed by players
+          </p>
+          
+          <Link href="/bazaar/categories">
+            <Button size="lg" className="font-medium text-lg px-8 py-6">
+              Explore Bazaars
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
+    </MainLayout>
+  );
   const [page, setPage] = useState(1);
   const [availableSubCategories, setAvailableSubCategories] = useState<string[]>([]);
   
