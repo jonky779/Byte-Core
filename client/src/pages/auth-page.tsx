@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Helmet } from "react-helmet";
 
 const loginSchema = z.object({
@@ -21,6 +22,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function AuthPage() {
   const [location, navigate] = useLocation();
   const { user, loginMutation } = useAuth();
+  const [showTosModal, setShowTosModal] = useState(false);
 
   // Redirect to home if already logged in
   useEffect(() => {
@@ -154,6 +156,16 @@ export default function AuthPage() {
                   <div>BYTE-CORE VAULT</div>
                 </CardTitle>
                 <CardDescription className="text-muted-foreground">Enter your Torn API key to access your dashboard</CardDescription>
+                <div className="text-xs text-muted-foreground text-center mt-2">
+                  First time users: Your account will be created automatically when you sign in.<br />
+                  By entering your key and using this site, you agree to the <button 
+                    type="button" 
+                    onClick={() => setShowTosModal(true)}
+                    className="text-primary hover:underline"
+                  >
+                    ToS
+                  </button>
+                </div>
               </CardHeader>
               <CardContent>
                 <Form {...loginForm}>
@@ -215,6 +227,73 @@ export default function AuthPage() {
           </div>
         </div>
       </div>
+      {/* Terms of Service Modal */}
+      <Dialog open={showTosModal} onOpenChange={setShowTosModal}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Terms of Service (ToS)</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 mt-4">
+            <div className="bg-muted rounded-md p-3">
+              <p className="text-sm font-medium text-center">
+                Disclaimer: Byte-Core Vault is not affiliated with Torn City or Torn.com. 
+                We are an independent third-party tool.
+              </p>
+            </div>
+            
+            <div className="bg-card border border-border rounded-md p-3">
+              <p className="text-sm text-center">
+                By using / logging into / providing your API key to
+                Byte-Core Vault, you agree to the Terms Of Service as
+                outlined below.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-medium text-primary">Data Storage</h3>
+                <p className="text-sm">Your data will be persistent - until account deletion.</p>
+              </div>
+              
+              <div>
+                <h3 className="text-lg font-medium text-primary">Data Sharing</h3>
+                <p className="text-sm">Your data will be viewable only by authorized users with appropriate permissions.</p>
+              </div>
+              
+              <div>
+                <h3 className="text-lg font-medium text-primary">Purpose of Use</h3>
+                <p className="text-sm">Your data & API key will be used for the following purposes:</p>
+                <ul className="list-disc ml-5 mt-1 text-sm">
+                  <li>Ensure you are an active, real player on Torn.com</li>
+                  <li>To display your username and unique ID</li>
+                  <li>To carry out item lookups on Torn.com</li>
+                  <li>To analyze market values and player statistics</li>
+                </ul>
+              </div>
+              
+              <div>
+                <h3 className="text-lg font-medium text-primary">Key Storage & Sharing</h3>
+                <p className="text-sm">Your API key will be stored in a secure database. It will not be shared with any third parties without your consent.</p>
+              </div>
+              
+              <div>
+                <h3 className="text-lg font-medium text-primary">Key Access Level</h3>
+                <p className="text-sm">Limited Access - we request only the minimum permissions required for the application to function.</p>
+              </div>
+            </div>
+            
+            <div className="pt-4">
+              <Button 
+                onClick={() => setShowTosModal(false)} 
+                className="w-full"
+              >
+                I Understand
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
