@@ -149,8 +149,8 @@ export default function AuthPage() {
               
             <Card className="border-border bg-card backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-xl text-gray-100">Sign in to Byte-Core Vault</CardTitle>
-                <CardDescription className="text-gray-400">Enter your Torn API key to access your dashboard</CardDescription>
+                <CardTitle className="text-xl text-foreground">Sign in to Byte-Core Vault</CardTitle>
+                <CardDescription className="text-muted-foreground">Enter your Torn API key to access your dashboard</CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...loginForm}>

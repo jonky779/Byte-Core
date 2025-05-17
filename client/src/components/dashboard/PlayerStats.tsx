@@ -152,7 +152,7 @@ export default function PlayerStats() {
           
           <div className="mt-4 bg-card rounded-lg p-4 pb-3">
             <div className="flex justify-between items-center text-sm mb-3">
-              <div className="font-medium uppercase text-gray-400">ATTRIBUTES</div>
+              <div className="font-medium uppercase text-muted-foreground">ATTRIBUTES</div>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M20 6L4 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M20 12L4 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -170,7 +170,7 @@ export default function PlayerStats() {
                   <span className="font-mono text-right">{formatNumber(safeObj(playerStats, 'stats.strength', 0))}</span>
                 </div>
                 <div className="relative">
-                  <div className="h-1 w-full bg-gray-700 rounded-full overflow-hidden">
+                  <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-red-500 rounded-full"
                       style={{ 
@@ -187,7 +187,7 @@ export default function PlayerStats() {
                   <span className="font-mono text-right">{formatNumber(safeObj(playerStats, 'stats.defense', 0))}</span>
                 </div>
                 <div className="relative">
-                  <div className="h-1 w-full bg-gray-700 rounded-full overflow-hidden">
+                  <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-gray-300 rounded-full"
                       style={{ 
@@ -204,7 +204,7 @@ export default function PlayerStats() {
                   <span className="font-mono text-right">{formatNumber(safeObj(playerStats, 'stats.speed', 0))}</span>
                 </div>
                 <div className="relative">
-                  <div className="h-1 w-full bg-gray-700 rounded-full overflow-hidden">
+                  <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-yellow-500 rounded-full"
                       style={{ 
@@ -221,7 +221,7 @@ export default function PlayerStats() {
                   <span className="font-mono text-right">{formatNumber(safeObj(playerStats, 'stats.dexterity', 0))}</span>
                 </div>
                 <div className="relative">
-                  <div className="h-1 w-full bg-gray-700 rounded-full overflow-hidden">
+                  <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-blue-500 rounded-full"
                       style={{ 
@@ -236,7 +236,7 @@ export default function PlayerStats() {
           
           <div className="mt-4 bg-card rounded-lg p-4 pb-3">
             <div className="flex justify-between items-center text-sm mb-3">
-              <div className="font-medium uppercase text-gray-400">STATUS</div>
+              <div className="font-medium uppercase text-muted-foreground">STATUS</div>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M21 12H3M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12M21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12M12 17C9.23858 17 7 14.7614 7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12C17 14.7614 14.7614 17 12 17Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
@@ -307,7 +307,7 @@ export default function PlayerStats() {
           
           <div className="mt-4 mb-1 bg-card rounded-lg p-4 pb-3">
             <div className="flex justify-between items-center text-sm mb-1">
-              <div className="font-medium uppercase text-gray-400">FINANCES</div>
+              <div className="font-medium uppercase text-muted-foreground">FINANCES</div>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M5 14C6.10457 14 7 13.1046 7 12C7 10.8954 6.10457 10 5 10C3.89543 10 3 10.8954 3 12C3 13.1046 3.89543 14 5 14Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
                 <path d="M12 7C13.1046 7 14 6.10457 14 5C14 3.89543 13.1046 3 12 3C10.8954 3 10 3.89543 10 5C10 6.10457 10.8954 7 12 7Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
