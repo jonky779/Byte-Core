@@ -276,32 +276,34 @@ export default function FactionPage() {
                 </div>
                 
                 <div className="flex space-x-2">
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-[150px] bg-game-panel border-gray-700">
-                      <SelectValue placeholder="Filter by status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Statuses</SelectItem>
-                      <SelectItem value="Online">Online</SelectItem>
-                      <SelectItem value="Idle">Idle</SelectItem>
-                      <SelectItem value="Offline">Offline</SelectItem>
-                      <SelectItem value="Hospital">Hospital</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="w-[150px]">
+                    <select 
+                      value={statusFilter} 
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                      className="w-full p-2 bg-game-panel border border-gray-700 rounded-md"
+                    >
+                      <option value="all">All Statuses</option>
+                      <option value="Online">Online</option>
+                      <option value="Idle">Idle</option>
+                      <option value="Offline">Offline</option>
+                      <option value="Hospital">Hospital</option>
+                    </select>
+                  </div>
                   
-                  <Select value={positionFilter} onValueChange={setPositionFilter}>
-                    <SelectTrigger className="w-[150px] bg-game-panel border-gray-700">
-                      <SelectValue placeholder="Filter by position" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Positions</SelectItem>
-                      <SelectItem value="Leader">Leader</SelectItem>
-                      <SelectItem value="Co-leader">Co-leader</SelectItem>
-                      <SelectItem value="Officer">Officer</SelectItem>
-                      <SelectItem value="Member">Member</SelectItem>
-                      <SelectItem value="Recruit">Recruit</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="w-[150px]">
+                    <select 
+                      value={positionFilter} 
+                      onChange={(e) => setPositionFilter(e.target.value)}
+                      className="w-full p-2 bg-game-panel border border-gray-700 rounded-md"
+                    >
+                      <option value="all">All Positions</option>
+                      <option value="Leader">Leader</option>
+                      <option value="Co-leader">Co-leader</option>
+                      <option value="Officer">Officer</option>
+                      <option value="Member">Member</option>
+                      <option value="Recruit">Recruit</option>
+                    </select>
+                  </div>
                 </div>
               </div>
               
