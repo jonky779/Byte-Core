@@ -751,84 +751,9 @@ export class TornAPI {
       // Extract recent activities based on real data
       const recentActivity = [];
       
-      // Check new members from applications (if available)
-      if (factionData.applications) {
-        // Log the structure to understand the applications format
-        console.log("Applications structure:", 
-                   JSON.stringify({ 
-                     hasApplications: !!factionData.applications, 
-                     sampleKeys: Object.keys(factionData.applications || {}).slice(0, 2)
-                   }));
-        
-        try {
-          // Applications in the v2 API come as an object, not an array
-          const applications = Object.values(factionData.applications || {});
-          
-          if (applications.length > 0) {
-            console.log("Sample application data:", JSON.stringify(applications[0]));
-            
-            // Filter for accepted applications
-            const acceptedApplications = applications
-              .filter((app: any) => app.status === 'accepted');
-            
-            if (acceptedApplications.length > 0) {
-              // The valid_until field represents when the application expires
-              // Since this appears to be in the future, let's calculate days directly 
-              const mostRecentApp = acceptedApplications.sort((a: any, b: any) => 
-                (b.valid_until || 0) - (a.valid_until || 0)
-              )[0];
-              
-              // Get the current time
-              const now = Math.floor(Date.now() / 1000);
-              
-              // In Torn API, applications have a valid_until timestamp that indicates when they expire
-              // When an application is accepted, this timestamp is set to 72 hours (3 days) after acceptance
-              
-              // Get the application valid_until timestamp
-              const validUntilTime = mostRecentApp?.valid_until || now;
-              
-              // The member was accepted 3 days (72 hours) before the valid_until time
-              // So calculate the acceptance time by subtracting 72 hours (259200 seconds) from valid_until
-              const acceptanceTime = validUntilTime - 259200;
-              
-              // Calculate time difference from acceptance to now in seconds
-              const secondsSinceAcceptance = now - acceptanceTime;
-              
-              // Convert to days (86400 seconds = 1 day)
-              const daysSinceAcceptance = Math.floor(secondsSinceAcceptance / 86400);
-              
-              // Log details for debugging
-              console.log("Current time:", new Date(now * 1000).toISOString());
-              console.log("Valid until:", new Date(validUntilTime * 1000).toISOString()); 
-              console.log("Calculated acceptance time:", new Date(acceptanceTime * 1000).toISOString());
-              console.log("Seconds since acceptance:", secondsSinceAcceptance);
-              console.log("Days since acceptance:", daysSinceAcceptance);
-              
-              // Create the appropriate time label
-              let timeLabel = '';
-              if (daysSinceAcceptance <= 0) {
-                timeLabel = 'today';
-              } else if (daysSinceAcceptance === 1) {
-                timeLabel = 'yesterday';
-              } else {
-                timeLabel = `${daysSinceAcceptance}d ago`;
-              }
-              
-              console.log(`Member join time calculation: valid until ${new Date((mostRecentApp?.valid_until || 0) * 1000).toISOString()}, days since acceptance: ${daysSinceAcceptance}, time label: ${timeLabel}`);
-              
-              recentActivity.push({
-                type: 'join',
-                description: 'New member joined the faction',
-                time: timeLabel,
-                icon: 'user-plus',
-                color: 'green'
-              });
-            }
-          }
-        } catch (err) {
-          console.error("Error processing applications data:", err);
-        }
-      }
+      // Removed the "New member joined" activity since it's unreliable without proper date information
+      // Applications have valid_until timestamps but without a specific join date attached,
+      // the calculation is not meaningful for displaying accurate join times
       
       // Check faction wars
       if (factionData.rankedwars && factionData.rankedwars.length > 0) {
