@@ -627,7 +627,14 @@ export default function FactionPage() {
                                       <TableCell className="font-medium">#{war.id}</TableCell>
                                       <TableCell>
                                         {opposingFaction ? (
-                                          <span className="text-blue-400">{opposingFaction.name}</span>
+                                          <a 
+                                            href={`https://www.torn.com/factions.php?step=profile&ID=${opposingFaction.id}`} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="text-blue-400 hover:underline"
+                                          >
+                                            {opposingFaction.name}
+                                          </a>
                                         ) : (
                                           <span className="text-gray-400">Unknown</span>
                                         )}
@@ -710,7 +717,14 @@ export default function FactionPage() {
                                       <TableCell className="font-medium">#{war.id}</TableCell>
                                       <TableCell>
                                         {opposingFaction ? (
-                                          <span className="text-primary">{opposingFaction.name}</span>
+                                          <a 
+                                            href={`https://www.torn.com/factions.php?step=profile&ID=${opposingFaction.id}`} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="text-primary hover:underline"
+                                          >
+                                            {opposingFaction.name}
+                                          </a>
                                         ) : (
                                           <span className="text-gray-400">Unknown</span>
                                         )}
@@ -761,7 +775,6 @@ export default function FactionPage() {
                             </Button>
                             <span className="px-4 py-2 bg-gray-800 rounded-md text-sm font-medium">
                               Page {warPage} of {totalPages}
-                              {completedWars.length > 0 && ` (${completedWars.length} total wars)`}
                             </span>
                             <Button 
                               variant="outline" 
