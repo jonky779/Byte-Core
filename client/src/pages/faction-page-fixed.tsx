@@ -319,56 +319,72 @@ export default function FactionPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {Object.values(faction.members || {})
-                      .filter((member: any) => {
-                        if (!member) return false;
+                    {(() => {
+                      try {
+                        // First filter the members
+                        const filteredMembers = Object.values(faction.members || {}).filter((member: any) => {
+                          if (!member) return false;
+                          
+                          try {
+                            const memberStatus = member.last_action?.status || "Offline";
+                            const inHospital = member.status?.state === "Hospital";
+                            const displayStatus = inHospital ? "Hospital" : memberStatus;
+                            
+                            if (statusFilter !== 'all' && displayStatus !== statusFilter) return false;
+                            if (positionFilter !== 'all' && member.position !== positionFilter) return false;
+                            if (searchQuery && !member.name?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+                            return true;
+                          } catch (err) {
+                            console.error("Error filtering member:", err);
+                            return false;
+                          }
+                        });
                         
-                        try {
+                        // Then map to table rows
+                        return filteredMembers.map((member: any) => {
+                          if (!member) return null;
+                          
                           const memberStatus = member.last_action?.status || "Offline";
                           const inHospital = member.status?.state === "Hospital";
                           const displayStatus = inHospital ? "Hospital" : memberStatus;
                           
-                          if (statusFilter !== 'all' && displayStatus !== statusFilter) return false;
-                          if (positionFilter !== 'all' && member.position !== positionFilter) return false;
-                          if (searchQuery && !member.name?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-                          return true;
-                        } catch (error) {
-                          console.error("Error filtering member:", error);
-                          return false;
-                        }
-                      })
-                      .map((member: any) => {
-                        const memberStatus = member.last_action?.status || "Offline";
-                        const inHospital = member.status?.state === "Hospital";
-                        const displayStatus = inHospital ? "Hospital" : memberStatus;
-                        
+                          return (
+                            <TableRow key={member.id || Math.random()} className="border-gray-700">
+                              <TableCell className="font-medium">{member.name || "Unknown"}</TableCell>
+                              <TableCell>{member.position || "Unknown"}</TableCell>
+                              <TableCell>
+                                <Badge className={
+                                  displayStatus === 'Online' ? 'bg-green-500/20 text-green-500' :
+                                  displayStatus === 'Idle' ? 'bg-yellow-500/20 text-yellow-500' :
+                                  displayStatus === 'Hospital' ? 'bg-blue-500/20 text-blue-500' :
+                                  'bg-red-500/20 text-red-500'
+                                }>
+                                  {displayStatus}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>{member.status?.description || "Unknown"}</TableCell>
+                              <TableCell>{member.revive_setting || "Unknown"}</TableCell>
+                              <TableCell>
+                                {member.is_in_oc ? 
+                                  <Badge className="bg-green-500/20 text-green-500">Yes</Badge> : 
+                                  <Badge className="bg-gray-500/20 text-gray-400">No</Badge>
+                                }
+                              </TableCell>
+                              <TableCell className="text-right">{member.days_in_faction || 0}</TableCell>
+                            </TableRow>
+                          );
+                        });
+                      } catch (error) {
+                        console.error("Error rendering member table:", error);
                         return (
-                          <TableRow key={member.id} className="border-gray-700">
-                            <TableCell className="font-medium">{member.name}</TableCell>
-                            <TableCell>{member.position}</TableCell>
-                            <TableCell>
-                              <Badge className={
-                                displayStatus === 'Online' ? 'bg-green-500/20 text-green-500' :
-                                displayStatus === 'Idle' ? 'bg-yellow-500/20 text-yellow-500' :
-                                displayStatus === 'Hospital' ? 'bg-blue-500/20 text-blue-500' :
-                                'bg-red-500/20 text-red-500'
-                              }>
-                                {displayStatus}
-                              </Badge>
+                          <TableRow>
+                            <TableCell colSpan={7} className="text-center py-4 text-gray-400">
+                              Error loading faction members. Please refresh the page.
                             </TableCell>
-                            <TableCell>{member.status?.description || "Unknown"}</TableCell>
-                            <TableCell>{member.revive_setting || "Unknown"}</TableCell>
-                            <TableCell>
-                              {member.is_in_oc ? 
-                                <Badge className="bg-green-500/20 text-green-500">Yes</Badge> : 
-                                <Badge className="bg-gray-500/20 text-gray-400">No</Badge>
-                              }
-                            </TableCell>
-                            <TableCell className="text-right">{member.days_in_faction}</TableCell>
                           </TableRow>
-                        )
-                      })
-                    }
+                        );
+                      }
+                    })()}
                   </TableBody>
                 </Table>
               ) : (
