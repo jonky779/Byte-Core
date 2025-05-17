@@ -8,33 +8,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
-import { AlertCircle, Users, Trophy, Globe, Shield, Activity } from "lucide-react";
+import { AlertCircle, Users, Trophy, Globe, Shield, Activity, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-interface FactionMember {
-  id: number;
-  name: string;
-  level: number;
-  days_in_faction: number;
-  position: string;
-  last_action: {
-    status: string;
-    timestamp: number;
-    relative: string;
-  } | string;
-  status: {
-    description: string;
-    details: string;
-    state: string;
-  } | string;
-}
-
-interface Territory {
-  id: string;
-  name: string;
-  value: number;
-  controlled_since: string;
-}
 
 interface FactionDetailedData {
   id: number;
@@ -48,35 +23,67 @@ interface FactionDetailedData {
     id: number;
     name: string;
   };
-  co_leaders?: any[];
   age_days: number;
   respect: number;
-  capacity?: {
+  capacity: {
     current: number;
     maximum: number;
   };
-  peace?: boolean;
-  territories?: {
+  peace: boolean;
+  territories: {
     count: number;
     list: string[];
   };
-  members?: {
-    [key: string]: FactionMember;
-  } | FactionMember[];
-  chain?: {
+  members: {
+    [key: string]: {
+      id: number;
+      name: string;
+      level: number;
+      days_in_faction: number;
+      last_action: {
+        status: string;
+        timestamp: number;
+        relative: string;
+      };
+      position: string;
+      status: {
+        description: string;
+        details: string;
+        state: string;
+      };
+    };
+  };
+  chain: {
     current: number;
     max: number;
     timeout: number;
     cooldown: boolean;
   };
-  stats?: {
-    [key: string]: number;
+  stats: {
+    medicalitemsused: number;
+    criminaloffences: number;
+    organisedcrimerespect: number;
+    organisedcrimemoney: number;
+    organisedcrimesuccess: number;
+    organisedcrimefailed: number;
+    attackswon: number;
+    attackslost: number;
+    attacksleave: number;
+    attacksmug: number;
+    attackshosp: number;
+    bestchain: number;
+    busts: number;
+    revives: number;
+    jails: number;
+    hosps: number;
+    rankedwarswon: number;
+    rankedwarslost: number;
+    rankedpoints: number;
+    raidswon: number;
+    raidslost: number;
+    territoryrespect: number;
   };
-  wars?: {
-    active: any[];
-    past: any[];
-  };
-  last_updated?: string;
+  last_updated: string;
 }
 
 export default function FactionDetailPage() {
@@ -135,9 +142,6 @@ export default function FactionDetailPage() {
     );
   }
 
-  // Debug output
-  console.log("Faction data:", factionDetailedData);
-
   // If user is not in a faction
   if (factionDetailedData.id === 0) {
     return (
@@ -161,30 +165,8 @@ export default function FactionDetailPage() {
     );
   }
 
-  // Ensure capacity exists
-  const capacity = factionDetailedData.capacity || {
-    current: factionDetailedData.stats?.members_count || Array.isArray(factionDetailedData.members) ? factionDetailedData.members.length : 
-      Object.keys(factionDetailedData.members || {}).length,
-    maximum: factionDetailedData.stats?.max_members || 0
-  };
-  
-  // Ensure territories exists
-  const territories = factionDetailedData.territories || {
-    count: factionDetailedData.stats?.territories || 0,
-    list: (factionDetailedData.territories as any[] || []).map((t: Territory) => t.name || t.id)
-  };
-
-  // Process members into a consistent format
-  const processedMembers: FactionMember[] = [];
-  
-  if (Array.isArray(factionDetailedData.members)) {
-    processedMembers.push(...factionDetailedData.members);
-  } else if (factionDetailedData.members) {
-    processedMembers.push(...Object.values(factionDetailedData.members));
-  }
-
   // Calculate member stats
-  const totalMembers = capacity.current;
+  const totalMembers = factionDetailedData.capacity.current;
   const membersByStatus = {
     online: 0,
     idle: 0,
@@ -194,28 +176,41 @@ export default function FactionDetailPage() {
     traveling: 0
   };
 
-  // Process members status
-  processedMembers.forEach(member => {
-    const status = typeof member.last_action === 'string' 
-      ? member.last_action 
-      : member.last_action?.status;
-    
-    if (status === "Online") membersByStatus.online++;
-    else if (status === "Idle") membersByStatus.idle++;
-    else if (status === "Offline") membersByStatus.offline++;
-    
-    const memberState = typeof member.status === 'string'
-      ? member.status
-      : member.status?.state;
-    
-    if (memberState === "Hospital") membersByStatus.hospital++;
-    else if (memberState === "Jail") membersByStatus.jail++;
-    else if (memberState === "Traveling") membersByStatus.traveling++;
-  });
+  // Process members if available
+  if (factionDetailedData.members) {
+    Object.values(factionDetailedData.members).forEach(member => {
+      const status = member.last_action.status;
+      if (status === "Online") membersByStatus.online++;
+      else if (status === "Idle") membersByStatus.idle++;
+      else if (status === "Offline") membersByStatus.offline++;
+      
+      if (member.status) {
+        if (member.status.state === "Hospital") membersByStatus.hospital++;
+        else if (member.status.state === "Jail") membersByStatus.jail++;
+        else if (member.status.state === "Traveling") membersByStatus.traveling++;
+      }
+    });
+  }
 
   // Member positions
   const positions: {
-    [key: string]: FactionMember[]
+    [key: string]: Array<{
+      id: number;
+      name: string;
+      level: number;
+      days_in_faction: number;
+      last_action: {
+        status: string;
+        timestamp: number;
+        relative: string;
+      };
+      position: string;
+      status: {
+        description: string;
+        details: string;
+        state: string;
+      };
+    }>
   } = {
     'Leader': [],
     'Co-leader': [],
@@ -224,14 +219,16 @@ export default function FactionDetailPage() {
     'New Member': []
   };
 
-  processedMembers.forEach(member => {
-    const position = member.position || 'Member';
-    if (positions[position]) {
-      positions[position].push(member);
-    } else {
-      positions['Member'].push(member);
-    }
-  });
+  if (factionDetailedData.members) {
+    Object.values(factionDetailedData.members).forEach(member => {
+      const position = member.position || 'Member';
+      if (positions[position]) {
+        positions[position].push(member);
+      } else {
+        positions['Member'].push(member);
+      }
+    });
+  }
 
   return (
     <MainLayout title={`${factionDetailedData.name} - Faction Details`}>
@@ -277,37 +274,37 @@ export default function FactionDetailPage() {
                     <div>
                       <div className="flex justify-between mb-1">
                         <span className="text-sm">Online ({membersByStatus.online})</span>
-                        <span className="text-sm">{totalMembers ? Math.round((membersByStatus.online / totalMembers) * 100) : 0}%</span>
+                        <span className="text-sm">{Math.round((membersByStatus.online / totalMembers) * 100)}%</span>
                       </div>
-                      <Progress value={totalMembers ? (membersByStatus.online / totalMembers) * 100 : 0} className="h-2 bg-gray-700">
-                        <div className="h-full bg-green-500" style={{ width: `${totalMembers ? (membersByStatus.online / totalMembers) * 100 : 0}%` }}></div>
+                      <Progress value={(membersByStatus.online / totalMembers) * 100} className="h-2 bg-gray-700">
+                        <div className="h-full bg-green-500" style={{ width: `${(membersByStatus.online / totalMembers) * 100}%` }}></div>
                       </Progress>
                     </div>
                     <div>
                       <div className="flex justify-between mb-1">
                         <span className="text-sm">Idle ({membersByStatus.idle})</span>
-                        <span className="text-sm">{totalMembers ? Math.round((membersByStatus.idle / totalMembers) * 100) : 0}%</span>
+                        <span className="text-sm">{Math.round((membersByStatus.idle / totalMembers) * 100)}%</span>
                       </div>
-                      <Progress value={totalMembers ? (membersByStatus.idle / totalMembers) * 100 : 0} className="h-2 bg-gray-700">
-                        <div className="h-full bg-yellow-500" style={{ width: `${totalMembers ? (membersByStatus.idle / totalMembers) * 100 : 0}%` }}></div>
+                      <Progress value={(membersByStatus.idle / totalMembers) * 100} className="h-2 bg-gray-700">
+                        <div className="h-full bg-yellow-500" style={{ width: `${(membersByStatus.idle / totalMembers) * 100}%` }}></div>
                       </Progress>
                     </div>
                     <div>
                       <div className="flex justify-between mb-1">
                         <span className="text-sm">Offline ({membersByStatus.offline})</span>
-                        <span className="text-sm">{totalMembers ? Math.round((membersByStatus.offline / totalMembers) * 100) : 0}%</span>
+                        <span className="text-sm">{Math.round((membersByStatus.offline / totalMembers) * 100)}%</span>
                       </div>
-                      <Progress value={totalMembers ? (membersByStatus.offline / totalMembers) * 100 : 0} className="h-2 bg-gray-700">
-                        <div className="h-full bg-red-500" style={{ width: `${totalMembers ? (membersByStatus.offline / totalMembers) * 100 : 0}%` }}></div>
+                      <Progress value={(membersByStatus.offline / totalMembers) * 100} className="h-2 bg-gray-700">
+                        <div className="h-full bg-red-500" style={{ width: `${(membersByStatus.offline / totalMembers) * 100}%` }}></div>
                       </Progress>
                     </div>
                     <div>
                       <div className="flex justify-between mb-1">
                         <span className="text-sm">Hospital ({membersByStatus.hospital})</span>
-                        <span className="text-sm">{totalMembers ? Math.round((membersByStatus.hospital / totalMembers) * 100) : 0}%</span>
+                        <span className="text-sm">{Math.round((membersByStatus.hospital / totalMembers) * 100)}%</span>
                       </div>
-                      <Progress value={totalMembers ? (membersByStatus.hospital / totalMembers) * 100 : 0} className="h-2 bg-gray-700">
-                        <div className="h-full bg-blue-500" style={{ width: `${totalMembers ? (membersByStatus.hospital / totalMembers) * 100 : 0}%` }}></div>
+                      <Progress value={(membersByStatus.hospital / totalMembers) * 100} className="h-2 bg-gray-700">
+                        <div className="h-full bg-blue-500" style={{ width: `${(membersByStatus.hospital / totalMembers) * 100}%` }}></div>
                       </Progress>
                     </div>
                   </div>
@@ -325,22 +322,22 @@ export default function FactionDetailPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-game-panel p-3 rounded">
                       <div className="text-2xl font-rajdhani font-bold">
-                        {(factionDetailedData.stats?.respect || factionDetailedData.respect || 0) >= 1000000 
-                          ? `${((factionDetailedData.stats?.respect || factionDetailedData.respect || 0) / 1000000).toFixed(1)}M` 
-                          : (factionDetailedData.stats?.respect || factionDetailedData.respect || 0).toLocaleString()}
+                        {factionDetailedData.respect >= 1000000 
+                          ? `${(factionDetailedData.respect / 1000000).toFixed(1)}M` 
+                          : factionDetailedData.respect.toLocaleString()}
                       </div>
                       <div className="text-xs text-gray-400">RESPECT</div>
                     </div>
                     <div className="bg-game-panel p-3 rounded">
                       <div className="text-2xl font-rajdhani font-bold">
-                        {capacity.current}
-                        <span className="text-xs text-gray-400">/{capacity.maximum || "?"}</span>
+                        {factionDetailedData.capacity.current}
+                        <span className="text-xs text-gray-400">/{factionDetailedData.capacity.maximum || "?"}</span>
                       </div>
                       <div className="text-xs text-gray-400">MEMBERS</div>
                     </div>
                     <div className="bg-game-panel p-3 rounded">
                       <div className="text-2xl font-rajdhani font-bold">
-                        {territories.count}
+                        {factionDetailedData.territories.count}
                       </div>
                       <div className="text-xs text-gray-400">TERRITORIES</div>
                     </div>
@@ -366,7 +363,7 @@ export default function FactionDetailPage() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="bg-game-panel p-3 rounded">
                     <div className="text-lg font-rajdhani font-bold">
-                      {factionDetailedData.stats?.attackswon || factionDetailedData.stats?.attacks_won || 0}
+                      {factionDetailedData.stats?.attackswon || 0}
                     </div>
                     <div className="text-xs text-gray-400">ATTACKS WON</div>
                   </div>
@@ -378,15 +375,15 @@ export default function FactionDetailPage() {
                   </div>
                   <div className="bg-game-panel p-3 rounded">
                     <div className="text-lg font-rajdhani font-bold">
-                      {factionDetailedData.stats?.bestchain || factionDetailedData.stats?.best_chain || 0}
+                      {factionDetailedData.stats?.bestchain || 0}
                     </div>
                     <div className="text-xs text-gray-400">BEST CHAIN</div>
                   </div>
                   <div className="bg-game-panel p-3 rounded">
                     <div className="text-lg font-rajdhani font-bold">
-                      {(factionDetailedData.stats?.territoryrespect || 0) > 1000000
-                        ? `${((factionDetailedData.stats?.territoryrespect || 0) / 1000000).toFixed(1)}M` 
-                        : (factionDetailedData.stats?.territoryrespect || 0).toLocaleString()}
+                      {factionDetailedData.stats?.territoryrespect 
+                        ? `${(factionDetailedData.stats.territoryrespect / 1000000).toFixed(1)}M` 
+                        : "0"}
                     </div>
                     <div className="text-xs text-gray-400">TERRITORY RESPECT</div>
                   </div>
@@ -441,7 +438,7 @@ export default function FactionDetailPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center">
                   <Users className="h-5 w-5 mr-2" />
-                  Members ({capacity.current})
+                  Members ({factionDetailedData.capacity.current})
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -463,10 +460,10 @@ export default function FactionDetailPage() {
                                   <span>Level {member.level}</span>
                                   <span className="mx-1">•</span>
                                   <span className={
-                                    (typeof member.last_action === 'string' ? member.last_action : member.last_action?.status) === "Online" ? "text-green-400" : 
-                                    (typeof member.last_action === 'string' ? member.last_action : member.last_action?.status) === "Idle" ? "text-yellow-400" : "text-red-400"
+                                    member.last_action.status === "Online" ? "text-green-400" : 
+                                    member.last_action.status === "Idle" ? "text-yellow-400" : "text-red-400"
                                   }>
-                                    {typeof member.last_action === 'string' ? member.last_action : member.last_action?.status}
+                                    {member.last_action.status}
                                   </span>
                                 </div>
                               </div>
@@ -501,19 +498,19 @@ export default function FactionDetailPage() {
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   <div className="bg-game-panel p-3 rounded">
                     <div className="text-lg font-rajdhani font-bold">
-                      {factionDetailedData.stats?.attackswon || factionDetailedData.stats?.attacks_won || 0}
+                      {factionDetailedData.stats?.attackswon || 0}
                     </div>
                     <div className="text-xs text-gray-400">ATTACKS WON</div>
                   </div>
                   <div className="bg-game-panel p-3 rounded">
                     <div className="text-lg font-rajdhani font-bold">
-                      {factionDetailedData.stats?.attackslost || factionDetailedData.stats?.attacks_lost || 0}
+                      {factionDetailedData.stats?.attackslost || 0}
                     </div>
                     <div className="text-xs text-gray-400">ATTACKS LOST</div>
                   </div>
                   <div className="bg-game-panel p-3 rounded">
                     <div className="text-lg font-rajdhani font-bold">
-                      {factionDetailedData.stats?.bestchain || factionDetailedData.stats?.best_chain || 0}
+                      {factionDetailedData.stats?.bestchain || 0}
                     </div>
                     <div className="text-xs text-gray-400">BEST CHAIN</div>
                   </div>
@@ -549,11 +546,23 @@ export default function FactionDetailPage() {
                   </div>
                   <div className="bg-game-panel p-3 rounded">
                     <div className="text-lg font-rajdhani font-bold">
-                      {(factionDetailedData.stats?.territoryrespect || 0) > 1000000
-                        ? `${((factionDetailedData.stats?.territoryrespect || 0) / 1000000).toFixed(1)}M` 
-                        : (factionDetailedData.stats?.territoryrespect || 0).toLocaleString()}
+                      {factionDetailedData.stats?.territoryrespect 
+                        ? `${(factionDetailedData.stats.territoryrespect / 1000000).toFixed(1)}M` 
+                        : "0"}
                     </div>
                     <div className="text-xs text-gray-400">TERRITORY RESPECT</div>
+                  </div>
+                  <div className="bg-game-panel p-3 rounded">
+                    <div className="text-lg font-rajdhani font-bold">
+                      {factionDetailedData.stats?.raidswon || 0}
+                    </div>
+                    <div className="text-xs text-gray-400">RAIDS WON</div>
+                  </div>
+                  <div className="bg-game-panel p-3 rounded">
+                    <div className="text-lg font-rajdhani font-bold">
+                      {factionDetailedData.stats?.raidslost || 0}
+                    </div>
+                    <div className="text-xs text-gray-400">RAIDS LOST</div>
                   </div>
                   <div className="bg-game-panel p-3 rounded">
                     <div className="text-lg font-rajdhani font-bold">
@@ -572,14 +581,14 @@ export default function FactionDetailPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center">
                   <Globe className="h-5 w-5 mr-2" />
-                  Territories ({territories.count})
+                  Territories ({factionDetailedData.territories.count})
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {territories.list && territories.list.length > 0 ? (
+                {factionDetailedData.territories.list && factionDetailedData.territories.list.length > 0 ? (
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                    {territories.list.map((territory, index) => (
-                      <div key={index} className="bg-game-panel p-3 rounded">
+                    {factionDetailedData.territories.list.map(territory => (
+                      <div key={territory} className="bg-game-panel p-3 rounded">
                         <div className="font-medium">{territory}</div>
                       </div>
                     ))}
