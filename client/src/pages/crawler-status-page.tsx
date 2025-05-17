@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MainLayout from "@/components/layouts/MainLayout";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { Helmet } from "react-helmet";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Loader2, AlertCircle, Worm, RefreshCw, Database, Play, Pause, Clock } from "lucide-react";
+import { Loader2, AlertCircle, Worm, RefreshCw, Database, Play, Pause, Clock, ShieldOff, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
@@ -75,6 +75,7 @@ export default function CrawlerStatusPage() {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [configValues, setConfigValues] = useState<CrawlerConfig | null>(null);
+  const [adminAccessError, setAdminAccessError] = useState(false);
   
   const { data, isLoading, isError, refetch } = useQuery<DetailedCrawlerStatus>({
     queryKey: ["/api/system/crawler"],
