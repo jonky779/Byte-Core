@@ -619,7 +619,7 @@ export class TornAPI {
           return {
             id: companyData.ID || companyId,
             name: companyData.name || userData.job.company_name,
-            type: this.getCompanyTypeName(companyData.company_type || userData.job.company_type),
+            type: this.getCompanyTypeName(companyData.company_type || userData.job.company_type, companyData.name || userData.job.company_name),
             rating: companyData.rating || 0,
             employees: {
               current: companyData.employees_hired || 0,
