@@ -861,9 +861,14 @@ export class TornAPI {
       // Extract faction respect
       let factionRespect = 0;
       if (factionData.stats && factionData.stats.respect) {
-        factionRespect = factionData.stats.respect;
+        factionRespect = parseInt(factionData.stats.respect) || 0;
       } else if (basicFactionData && basicFactionData.respect) {
-        factionRespect = basicFactionData.respect;
+        factionRespect = parseInt(basicFactionData.respect) || 0;
+      }
+      
+      // Fallback to basic v2 API format if respect is still 0
+      if (factionRespect === 0 && factionData.basic && factionData.basic.respect) {
+        factionRespect = parseInt(factionData.basic.respect) || 0;
       }
       
       console.log(`Faction data for ${factionData.name || userData.faction.faction_name}:`, {
