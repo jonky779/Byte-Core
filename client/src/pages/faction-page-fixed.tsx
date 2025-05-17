@@ -666,8 +666,11 @@ export default function FactionPage() {
                   
                   {/* Completed Wars Section */}
                   {(() => {
-                    // Filter completed wars (those with an end date)
-                    const completedWars = faction.recent_wars.filter(war => war.end);
+                    // Get current timestamp for comparison
+                    const currentTime = Math.floor(Date.now() / 1000);
+                    
+                    // Filter completed wars (those with an end date in the past)
+                    const completedWars = faction.recent_wars.filter(war => war.end && war.end <= currentTime);
                     
                     // Calculate total pages
                     const totalPages = Math.ceil(completedWars.length / WARS_PER_PAGE);
@@ -746,28 +749,29 @@ export default function FactionPage() {
                         
                         {/* Pagination Controls */}
                         {totalPages > 1 && (
-                          <div className="flex justify-between items-center mt-4">
-                            <div className="text-sm text-muted-foreground">
+                          <div className="flex justify-between items-center p-4 bg-gray-800/50 mt-4 rounded-md">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => setWarPage(p => Math.max(1, p - 1))}
+                              disabled={warPage === 1}
+                              className="border-blue-700 hover:bg-blue-900/20"
+                            >
+                              <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+                            </Button>
+                            <span className="px-4 py-2 bg-gray-800 rounded-md text-sm font-medium">
                               Page {warPage} of {totalPages}
-                            </div>
-                            <div className="flex space-x-2">
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => setWarPage(p => Math.max(1, p - 1))}
-                                disabled={warPage === 1}
-                              >
-                                <ChevronLeft className="h-4 w-4 mr-1" /> Previous
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => setWarPage(p => Math.min(totalPages, p + 1))}
-                                disabled={warPage === totalPages}
-                              >
-                                Next <ChevronRight className="h-4 w-4 ml-1" />
-                              </Button>
-                            </div>
+                              {completedWars.length > 0 && ` (${completedWars.length} total wars)`}
+                            </span>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => setWarPage(p => Math.min(totalPages, p + 1))}
+                              disabled={warPage === totalPages}
+                              className="border-blue-700 hover:bg-blue-900/20"
+                            >
+                              Next <ChevronRight className="h-4 w-4 ml-1" />
+                            </Button>
                           </div>
                         )}
                       </div>
