@@ -529,10 +529,10 @@ export default function FactionPage() {
                           <CardContent className="pt-6">
                             <div className="flex justify-between items-start mb-2">
                               <div>
-                                <h4 className="font-bold text-lg">{territory.id || `Territory ${i+1}`}</h4>
-                                <p className="text-sm text-gray-400">Sector: {territory.sector}</p>
+                                <h4 className="font-bold text-lg text-foreground">{territory.id || `Territory ${i+1}`}</h4>
+                                <p className="text-sm text-foreground/80">Sector: {territory.sector}</p>
                               </div>
-                              <Badge className={territory.racket ? 'bg-green-500/20 text-green-500' : 'bg-gray-500/20 text-gray-400'}>
+                              <Badge className={territory.racket ? 'bg-green-500/20 text-green-500 font-medium' : 'bg-gray-500/20 text-foreground/80 font-medium'}>
                                 {territory.racket ? 'Racket Active' : 'No Racket'}
                               </Badge>
                             </div>
@@ -551,11 +551,11 @@ export default function FactionPage() {
                             
                             <div className="flex justify-between items-center mt-4">
                               <span className="text-sm">
-                                <Badge variant="outline" className="bg-gray-800/50">
+                                <Badge variant="outline" className="bg-gray-800/50 text-foreground">
                                   {territory.respect} respect
                                 </Badge>
                               </span>
-                              <span className="text-xs text-gray-400">
+                              <span className="text-xs text-foreground/80 font-medium">
                                 {territory.acquired_at ? 
                                   `Acquired ${new Date(territory.acquired_at * 1000).toLocaleDateString()}` : 
                                   'Recently acquired'}
