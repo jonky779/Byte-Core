@@ -42,14 +42,14 @@ export default function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   // API key status indicator
-  const hasApiKey = user?.apiKey && typeof user.apiKey === 'string' && user.apiKey.length > 0;
+  const hasApiKey = !!user?.apiKey;
 
   return (
     <>
       {/* Mobile menu button - visible only on small screens */}
       <button 
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="md:hidden fixed top-4 left-4 z-50 text-gray-300 hover:text-white bg-black/50 backdrop-blur-sm p-2 rounded-md"
+        className="md:hidden fixed top-4 left-4 z-50 text-gray-300 hover:text-white p-2 rounded-md"
         aria-label="Open Navigation Menu"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
