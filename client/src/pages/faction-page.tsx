@@ -113,9 +113,16 @@ export default function FactionPage() {
   const [positionFilter, setPositionFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   
+  // First fetch basic faction data
+  const { data: factionBasic, isLoading: isLoadingBasic, error: errorBasic } = useQuery({
+    queryKey: ["/api/faction"],
+    enabled: !!user?.apiKey
+  });
+  
+  // Then fetch detailed faction data
   const { data, isLoading, isError, refetch, isFetching } = useQuery<FactionDetailResponse>({
     queryKey: ["/api/faction/detail"],
-    enabled: !!user?.apiKey
+    enabled: !!user?.apiKey && !!factionBasic
   });
   
   const getStatusBadge = (status: string) => {
@@ -175,8 +182,13 @@ export default function FactionPage() {
     );
   }
   
-  // Calculate member statistics 
-  const filteredMembers = data.members.filter(member => {
+  // Use the actual faction data from the API
+  // Combine both basic and detail data
+  const factionData = factionBasic || {};
+  
+  // Calculate member statistics based on the available data
+  const membersArray = (data?.members || []);
+  const filteredMembers = membersArray.filter(member => {
     return (statusFilter === "all" || member.status === statusFilter) &&
            (positionFilter === "all" || member.position === positionFilter) &&
            (searchQuery === "" || 
@@ -184,15 +196,16 @@ export default function FactionPage() {
             member.position.toLowerCase().includes(searchQuery.toLowerCase()));
   });
   
-  const onlineCount = data.members.filter(m => m.status === "Online").length;
-  const idleCount = data.members.filter(m => m.status === "Idle").length;
-  const offlineCount = data.members.filter(m => m.status === "Offline").length;
-  const hospitalCount = data.members.filter(m => m.status === "Hospital").length;
+  const onlineCount = factionBasic?.member_status?.online || 0;
+  const idleCount = factionBasic?.member_status?.idle || 0;
+  const offlineCount = factionBasic?.member_status?.offline || 0;
+  const hospitalCount = factionBasic?.member_status?.hospital || 0;
+  const totalMembers = (onlineCount + idleCount + offlineCount + hospitalCount) || 1;
   
-  const onlinePercentage = (onlineCount / data.members.length) * 100;
-  const idlePercentage = (idleCount / data.members.length) * 100;
-  const offlinePercentage = (offlineCount / data.members.length) * 100;
-  const hospitalPercentage = (hospitalCount / data.members.length) * 100;
+  const onlinePercentage = (onlineCount / totalMembers) * 100;
+  const idlePercentage = (idleCount / totalMembers) * 100;
+  const offlinePercentage = (offlineCount / totalMembers) * 100;
+  const hospitalPercentage = (hospitalCount / totalMembers) * 100;
   
   return (
     <MainLayout title="Faction Tracking">
@@ -211,8 +224,8 @@ export default function FactionPage() {
                   <Users className="text-primary h-6 w-6" />
                 </div>
                 <div>
-                  <h2 className="font-rajdhani font-bold text-xl">{data.name} [{data.tag}]</h2>
-                  <p className="text-sm text-gray-400">ID: #{data.id} • Age: {data.age_days} days</p>
+                  <h2 className="font-rajdhani font-bold text-xl">{factionBasic?.name || "Loading..."} [{factionBasic?.tag || ""}]</h2>
+                  <p className="text-sm text-gray-400">ID: #{factionBasic?.id || "?"} • Age: {data?.age_days || factionBasic?.age_days || "?"} days</p>
                 </div>
               </div>
               
@@ -237,10 +250,10 @@ export default function FactionPage() {
               <div className="bg-game-panel rounded p-3 border border-gray-700">
                 <div className="text-xs text-gray-400 mb-1">MEMBERS</div>
                 <div className="text-xl font-rajdhani font-bold">
-                  {data.stats.members_count} / {data.stats.max_members}
+                  {factionBasic?.members_count || 0} / {factionBasic?.capacity?.maximum || 0}
                 </div>
                 <Progress 
-                  value={(data.stats.members_count / data.stats.max_members) * 100} 
+                  value={((factionBasic?.members_count || 0) / (factionBasic?.capacity?.maximum || 1)) * 100} 
                   className="h-1.5 mt-1 bg-gray-700" 
                 />
               </div>
@@ -248,20 +261,20 @@ export default function FactionPage() {
               <div className="bg-game-panel rounded p-3 border border-gray-700">
                 <div className="text-xs text-gray-400 mb-1">RESPECT</div>
                 <div className="text-xl font-rajdhani font-bold">
-                  {(data.stats.respect / 1000000).toFixed(1)}M
+                  {((factionBasic?.respect || 0) / 1000000).toFixed(1)}M
                 </div>
                 <div className="text-xs text-gray-400 mt-2">
-                  Best Chain: {data.stats.best_chain} hits
+                  Best Chain: {data?.stats?.best_chain || factionBasic?.best_chain || 0} hits
                 </div>
               </div>
               
               <div className="bg-game-panel rounded p-3 border border-gray-700">
                 <div className="text-xs text-gray-400 mb-1">TERRITORIES</div>
                 <div className="text-xl font-rajdhani font-bold">
-                  {data.stats.territories}
+                  {factionBasic?.territories || 0}
                 </div>
                 <div className="text-xs text-gray-400 mt-2">
-                  Value: ${(data.territories.reduce((sum, t) => sum + t.value, 0)).toLocaleString()}
+                  Value: ${(data?.territories?.reduce((sum, t) => sum + t.value, 0) || 0).toLocaleString()}
                 </div>
               </div>
               
