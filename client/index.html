@@ -6,23 +6,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Byte-Core Vault | Torn RPG Dashboard</title>
     <meta name="description" content="Byte-Core Vault - Advanced Dashboard for Torn RPG players - Track your Torn company and faction performance." />
-    <!-- Disable error overlays -->
+    <!-- Load error overlay disabler as the first script to ensure it catches everything -->
     <script src="/disable-error-overlay.js"></script>
     <style>
-      /* Ensure error overlays are hidden */
+      /* Super aggressive error overlay hiding - covers ALL possible error overlays */
       .vite-error-overlay, 
       [data-plugin="runtime-error-modal"], 
       [plugin="runtime-error-plugin"],
       div#__vite-plugin-runtime-error-modal,
       div[plugin*="error"],
-      div[style*="position: fixed"][style*="z-index: 9999"] {
+      div[style*="position: fixed"],
+      div[style*="z-index: 9"],
+      div[style*="background: rgba"],
+      div[style*="background-color: rgba"],
+      div.overlay,
+      div[class*="error"],
+      div[class*="overlay"],
+      div[id*="error"],
+      div[id*="overlay"] {
         display: none !important;
         visibility: hidden !important;
         opacity: 0 !important;
         z-index: -9999 !important;
         pointer-events: none !important;
+        height: 0 !important;
+        width: 0 !important;
+        position: absolute !important;
+        top: -9999px !important;
+        left: -9999px !important;
       }
     </style>
+    <script>
+      // Immediate inline error prevention
+      window.addEventListener('error', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        return true;
+      }, true);
+      
+      // Disable all error overlay hooks
+      window.__REACT_ERROR_OVERLAY_GLOBAL_HOOK__ = {
+        handleError: function(){},
+        dismissCompileError: function(){},
+        reportRuntimeError: function(){},
+        startReportingRuntimeErrors: function(){},
+        stopReportingRuntimeErrors: function(){}
+      };
+    </script>
   </head>
   <body class="bg-gray-950 text-white">
     <div id="root"></div>

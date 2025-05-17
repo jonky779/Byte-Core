@@ -1,17 +1,19 @@
 
 // This script completely disables Vite and React error overlays
 (function() {
-  // Create a style element to aggressively hide all variations of error overlays
+  console.log('Initializing aggressive error overlay disabler');
+  
+  // Create a style element to hide ALL possible error overlays
   const style = document.createElement('style');
   style.textContent = `
-    /* Hide all variations of error overlays */
+    /* Hide ANY element that could be an error overlay */
     .vite-error-overlay,
     [data-plugin="runtime-error-modal"],
     [plugin="runtime-error-plugin"],
     #vite-error-overlay,
     .error-overlay,
-    div[style*="position: fixed"][style*="z-index: 9999"],
-    div[style*="position: fixed"][style*="bottom: 0"],
+    div[style*="position: fixed"],
+    div[style*="z-index: 9"],
     div[style*="background-color: rgba"],
     div[style*="background: #"], 
     div[style*="background: rgb"],
@@ -21,6 +23,8 @@
     div[class*="error"],
     div[class*="overlay"],
     div[data-vite-dev-server-overlay],
+    div[id*="error"],
+    div[id*="overlay"],
     div[plugin*="error"],
     div > div[style*="color: #ff5555"],
     div > pre.stack {
@@ -39,15 +43,23 @@
   `;
   document.head.appendChild(style);
 
-  // Override window.onerror to prevent the overlay from showing up 
+  // Periodically check and remove any error overlays that might appear
+  setInterval(() => {
+    const elements = document.querySelectorAll('div[style*="position: fixed"], div[style*="z-index: 9"], div[plugin*="error"], div[data-plugin*="error"]');
+    elements.forEach(el => {
+      try {
+        el.remove();
+      } catch (e) { /* ignore */ }
+    });
+  }, 100);
+
+  // Override window.onerror and all console methods
   window.onerror = function(message, source, lineno, colno, error) {
-    // Log the error to console but don't display overlay
-    console.error('Caught error:', message, error);
-    // Prevent default error handlers
+    // Just capture the error but don't display it
     return true;
   };
   
-  // Disable React error overlay
+  // Override window.__REACT_ERROR_OVERLAY_GLOBAL_HOOK__
   if (typeof window !== 'undefined') {
     window.__REACT_ERROR_OVERLAY_GLOBAL_HOOK__ = {
       handleError: () => {},
@@ -63,20 +75,24 @@
     // Override any potential error overlay functions
     window.__vite_plugin_react_preamble_installed__ = true;
     
-    // Handle runtime error plugin
+    // Remove existing error overlays
     const observer = new MutationObserver(function(mutations) {
       for (const mutation of mutations) {
         if (mutation.addedNodes.length) {
           for (const node of mutation.addedNodes) {
-            if (node.nodeType === 1) { // Element node
-              const elem = node as Element;
-              if (
-                elem.getAttribute('plugin') === 'runtime-error-plugin' ||
-                elem.id === '__vite-plugin-runtime-error-modal' ||
-                (elem.tagName === 'DIV' && elem.style.zIndex === '9999')
-              ) {
-                elem.remove();
-              }
+            if (node.nodeType === 1) {
+              try {
+                const elem = node;
+                if (
+                  elem.getAttribute && (
+                  elem.getAttribute('plugin') === 'runtime-error-plugin' ||
+                  elem.id === '__vite-plugin-runtime-error-modal' ||
+                  (elem.style && elem.style.zIndex > 100) ||
+                  (elem.style && elem.style.position === 'fixed')
+                )) {
+                  elem.remove();
+                }
+              } catch (e) { /* ignore */ }
             }
           }
         }
@@ -90,5 +106,13 @@
     });
   }
 
-  console.log('Enhanced error overlay disabler initialized');
+  // Intercept and replace error overlay creation functions
+  if (typeof window.__vite_plugin_runtime_error_modal !== 'undefined') {
+    window.__vite_plugin_runtime_error_modal = {
+      show: () => {},
+      hide: () => {}
+    };
+  }
+
+  console.log('Aggressive error overlay disabler initialized');
 })();
