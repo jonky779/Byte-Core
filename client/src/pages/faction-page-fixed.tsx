@@ -511,11 +511,11 @@ export default function FactionPage() {
             
             {/* Territories Tab */}
             <TabsContent value="territories">
-              {faction && faction.territory && Object.keys(faction.territory).length > 0 ? (
+              {faction ? (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold">
-                      Territories: <span className="text-primary">{Object.keys(faction.territory).length}</span>
+                      Territories: <span className="text-primary">{faction.territories || 0}</span>
                     </h3>
                     <Badge variant="outline" className="bg-gray-800/50">
                       {faction.territory_wars ? 
@@ -524,8 +524,9 @@ export default function FactionPage() {
                     </Badge>
                   </div>
                 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {Object.entries(faction.territory || {}).map(([id, territory]: [string, any]) => (
+                  {faction.territory && Object.keys(faction.territory).length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {Object.entries(faction.territory || {}).map(([id, territory]: [string, any]) => (
                       <Card key={id} className="bg-game-panel border-gray-700">
                         <CardContent className="pt-6">
                           <div className="flex justify-between items-start mb-2">
