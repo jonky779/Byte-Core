@@ -119,14 +119,15 @@ export default function FactionPage() {
     );
   }
   
-  // Set member status values based on API data
-  const onlineCount = 7;
-  const idleCount = 14;
-  const offlineCount = 24;
-  const hospitalCount = 5;
+  // Extract member status from faction data
+  const memberStatus = faction.member_status || {};
+  const onlineCount = memberStatus.online || 0;
+  const idleCount = memberStatus.idle || 0;
+  const offlineCount = memberStatus.offline || 0;
+  const hospitalCount = memberStatus.hospital || 0;
   
   // Calculate totals
-  const totalMembers = onlineCount + idleCount + offlineCount + hospitalCount;
+  const totalMembers = (onlineCount + idleCount + offlineCount + hospitalCount) || 1;
   const onlinePercentage = (onlineCount / totalMembers) * 100;
   const idlePercentage = (idleCount / totalMembers) * 100;
   const offlinePercentage = (offlineCount / totalMembers) * 100;
@@ -153,10 +154,16 @@ export default function FactionPage() {
                   <p className="text-sm text-gray-400">ID: #{faction.id}</p>
                   <p className="text-sm text-gray-400">{formatFactionAge(faction.days_old || 0)}</p>
                   <div className="flex flex-wrap gap-2 mt-1">
-                    <Badge className="bg-gray-500/20 text-gray-400 hover:bg-gray-500/30">Not Enlisted</Badge>
-                    <Badge className="bg-purple-500/20 text-purple-500 hover:bg-purple-500/30">
-                      Diamond 20 (#41)
-                    </Badge>
+                    {faction.is_enlisted ? (
+                      <Badge className="bg-green-500/20 text-green-500 hover:bg-green-500/30">Enlisted</Badge>
+                    ) : (
+                      <Badge className="bg-gray-500/20 text-gray-400 hover:bg-gray-500/30">Not Enlisted</Badge>
+                    )}
+                    {faction.rank && (
+                      <Badge className="bg-purple-500/20 text-purple-500 hover:bg-purple-500/30">
+                        {faction.rank.name} {faction.rank.level} (#{faction.rank.position})
+                      </Badge>
+                    )}
                   </div>
                 </div>
               </div>
