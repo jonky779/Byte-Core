@@ -240,35 +240,35 @@ export default function AuthPage() {
           <div className="space-y-6 mt-4">
             <div className="bg-muted/30 rounded-md p-4">
               <p className="font-medium text-center text-foreground">
-                Disclaimer: Byte-Core Vault is not affiliated with Torn City or Torn.com. We are an independent third-party tool.
+                NOTE: Byte-Core Vault is a community-created companion tool for Torn. We operate independently and are not endorsed by or affiliated with the game developers.
               </p>
             </div>
             
             <div className="space-y-6">
               <div>
-                <h3 className="text-xl font-medium text-blue-500 dark:text-blue-400">Data Storage</h3>
-                <p className="mt-1 text-foreground">We store only the minimum data needed to provide our services. Your information is retained until you request account deletion.</p>
+                <h3 className="text-xl font-medium text-blue-500 dark:text-blue-400">Your Privacy</h3>
+                <p className="mt-1 text-foreground">We respect your privacy and only collect essential information to provide our services. You maintain control of your data and can request its removal at any time.</p>
               </div>
               
               <div>
-                <h3 className="text-xl font-medium text-blue-500 dark:text-blue-400">Data Sharing</h3>
-                <p className="mt-1 text-foreground">Your data remains private and is only accessible to authorized users with appropriate permissions. We do not sell or share your data with third parties.</p>
+                <h3 className="text-xl font-medium text-blue-500 dark:text-blue-400">Information Usage</h3>
+                <p className="mt-1 text-foreground">We use your information solely to enhance your gaming experience. Your data is never sold, traded, or transferred to outside parties without your explicit consent.</p>
               </div>
               
               <div>
-                <h3 className="text-xl font-medium text-blue-500 dark:text-blue-400">Purpose of Use</h3>
-                <p className="mt-1 text-foreground">The data we collect is used exclusively to provide and improve our services, including:</p>
+                <h3 className="text-xl font-medium text-blue-500 dark:text-blue-400">Service Functionality</h3>
+                <p className="mt-1 text-foreground">By providing your API key, you allow us to:</p>
                 <ul className="list-disc ml-5 mt-2 text-foreground">
-                  <li>Verifying your Torn.com player status</li>
-                  <li>Displaying relevant game information and statistics</li>
-                  <li>Analyzing market data and player metrics</li>
-                  <li>Enhancing your experience with personalized features</li>
+                  <li>Create customized dashboard displays of your game statistics</li>
+                  <li>Track market fluctuations and investment opportunities</li>
+                  <li>Monitor faction and company performance metrics</li>
+                  <li>Provide strategic insights based on game data analysis</li>
                 </ul>
               </div>
               
               <div>
-                <h3 className="text-xl font-medium text-blue-500 dark:text-blue-400">API Key Security</h3>
-                <p className="mt-1 text-foreground">Your API key is securely stored using industry-standard encryption practices. We never share your key with anyone and implement strict access controls to protect your information.</p>
+                <h3 className="text-xl font-medium text-blue-500 dark:text-blue-400">Security Commitment</h3>
+                <p className="mt-1 text-foreground">Your API key is protected through advanced encryption and secure storage protocols. Our system employs multiple layers of protection to prevent unauthorized access to your information.</p>
               </div>
             </div>
             
