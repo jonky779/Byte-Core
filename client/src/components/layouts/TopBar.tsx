@@ -21,9 +21,9 @@ interface TopBarProps {
 export default function TopBar({ title }: TopBarProps) {
   const { user, logoutMutation } = useAuth();
   const { toast } = useToast();
-  const [isSyncing, setIsSyncing] = useState(false);
+  const { isRefreshing, refreshAllData, lastRefreshTime } = useDataRefresh();
 
-  const handleSyncData = async () => {
+  const handleRefreshData = async () => {
     if (!user?.apiKey) {
       toast({
         title: "API Key Required",
@@ -33,30 +33,7 @@ export default function TopBar({ title }: TopBarProps) {
       return;
     }
 
-    setIsSyncing(true);
-    try {
-      await apiRequest("POST", "/api/sync", { userId: user.id });
-      
-      toast({
-        title: "Data Synced",
-        description: "Your data has been successfully refreshed.",
-        variant: "default",
-      });
-      
-      // Update the last sync time display
-      const lastSyncElement = document.getElementById("last-sync-time");
-      if (lastSyncElement) {
-        lastSyncElement.textContent = "Just now";
-      }
-    } catch (error) {
-      toast({
-        title: "Sync Failed",
-        description: error instanceof Error ? error.message : "Unknown error occurred",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSyncing(false);
-    }
+    await refreshAllData();
   };
 
   return (
