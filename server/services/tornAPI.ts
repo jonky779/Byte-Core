@@ -714,18 +714,26 @@ export class TornAPI {
         };
       }
       
-      // User is in a faction - get detailed data from v2 API
+      // User is in a faction - get detailed data
       const factionId = userData.faction.faction_id;
-      console.log(`Fetching detailed faction data for faction ID: ${factionId}`);
       
-      // Get detailed faction data using the v2 API with all needed selections
-      const factionData = await this.makeRequest(`v2/faction?selections=basic,applications,chains,rankedwars,stats,territory`, apiKey);
-      
-      // Parse member status - The v2 API doesn't provide member status in basic data
-      // We still need to fetch basic faction data for member status
+      // Get different faction data aspects with separate calls to ensure we have all the data
+      console.log(`Fetching basic faction data for ID: ${factionId}`);
       const basicFactionData = await this.makeRequest(`faction/${factionId}?selections=basic`, apiKey);
       
-      // Extract member status
+      console.log(`Fetching faction applications data for ID: ${factionId}`);
+      const applicationsData = await this.makeRequest(`faction/${factionId}?selections=applications`, apiKey);
+      
+      console.log(`Fetching faction territory data for ID: ${factionId}`);
+      const territoryData = await this.makeRequest(`faction/${factionId}?selections=territory`, apiKey);
+      
+      console.log(`Fetching faction chain data for ID: ${factionId}`);
+      const chainData = await this.makeRequest(`faction/${factionId}?selections=chain`, apiKey);
+      
+      console.log(`Fetching faction attacks data for ID: ${factionId}`);
+      const attacksData = await this.makeRequest(`faction/${factionId}?selections=attacks`, apiKey);
+      
+      // Extract member status from basic data
       const memberStatus = { online: 0, idle: 0, offline: 0, hospital: 0 };
       let totalMembers = 0;
       
@@ -748,24 +756,26 @@ export class TornAPI {
         });
       }
       
-      // Extract recent activities based on real data
+      // Create real recent activity list based on various faction activities
       const recentActivity = [];
       
-      // Check new members from applications (if available)
-      if (factionData.applications && factionData.applications.length > 0) {
-        // Sort applications by time, newest first
-        const recentApplications = [...factionData.applications]
-          .filter(app => app.status === 'accepted')
-          .sort((a, b) => b.time_created - a.time_created)
-          .slice(0, 1);
+      // 1. Check recent applications
+      if (applicationsData && applicationsData.applications) {
+        // Find the most recent accepted application
+        const sortedApps = Object.values(applicationsData.applications)
+          .filter((app: any) => app.status === 'accepted')
+          .sort((a: any, b: any) => b.timestamp - a.timestamp);
           
-        if (recentApplications.length > 0) {
-          const timeDiff = Math.floor((Date.now() / 1000 - recentApplications[0].time_created) / 3600);
-          const timeLabel = timeDiff <= 24 ? `${timeDiff}h ago` : `${Math.floor(timeDiff / 24)}d ago`;
+        if (sortedApps.length > 0) {
+          const latestApp = sortedApps[0] as any;
+          const timeDiff = Math.floor((Date.now() / 1000 - latestApp.timestamp) / 3600);
+          const timeLabel = timeDiff <= 24 
+            ? `${timeDiff === 0 ? '<1' : timeDiff}h ago` 
+            : `${Math.floor(timeDiff / 24)}d ago`;
           
           recentActivity.push({
             type: 'join',
-            description: 'New member joined the faction',
+            description: `${latestApp.name} joined the faction`,
             time: timeLabel,
             icon: 'user-plus',
             color: 'green'
@@ -773,20 +783,23 @@ export class TornAPI {
         }
       }
       
-      // Check faction wars
-      if (factionData.rankedwars && factionData.rankedwars.length > 0) {
-        // Sort wars by start time, newest first
-        const recentWars = [...factionData.rankedwars]
-          .sort((a, b) => b.start - a.start)
-          .slice(0, 1);
+      // 2. Check recent attacks (shows faction war activity)
+      if (attacksData && attacksData.attacks) {
+        // Find the most recent faction attack
+        const sortedAttacks = Object.values(attacksData.attacks)
+          .filter((attack: any) => attack.attacker_faction_id === factionId || attack.defender_faction_id === factionId)
+          .sort((a: any, b: any) => b.timestamp_ended - a.timestamp_ended);
           
-        if (recentWars.length > 0) {
-          const timeDiff = Math.floor((Date.now() / 1000 - recentWars[0].start) / 3600);
-          const timeLabel = timeDiff <= 24 ? `${timeDiff}h ago` : `${Math.floor(timeDiff / 24)}d ago`;
+        if (sortedAttacks.length > 0) {
+          const latestAttack = sortedAttacks[0] as any;
+          const timeDiff = Math.floor((Date.now() / 1000 - latestAttack.timestamp_ended) / 3600);
+          const timeLabel = timeDiff <= 24 
+            ? `${timeDiff === 0 ? '<1' : timeDiff}h ago` 
+            : `${Math.floor(timeDiff / 24)}d ago`;
           
           recentActivity.push({
             type: 'war',
-            description: 'Faction war started',
+            description: 'Faction war activity',
             time: timeLabel,
             icon: 'fist-raised',
             color: 'red'
@@ -794,11 +807,10 @@ export class TornAPI {
         }
       }
       
-      // Check territories (count gives us some indication of territory activity)
-      if (factionData.territory) {
-        const territoryCount = Object.keys(factionData.territory).length;
+      // 3. Check territory data
+      if (territoryData && territoryData.territory) {
+        const territoryCount = Object.keys(territoryData.territory).length;
         
-        // Use a placeholder time since we don't know when territories were actually captured
         recentActivity.push({
           type: 'achievement',
           description: `${territoryCount} territories controlled`,
@@ -819,28 +831,38 @@ export class TornAPI {
         });
       }
       
-      // Determine war status based on ranked wars
+      // Determine war status based on recent attacks
       let warStatus = "PEACE";
-      if (factionData.rankedwars && factionData.rankedwars.some(war => war.status === 'active')) {
-        warStatus = "WAR";
+      if (attacksData && attacksData.attacks) {
+        // Check if there's a recent attack (in the last 24 hours)
+        const recentFactionAttack = Object.values(attacksData.attacks)
+          .some((attack: any) => {
+            const isRelevant = attack.attacker_faction_id === factionId || attack.defender_faction_id === factionId;
+            const isRecent = (Date.now() / 1000 - attack.timestamp_ended) < 86400; // 24 hours
+            return isRelevant && isRecent;
+          });
+          
+        if (recentFactionAttack) {
+          warStatus = "WAR";
+        }
       }
       
-      // Build the response object with real data
+      // Build the response object with all gathered data
       return {
-        id: factionData.ID || userData.faction.faction_id,
-        name: factionData.name || userData.faction.faction_name,
-        tag: factionData.tag || userData.faction.faction_tag || "N/A",
+        id: basicFactionData.ID || userData.faction.faction_id,
+        name: basicFactionData.name || userData.faction.faction_name,
+        tag: basicFactionData.tag || userData.faction.faction_tag || "N/A",
         leader: {
-          id: factionData.leader || 0,
-          name: factionData.leader_name || "Unknown"
+          id: basicFactionData.leader || 0,
+          name: basicFactionData.leader_name || "Unknown"
         },
         members_count: totalMembers || 1,
-        respect: factionData.respect || 0,
-        territories: factionData.territory ? Object.keys(factionData.territory).length : 0,
+        respect: basicFactionData.respect || 0,
+        territories: territoryData.territory ? Object.keys(territoryData.territory).length : 0,
         war_status: warStatus,
         capacity: {
           current: totalMembers || 1,
-          maximum: totalMembers + 5 // Not directly available from API
+          maximum: totalMembers + 5
         },
         member_status: memberStatus,
         recent_activity: recentActivity,
