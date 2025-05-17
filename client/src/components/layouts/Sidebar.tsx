@@ -41,8 +41,8 @@ export default function Sidebar() {
   const { user, logoutMutation } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // API key status indicator - checking if the actual apiKey string exists in user data
-  const hasApiKey = !!user && typeof user.apiKey === 'string' && user.apiKey.length > 0;
+  // API key status indicator - server returns apiKey as boolean true when active
+  const hasApiKey = !!user && user.apiKey === true;
 
   return (
     <>
