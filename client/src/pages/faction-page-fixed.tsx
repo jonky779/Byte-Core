@@ -333,7 +333,16 @@ export default function FactionPage() {
                             const displayStatus = inHospital ? "Hospital" : memberStatus;
                             
                             if (statusFilter !== 'all' && displayStatus !== statusFilter) return false;
-                            if (positionFilter !== 'all' && member.position !== positionFilter) return false;
+                            
+                            // For position filter, compare more flexibly
+                            if (positionFilter !== 'all') {
+                              const memberPosition = String(member.position || "").toLowerCase();
+                              const filterValue = positionFilter.toLowerCase();
+                              // Check if position contains the filter text or vice versa
+                              if (!memberPosition.includes(filterValue) && !filterValue.includes(memberPosition)) {
+                                return false;
+                              }
+                            }
                             if (searchQuery && !member.name?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
                             return true;
                           } catch (err) {
