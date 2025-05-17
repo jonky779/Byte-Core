@@ -347,10 +347,17 @@ export class TornAPI {
     }
   }
   
-  private getCompanyTypeName(typeId: number): string {
+  private getCompanyTypeName(typeId: number, companyName?: string): string {
     // Log the incoming company type ID for debugging
-    console.log(`Getting company type name for type ID: ${typeId}`);
+    console.log(`Getting company type name for type ID: ${typeId}, company name: ${companyName || 'N/A'}`);
     
+    // If we have a company name that includes "Empire Broker", use that directly
+    if (companyName && companyName.includes("Empire Broker")) {
+      return "Empire Broker";
+    }
+    
+    // Otherwise, get the type from the API response
+    // This is used as a reference dictionary only
     const companyTypes: Record<number, string> = {
       1: "Hair Salon",
       2: "Law Firm",
@@ -371,7 +378,7 @@ export class TornAPI {
       17: "Zoo",
       18: "Firework Stand",
       19: "Property Broker",
-      20: "Furniture Store",
+      20: "Furniture Store", // Will be overridden by company name check above
       21: "Gas Station",
       22: "Music Store",
       23: "Nightclub",
@@ -392,15 +399,6 @@ export class TornAPI {
       38: "Mining Corporation",
       39: "Detective Agency"
     };
-    
-    // Make sure we return correct type for Empire Broker
-    if (typeId === 20) {
-      return "Empire Broker";
-    }
-    
-    if (typeId === 19) {
-      return "Property Broker";
-    }
     
     return companyTypes[typeId] || "Unknown";
   }
@@ -473,7 +471,7 @@ export class TornAPI {
         return {
           id: companyData.ID,
           name: companyData.name,
-          type: this.getCompanyTypeName(companyData.company_type),
+          type: this.getCompanyTypeName(companyData.company_type, companyData.name),
           rating: companyData.rating || 0,
           days_old: companyData.days_old || 0,
           weekly_profit: companyData.weekly_income || 0,
@@ -501,7 +499,7 @@ export class TornAPI {
         return {
           id: userData.job.company_id,
           name: userData.job.company_name,
-          type: this.getCompanyTypeName(userData.job.company_type),
+          type: this.getCompanyTypeName(userData.job.company_type, userData.job.company_name),
           rating: 0,
           days_old: 0,
           weekly_profit: 0,
