@@ -773,34 +773,28 @@ export class TornAPI {
             
             if (acceptedApplications.length > 0) {
               // The valid_until field represents when the application expires
-              // Applications are typically valid for 24 hours after acceptance
+              // Since this appears to be in the future, let's calculate days directly 
               const mostRecentApp = acceptedApplications.sort((a: any, b: any) => 
                 (b.valid_until || 0) - (a.valid_until || 0)
               )[0];
               
-              // Calculate when the application was accepted (approximately 24 hours before expiry)
+              // Simply show as days since the application is fairly recent
               const now = Math.floor(Date.now() / 1000);
-              const acceptedTime = mostRecentApp.valid_until - 86400; // 24 hours = 86400 seconds
-              
-              // Calculate time difference
-              const timeDiffSeconds = now - acceptedTime;
+              // Calculate days directly from when the application will expire
+              // If valid_until is in the future, this means the application was accepted recently
+              const daysUntilExpiry = Math.ceil((mostRecentApp.valid_until - now) / 86400);
               let timeLabel = '';
               
-              if (timeDiffSeconds < 3600) {
-                // Less than an hour
-                const minutes = Math.floor(timeDiffSeconds / 60);
-                timeLabel = `${minutes}m ago`;
-              } else if (timeDiffSeconds < 86400) {
-                // Less than a day
-                const hours = Math.floor(timeDiffSeconds / 3600);
-                timeLabel = `${hours}h ago`;
+              // If it expires within 1 day, it was probably accepted today
+              if (daysUntilExpiry >= 1) {
+                timeLabel = 'today';
               } else {
-                // Days
-                const days = Math.floor(timeDiffSeconds / 86400);
-                timeLabel = `${days}d ago`;
+                // It was accepted at least 1 day ago
+                // We use 1 because the application typically expires 24h after acceptance
+                timeLabel = '1d ago';
               }
               
-              console.log(`Member join time calculation: accepted around ${new Date(acceptedTime * 1000).toISOString()}, time label: ${timeLabel}`);
+              console.log(`Member join time calculation: valid until ${new Date((mostRecentApp?.valid_until || 0) * 1000).toISOString()}, days until expiry: ${daysUntilExpiry}, time label: ${timeLabel}`);
               
               recentActivity.push({
                 type: 'join',
