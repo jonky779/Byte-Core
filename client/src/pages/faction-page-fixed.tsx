@@ -276,51 +276,47 @@ export default function FactionPage() {
                 </div>
                 
                 <div className="flex space-x-2">
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-[150px] bg-game-panel border-gray-700">
-                      <SelectValue placeholder="Filter by status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Statuses</SelectItem>
-                      <SelectItem value="Online">Online</SelectItem>
-                      <SelectItem value="Idle">Idle</SelectItem>
-                      <SelectItem value="Offline">Offline</SelectItem>
-                      <SelectItem value="Hospital">Hospital</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="w-[150px]">
+                    <select 
+                      value={statusFilter} 
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                      className="w-full p-2 bg-game-panel border border-gray-700 rounded-md text-sm"
+                    >
+                      <option value="all">All Statuses</option>
+                      <option value="Online">Online</option>
+                      <option value="Idle">Idle</option>
+                      <option value="Offline">Offline</option>
+                      <option value="Hospital">Hospital</option>
+                    </select>
+                  </div>
                   
-                  <div className="relative w-[150px]">
-                    <Select value={positionFilter} onValueChange={setPositionFilter}>
-                      <SelectTrigger className="w-full bg-game-panel border-gray-700">
-                        <SelectValue placeholder="Filter by position" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Positions</SelectItem>
-                        {faction.members ? (
-                          (() => {
-                            try {
-                              // Extract and sort unique positions from actual data
-                              const positions = new Set<string>();
-                              Object.values(faction.members).forEach((member: any) => {
-                                if (member && member.position) {
-                                  positions.add(member.position);
-                                }
-                              });
-                              
-                              // Convert to array, sort, and return as SelectItems
-                              return Array.from(positions).sort().map(position => (
-                                <SelectItem key={position} value={position}>
-                                  {position}
-                                </SelectItem>
-                              ));
-                            } catch (error) {
-                              console.error("Error extracting positions:", error);
-                              return null;
+                  <div className="w-[150px]">
+                    <select 
+                      value={positionFilter} 
+                      onChange={(e) => setPositionFilter(e.target.value)}
+                      className="w-full p-2 bg-game-panel border border-gray-700 rounded-md text-sm"
+                    >
+                      <option value="all">All Positions</option>
+                      {faction.members && (() => {
+                        try {
+                          // Extract and sort unique positions from actual data
+                          const positions = new Set<string>();
+                          Object.values(faction.members).forEach((member: any) => {
+                            if (member && member.position) {
+                              positions.add(member.position);
                             }
-                          })()
-                        ) : null}
-                      </SelectContent>
-                    </Select>
+                          });
+                          
+                          // Return position options
+                          return Array.from(positions).sort().map(position => (
+                            <option key={position} value={position}>{position}</option>
+                          ));
+                        } catch (error) {
+                          console.error("Error rendering positions:", error);
+                          return null;
+                        }
+                      })()}
+                    </select>
                   </div>
                 </div>
               </div>
