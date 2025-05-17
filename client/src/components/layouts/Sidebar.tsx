@@ -25,12 +25,13 @@ interface NavItemProps {
 function NavItem({ href, icon, label, isActive }: NavItemProps) {
   return (
     <Link href={href} className={cn(
-      "block px-4 py-3 text-sm font-medium flex items-center rounded-md mx-1",
+      "block px-4 py-3.5 text-sm font-medium flex items-center rounded-md mx-1",
       isActive 
-        ? "text-white bg-primary bg-opacity-20 border-l-2 border-primary" 
-        : "text-gray-300 hover:bg-gray-800"
+        ? "text-white bg-primary bg-opacity-20 border-l-2 border-primary shadow" 
+        : "text-gray-300 hover:bg-black/40 active:bg-black/60"
     )}>
-      <div className="w-5 text-center mr-2.5">{icon}</div> {label}
+      <div className="w-7 flex justify-center items-center mr-3 text-primary-light">{icon}</div> 
+      <span className="font-medium">{label}</span>
     </Link>
   );
 }
@@ -67,7 +68,7 @@ export default function Sidebar() {
       )}
 
       <aside className={cn(
-        "md:w-64 bg-game-dark md:min-h-screen border-r border-gray-700 flex flex-col",
+        "md:w-64 bg-black/95 backdrop-blur-sm md:min-h-screen border-r border-gray-700 flex flex-col",
         mobileOpen 
           ? "fixed top-0 left-0 w-4/5 max-w-xs h-full z-50 shadow-lg animate-slide-in" 
           : "hidden md:flex"
@@ -144,33 +145,46 @@ export default function Sidebar() {
 
         {/* Navigation Menu */}
         <nav className="flex-grow py-2 overflow-y-auto">
-          <div className="px-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center justify-between">
+          <div className={cn(
+            "px-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center justify-between",
+            mobileOpen && "sticky top-0 pt-3 pb-2 bg-black/80 backdrop-blur-sm z-10 shadow-md"
+          )}>
             <span>Dashboard</span>
             {mobileOpen && (
-              <div className="text-xs font-normal text-gray-400 bg-gray-800/50 px-1.5 py-0.5 rounded">
-                Tap to navigate
+              <div className="text-xs font-normal text-gray-400 bg-primary/20 px-2 py-0.5 rounded border border-primary/30">
+                Tap an option
               </div>
             )}
           </div>
           
-          <div className="space-y-1">
-            <NavItem href="/" icon={<ChartLine size={16} />} label="User Stats" isActive={location === '/'} />
-            <NavItem href="/company" icon={<Building size={16} />} label="Company Tracking" isActive={location === '/company'} />
-            <NavItem href="/faction" icon={<Users size={16} />} label="Faction Tracking" isActive={location === '/faction'} />
-            <NavItem href="/bazaar" icon={<Store size={16} />} label="Torn Bazaar" isActive={location === '/bazaar'} />
+          <div className="space-y-0.5 mb-2">
+            <NavItem href="/" icon={<ChartLine size={18} />} label="User Stats" isActive={location === '/'} />
+            <NavItem href="/company" icon={<Building size={18} />} label="Company Tracking" isActive={location === '/company'} />
+            <NavItem href="/faction" icon={<Users size={18} />} label="Faction Tracking" isActive={location === '/faction'} />
+            <NavItem href="/bazaar" icon={<Store size={18} />} label="Torn Bazaar" isActive={location === '/bazaar'} />
           </div>
 
-          <div className="px-4 mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Search Tools</div>
-          <div className="space-y-1">
-            <NavItem href="/employees-search" icon={<Briefcase size={16} />} label="Employees Search" isActive={location === '/employees-search'} />
-            <NavItem href="/faction-search" icon={<ShieldX size={16} />} label="Faction Members Search" isActive={location === '/faction-search'} />
+          <div className={cn(
+            "px-4 mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider",
+            mobileOpen && "bg-black/50 py-2 sticky top-12 z-10"
+          )}>
+            Search Tools
+          </div>
+          <div className="space-y-0.5 mb-2">
+            <NavItem href="/employees-search" icon={<Briefcase size={18} />} label="Employees Search" isActive={location === '/employees-search'} />
+            <NavItem href="/faction-search" icon={<ShieldX size={18} />} label="Faction Members Search" isActive={location === '/faction-search'} />
           </div>
 
-          <div className="px-4 mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">System</div>
-          <div className="space-y-1">
-            <NavItem href="/crawler-status" icon={<Worm size={16} />} label="Crawler Status" isActive={location === '/crawler-status'} />
-            <NavItem href="/item-database" icon={<Database size={16} />} label="Item Database" isActive={location === '/item-database'} />
-            <NavItem href="/settings" icon={<Cog size={16} />} label="Settings" isActive={location === '/settings'} />
+          <div className={cn(
+            "px-4 mt-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider",
+            mobileOpen && "bg-black/50 py-2 sticky top-12 z-10"
+          )}>
+            System
+          </div>
+          <div className="space-y-0.5">
+            <NavItem href="/crawler-status" icon={<Worm size={18} />} label="Crawler Status" isActive={location === '/crawler-status'} />
+            <NavItem href="/item-database" icon={<Database size={18} />} label="Item Database" isActive={location === '/item-database'} />
+            <NavItem href="/settings" icon={<Cog size={18} />} label="Settings" isActive={location === '/settings'} />
           </div>
           
           <div className="px-4 py-2">
