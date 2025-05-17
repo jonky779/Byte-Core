@@ -110,7 +110,7 @@ export default function Sidebar() {
           </div>
           <div className="flex flex-col">
             <div className="flex justify-between items-center text-xs mb-1">
-              <span className="text-gray-400">API Key Status</span>
+              <span className="text-foreground/80">API Key Status</span>
               <span className={cn(
                 "font-medium flex items-center",
                 hasApiKey ? "text-secondary" : "text-red-400"

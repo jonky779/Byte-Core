@@ -72,7 +72,7 @@ export default function AuthPage() {
       </Helmet>
       
       <div className="min-h-screen flex flex-col md:flex-row bg-background">
-        {/* Hero Section */}
+        {/* Hero Section - Desktop only */}
         <div className="hidden md:flex md:w-1/2 bg-card flex-col justify-center items-center px-8 border-r border-border">
           <div className="max-w-md text-center">
             <div className="mb-6 inline-block">
@@ -125,9 +125,23 @@ export default function AuthPage() {
           <div className="w-full max-w-md">
             <div className="flex justify-between items-center mb-8">
               {/* Mobile Logo */}
-              <div className="md:hidden">
-                <h1 className="font-bold text-2xl tracking-wide bg-gradient-to-r from-primary-light to-primary text-transparent bg-clip-text">BYTE-CORE VAULT</h1>
-                <p className="text-sm text-muted-foreground">Your Ultimate Torn RPG Dashboard</p>
+              <div className="md:hidden flex items-center">
+                <div className="w-12 h-12 relative mr-3">
+                  {/* Animated outer ring */}
+                  <div className="absolute inset-0 bg-blue-500 rounded-xl animate-pulse opacity-20"></div>
+                  {/* Logo background */}
+                  <div className="absolute inset-1 bg-background dark:bg-gray-800 rounded-lg"></div>
+                  {/* Logo content */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="text-blue-500">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+                    </svg>
+                  </div>
+                </div>
+                <div>
+                  <h1 className="font-bold text-2xl tracking-wide bg-gradient-to-r from-blue-400 to-blue-600 text-transparent bg-clip-text">BYTE-CORE VAULT</h1>
+                  <p className="text-sm text-foreground/80">Your Ultimate Torn RPG Dashboard</p>
+                </div>
               </div>
               
               {/* Theme Toggle Button */}
