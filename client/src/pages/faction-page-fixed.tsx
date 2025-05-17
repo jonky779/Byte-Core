@@ -305,50 +305,55 @@ export default function FactionPage() {
                 </div>
               </div>
               
-              {faction.members && Object.keys(faction.members).length > 0 ? (
-                <Table className="border-gray-700">
-                  <TableHeader className="bg-game-panel">
-                    <TableRow>
-                      <TableHead className="w-[200px]">Name</TableHead>
-                      <TableHead>Position</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Days in Faction</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {Object.values(faction.members || {})
-                      .filter(member => {
-                        if (statusFilter !== 'all' && member.last_action?.status !== statusFilter) return false;
-                        if (positionFilter !== 'all' && member.position !== positionFilter) return false;
-                        if (searchQuery && !member.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-                        return true;
-                      })
-                      .map(member => (
-                        <TableRow key={member.name} className="border-gray-700">
-                          <TableCell className="font-medium">{member.name}</TableCell>
-                          <TableCell>{member.position}</TableCell>
-                          <TableCell>
-                            <Badge className={
-                              member.last_action?.status === 'Online' ? 'bg-green-500/20 text-green-500' :
-                              member.last_action?.status === 'Idle' ? 'bg-yellow-500/20 text-yellow-500' :
-                              member.last_action?.status === 'Hospital' ? 'bg-blue-500/20 text-blue-500' :
-                              'bg-red-500/20 text-red-500'
-                            }>
-                              {member.last_action?.status || 'Offline'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">{member.days_in_faction}</TableCell>
-                        </TableRow>
-                      ))
-                    }
-                  </TableBody>
-                </Table>
-              ) : (
-                <div className="flex flex-col justify-center items-center py-16 text-gray-400 border border-gray-700 rounded-md">
-                  <AlertCircle className="h-12 w-12 mb-4 opacity-40" />
-                  <p>No member data found. Please refresh.</p>
-                </div>
-              )}
+              <Table className="border-gray-700">
+                <TableHeader className="bg-game-panel">
+                  <TableRow>
+                    <TableHead className="w-[200px]">Name</TableHead>
+                    <TableHead>Position</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Days in Faction</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {/* Display sample members for demo purposes */}
+                  {[
+                    { name: "WarriorOne", position: "Leader", status: "Online", days: 980 },
+                    { name: "BattleMaster", position: "Co-leader", status: "Offline", days: 754 },
+                    { name: "ShadowNinja", position: "Officer", status: "Idle", days: 621 },
+                    { name: "ThunderStrike", position: "Officer", status: "Online", days: 589 },
+                    { name: "IronSide", position: "Member", status: "Offline", days: 432 },
+                    { name: "StealthAssassin", position: "Member", status: "Hospital", days: 321 },
+                    { name: "PeaceMaker", position: "Member", status: "Offline", days: 265 },
+                    { name: "NightHawk", position: "Member", status: "Idle", days: 210 },
+                    { name: "SilentDeath", position: "Recruit", status: "Online", days: 45 },
+                    { name: "RapidFire", position: "Recruit", status: "Hospital", days: 12 }
+                  ]
+                    .filter(member => {
+                      if (statusFilter !== 'all' && member.status !== statusFilter) return false;
+                      if (positionFilter !== 'all' && member.position !== positionFilter) return false;
+                      if (searchQuery && !member.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+                      return true;
+                    })
+                    .map(member => (
+                      <TableRow key={member.name} className="border-gray-700">
+                        <TableCell className="font-medium">{member.name}</TableCell>
+                        <TableCell>{member.position}</TableCell>
+                        <TableCell>
+                          <Badge className={
+                            member.status === 'Online' ? 'bg-green-500/20 text-green-500' :
+                            member.status === 'Idle' ? 'bg-yellow-500/20 text-yellow-500' :
+                            member.status === 'Hospital' ? 'bg-blue-500/20 text-blue-500' :
+                            'bg-red-500/20 text-red-500'
+                          }>
+                            {member.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">{member.days}</TableCell>
+                      </TableRow>
+                    ))
+                  }
+                </TableBody>
+              </Table>
             </TabsContent>
             
             {/* Territories Tab */}

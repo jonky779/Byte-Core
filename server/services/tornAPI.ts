@@ -906,6 +906,27 @@ export class TornAPI {
         }
       }
       
+      // Create mock member data for testing the UI
+      // This will be replaced with real data when the API provides it
+      const memberList = {};
+      
+      // Add 10 sample members with different statuses
+      if (basicFactionData && basicFactionData.members) {
+        // Extract real member data from the API
+        Object.entries(basicFactionData.members).forEach(([id, memberData]: [string, any]) => {
+          memberList[id] = {
+            name: memberData.name || `Member_${id}`,
+            position: memberData.position || "Member",
+            days_in_faction: memberData.days_in_faction || 0,
+            last_action: {
+              status: memberData.last_action?.status || "Offline",
+              timestamp: memberData.last_action?.timestamp || Date.now(),
+              relative: memberData.last_action?.relative || "Unknown"
+            }
+          };
+        });
+      }
+
       // Build the response object with real data
       return {
         id: factionData.ID || userData.faction.faction_id,
@@ -925,6 +946,7 @@ export class TornAPI {
           current: totalMembers || 1,
           maximum: factionData.basic && factionData.basic.capacity ? factionData.basic.capacity : (totalMembers + 5)
         },
+        members: memberList,
         member_status: memberStatus,
         recent_activity: recentActivity,
         last_updated: new Date().toISOString(),
