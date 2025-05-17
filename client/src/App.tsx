@@ -16,7 +16,7 @@ import HomePage from "@/pages/home-page";
 import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/auth-page";
 import CompanyPage from "@/pages/company-page";
-import FactionPage from "@/pages/faction-page";
+import FactionPage from "@/pages/faction-page-fixed";
 import BazaarPage from "@/pages/bazaar-page";
 import EmployeesSearchPage from "@/pages/employees-search-page";
 import FactionSearchPage from "@/pages/faction-search-page";
