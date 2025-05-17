@@ -530,15 +530,15 @@ export default function BazaarPage() {
             )}
           </TabsContent>
           
+          {/* Custom pagination */}
           {data?.meta?.total_pages > 1 && (
             <div className="mt-6">
-              <div className="flex justify-center space-x-2">
+              <div className="flex flex-wrap justify-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setPage(p => Math.max(1, p - 1))} 
                   disabled={page === 1}
-                  className={page === 1 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                 >
                   Previous
                 </Button>
@@ -560,67 +560,77 @@ export default function BazaarPage() {
                     variant="outline"
                     size="sm"
                     disabled
-                    className="pointer-events-none"
                   >
                     ...
                   </Button>
                 )}
                   
-                  {/* Page before current if not first page */}
-                  {page > 1 && (
-                    <PaginationItem>
-                      <PaginationLink onClick={() => setPage(page - 1)}>
-                        {page - 1}
-                      </PaginationLink>
-                    </PaginationItem>
-                  )}
+                {/* Page before current if not first page */}
+                {page > 1 && (
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(page - 1)}
+                  >
+                    {page - 1}
+                  </Button>
+                )}
                   
-                  {/* Current page */}
-                  <PaginationItem>
-                    <PaginationLink isActive>{page}</PaginationLink>
-                  </PaginationItem>
+                {/* Current page */}
+                <Button 
+                  variant="default"
+                  size="sm"
+                  className="bg-primary text-primary-foreground"
+                  disabled
+                >
+                  {page}
+                </Button>
                   
-                  {/* Page after current if not last page */}
-                  {page < data.meta.total_pages && (
-                    <PaginationItem>
-                      <PaginationLink onClick={() => setPage(page + 1)}>
-                        {page + 1}
-                      </PaginationLink>
-                    </PaginationItem>
-                  )}
+                {/* Page after current if not last page */}
+                {page < (data?.meta?.total_pages || 1) && (
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(page + 1)}
+                  >
+                    {page + 1}
+                  </Button>
+                )}
                   
-                  {/* Ellipsis if needed */}
-                  {page < data.meta.total_pages - 3 && (
-                    <PaginationItem>
-                      <span className="px-4">...</span>
-                    </PaginationItem>
-                  )}
+                {/* Ellipsis if needed */}
+                {page < (data?.meta?.total_pages || 1) - 3 && (
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    disabled
+                  >
+                    ...
+                  </Button>
+                )}
                   
-                  {/* Last page if not close to current */}
-                  {page < data.meta.total_pages - 2 && (
-                    <PaginationItem>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage(data?.meta?.total_pages || 1)}
-                      >
-                        {data?.meta?.total_pages}
-                      </Button>
-                    </PaginationItem>
-                  )}
+                {/* Last page if not close to current */}
+                {page < (data?.meta?.total_pages || 1) - 2 && (
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(data?.meta?.total_pages || 1)}
+                  >
+                    {data?.meta?.total_pages}
+                  </Button>
+                )}
                   
-                  <PaginationItem>
-                    <PaginationNext 
-                      onClick={() => setPage(p => Math.min(data.meta.total_pages, p + 1))} 
-                      disabled={page === data.meta.total_pages}
-                      className={page === data.meta.total_pages ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(p => Math.min(data?.meta?.total_pages || 1, p + 1))} 
+                  disabled={page === (data?.meta?.total_pages || 1)}
+                >
+                  Next
+                </Button>
+              </div>
               
               <div className="text-center text-xs text-gray-400 mt-2">
-                Page {page} of {data.meta.total_pages} • Showing {data.items.length} of {data.meta.total} items
+                Page {page} of {data?.meta?.total_pages || 1} • Showing {data?.items?.length || 0} of {data?.meta?.total || 0} items
               </div>
             </div>
           )}
