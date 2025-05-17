@@ -77,9 +77,15 @@ export default function CrawlerStatusPage() {
   const [configValues, setConfigValues] = useState<CrawlerConfig | null>(null);
   const [adminAccessError, setAdminAccessError] = useState(false);
   
-  const { data, isLoading, isError, refetch } = useQuery<DetailedCrawlerStatus>({
+  const { data, isLoading, isError, error, refetch } = useQuery<DetailedCrawlerStatus>({
     queryKey: ["/api/system/crawler"],
     enabled: !!user?.apiKey,
+    onError: (err: any) => {
+      // Check if the error is due to admin permission (403 Forbidden)
+      if (err.message && err.message.includes('403')) {
+        setAdminAccessError(true);
+      }
+    }
   });
   
   const startCrawlerMutation = useMutation({
