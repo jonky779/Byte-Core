@@ -81,7 +81,7 @@ export default function PlayerStats() {
         </div>
         
         <div className="px-4 py-2">
-          <div className="bg-white bg-opacity-5 rounded-lg p-4 pb-3">
+          <div className="bg-card rounded-lg p-4 pb-3">
             <div className="flex justify-between items-center text-sm mb-1">
               <div className="font-medium uppercase text-gray-400">IDENTITY</div>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -150,7 +150,7 @@ export default function PlayerStats() {
             </div>
           </div>
           
-          <div className="mt-4 bg-white bg-opacity-5 rounded-lg p-4 pb-3">
+          <div className="mt-4 bg-card rounded-lg p-4 pb-3">
             <div className="flex justify-between items-center text-sm mb-3">
               <div className="font-medium uppercase text-gray-400">ATTRIBUTES</div>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -234,7 +234,7 @@ export default function PlayerStats() {
             </div>
           </div>
           
-          <div className="mt-4 bg-white bg-opacity-5 rounded-lg p-4 pb-3">
+          <div className="mt-4 bg-card rounded-lg p-4 pb-3">
             <div className="flex justify-between items-center text-sm mb-3">
               <div className="font-medium uppercase text-gray-400">STATUS</div>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -305,7 +305,7 @@ export default function PlayerStats() {
             </div>
           </div>
           
-          <div className="mt-4 mb-1 bg-white bg-opacity-5 rounded-lg p-4 pb-3">
+          <div className="mt-4 mb-1 bg-card rounded-lg p-4 pb-3">
             <div className="flex justify-between items-center text-sm mb-1">
               <div className="font-medium uppercase text-gray-400">FINANCES</div>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
