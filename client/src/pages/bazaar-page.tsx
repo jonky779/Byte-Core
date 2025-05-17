@@ -7,11 +7,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, Store, RefreshCw, Search, FilterX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-// Using custom dropdown implementation instead of Radix UI Select
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-// Using custom pagination implementation instead of Radix UI
+import { 
+  Pagination, 
+  PaginationContent, 
+  PaginationItem, 
+  PaginationLink, 
+  PaginationNext, 
+  PaginationPrevious 
+} from "@/components/ui/pagination";
 
 interface BazaarItem {
   id: number;
@@ -173,152 +186,60 @@ export default function BazaarPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="text-sm text-gray-400 mb-1 block">Category</label>
-                <div className="relative">
-                  <div 
-                    className="w-full p-2 bg-game-panel border border-gray-700 rounded-md flex items-center justify-between text-sm cursor-pointer hover:bg-gray-800"
-                    onClick={() => {
-                      const dropdown = document.getElementById("category-dropdown");
-                      if (dropdown) {
-                        dropdown.classList.toggle("hidden");
-                        document.getElementById("type-dropdown")?.classList.add("hidden");
-                        document.getElementById("subcategory-dropdown")?.classList.add("hidden");
-                      }
-                    }}
-                  >
-                    <span>{category === "all" ? "All Categories" : category}</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="m6 9 6 6 6-6"/>
-                    </svg>
-                  </div>
-                  
-                  <div id="category-dropdown" className="absolute z-10 w-full mt-1 bg-gray-900 border border-gray-700 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
-                    <div 
-                      className="p-2 hover:bg-gray-800 cursor-pointer"
-                      onClick={() => {
-                        setCategory("all");
-                        setPage(1);
-                        document.getElementById("category-dropdown")?.classList.add("hidden");
-                      }}
-                    >
-                      All Categories
-                    </div>
-                    {data?.meta?.categories?.map((cat) => (
-                      <div 
-                        key={cat}
-                        className="p-2 hover:bg-gray-800 cursor-pointer"
-                        onClick={() => {
-                          setCategory(cat);
-                          setPage(1);
-                          document.getElementById("category-dropdown")?.classList.add("hidden");
-                        }}
-                      >
-                        {cat}
-                      </div>
+                <Select value={category} onValueChange={(value) => {
+                  setCategory(value);
+                  setPage(1);
+                }}>
+                  <SelectTrigger className="bg-game-panel border-gray-700">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {data.meta.categories.map((cat) => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                     ))}
-                  </div>
-                </div>
+                  </SelectContent>
+                </Select>
               </div>
               
               <div>
                 <label className="text-sm text-gray-400 mb-1 block">Type</label>
-                <div className="relative">
-                  <div 
-                    className="w-full p-2 bg-game-panel border border-gray-700 rounded-md flex items-center justify-between text-sm cursor-pointer hover:bg-gray-800"
-                    onClick={() => {
-                      const dropdown = document.getElementById("type-dropdown");
-                      if (dropdown) {
-                        dropdown.classList.toggle("hidden");
-                        document.getElementById("category-dropdown")?.classList.add("hidden");
-                        document.getElementById("subcategory-dropdown")?.classList.add("hidden");
-                      }
-                    }}
-                  >
-                    <span>{type === "all" ? "All Types" : type}</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="m6 9 6 6 6-6"/>
-                    </svg>
-                  </div>
-                  
-                  <div id="type-dropdown" className="absolute z-10 w-full mt-1 bg-gray-900 border border-gray-700 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
-                    <div 
-                      className="p-2 hover:bg-gray-800 cursor-pointer"
-                      onClick={() => {
-                        setType("all");
-                        setPage(1);
-                        document.getElementById("type-dropdown")?.classList.add("hidden");
-                      }}
-                    >
-                      All Types
-                    </div>
-                    {data?.meta?.types?.map((t) => (
-                      <div 
-                        key={t}
-                        className="p-2 hover:bg-gray-800 cursor-pointer"
-                        onClick={() => {
-                          setType(t);
-                          setPage(1);
-                          document.getElementById("type-dropdown")?.classList.add("hidden");
-                        }}
-                      >
-                        {t}
-                      </div>
+                <Select value={type} onValueChange={(value) => {
+                  setType(value);
+                  setPage(1);
+                }}>
+                  <SelectTrigger className="bg-game-panel border-gray-700">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Types</SelectItem>
+                    {data.meta.types.map((t) => (
+                      <SelectItem key={t} value={t}>{t}</SelectItem>
                     ))}
-                  </div>
-                </div>
+                  </SelectContent>
+                </Select>
               </div>
               
               <div>
                 <label className="text-sm text-gray-400 mb-1 block">Sub-Category</label>
-                <div className="relative">
-                  <div 
-                    className={`w-full p-2 border rounded-md flex items-center justify-between text-sm ${
-                      category === 'all' || availableSubCategories.length === 0
-                        ? 'bg-game-panel/50 border-gray-700/50 text-gray-500 cursor-not-allowed'
-                        : 'bg-game-panel border-gray-700 cursor-pointer hover:bg-gray-800'
-                    }`}
-                    onClick={() => {
-                      if (category !== 'all' && availableSubCategories.length > 0) {
-                        const dropdown = document.getElementById("subcategory-dropdown");
-                        if (dropdown) {
-                          dropdown.classList.toggle("hidden");
-                          document.getElementById("category-dropdown")?.classList.add("hidden");
-                          document.getElementById("type-dropdown")?.classList.add("hidden");
-                        }
-                      }
-                    }}
-                  >
-                    <span>{subCategory === "all" ? "All Sub-Categories" : subCategory}</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="m6 9 6 6 6-6"/>
-                    </svg>
-                  </div>
-                  
-                  <div id="subcategory-dropdown" className="absolute z-10 w-full mt-1 bg-gray-900 border border-gray-700 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
-                    <div 
-                      className="p-2 hover:bg-gray-800 cursor-pointer"
-                      onClick={() => {
-                        setSubCategory("all");
-                        setPage(1);
-                        document.getElementById("subcategory-dropdown")?.classList.add("hidden");
-                      }}
-                    >
-                      All Sub-Categories
-                    </div>
+                <Select 
+                  value={subCategory} 
+                  onValueChange={(value) => {
+                    setSubCategory(value);
+                    setPage(1);
+                  }}
+                  disabled={category === 'all' || availableSubCategories.length === 0}
+                >
+                  <SelectTrigger className="bg-game-panel border-gray-700">
+                    <SelectValue placeholder="Select sub-category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Sub-Categories</SelectItem>
                     {availableSubCategories.map((sub) => (
-                      <div 
-                        key={sub}
-                        className="p-2 hover:bg-gray-800 cursor-pointer"
-                        onClick={() => {
-                          setSubCategory(sub);
-                          setPage(1);
-                          document.getElementById("subcategory-dropdown")?.classList.add("hidden");
-                        }}
-                      >
-                        {sub}
-                      </div>
+                      <SelectItem key={sub} value={sub}>{sub}</SelectItem>
                     ))}
-                  </div>
-                </div>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             
@@ -530,107 +451,83 @@ export default function BazaarPage() {
             )}
           </TabsContent>
           
-          {/* Custom pagination */}
-          {data?.meta?.total_pages > 1 && (
+          {data.meta.total_pages > 1 && (
             <div className="mt-6">
-              <div className="flex flex-wrap justify-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage(p => Math.max(1, p - 1))} 
-                  disabled={page === 1}
-                >
-                  Previous
-                </Button>
-                
-                {/* First page */}
-                {page > 3 && (
-                  <Button 
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage(1)}
-                  >
-                    1
-                  </Button>
-                )}
-                
-                {/* Ellipsis if needed */}
-                {page > 4 && (
-                  <Button 
-                    variant="outline"
-                    size="sm"
-                    disabled
-                  >
-                    ...
-                  </Button>
-                )}
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious 
+                      onClick={() => setPage(p => Math.max(1, p - 1))} 
+                      disabled={page === 1}
+                      className={page === 1 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
                   
-                {/* Page before current if not first page */}
-                {page > 1 && (
-                  <Button 
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage(page - 1)}
-                  >
-                    {page - 1}
-                  </Button>
-                )}
+                  {/* First page */}
+                  {page > 3 && (
+                    <PaginationItem>
+                      <PaginationLink onClick={() => setPage(1)}>1</PaginationLink>
+                    </PaginationItem>
+                  )}
                   
-                {/* Current page */}
-                <Button 
-                  variant="default"
-                  size="sm"
-                  className="bg-primary text-primary-foreground"
-                  disabled
-                >
-                  {page}
-                </Button>
+                  {/* Ellipsis if needed */}
+                  {page > 4 && (
+                    <PaginationItem>
+                      <span className="px-4">...</span>
+                    </PaginationItem>
+                  )}
                   
-                {/* Page after current if not last page */}
-                {page < (data?.meta?.total_pages || 1) && (
-                  <Button 
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage(page + 1)}
-                  >
-                    {page + 1}
-                  </Button>
-                )}
+                  {/* Page before current if not first page */}
+                  {page > 1 && (
+                    <PaginationItem>
+                      <PaginationLink onClick={() => setPage(page - 1)}>
+                        {page - 1}
+                      </PaginationLink>
+                    </PaginationItem>
+                  )}
                   
-                {/* Ellipsis if needed */}
-                {page < (data?.meta?.total_pages || 1) - 3 && (
-                  <Button 
-                    variant="outline"
-                    size="sm"
-                    disabled
-                  >
-                    ...
-                  </Button>
-                )}
+                  {/* Current page */}
+                  <PaginationItem>
+                    <PaginationLink isActive>{page}</PaginationLink>
+                  </PaginationItem>
                   
-                {/* Last page if not close to current */}
-                {page < (data?.meta?.total_pages || 1) - 2 && (
-                  <Button 
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage(data?.meta?.total_pages || 1)}
-                  >
-                    {data?.meta?.total_pages}
-                  </Button>
-                )}
+                  {/* Page after current if not last page */}
+                  {page < data.meta.total_pages && (
+                    <PaginationItem>
+                      <PaginationLink onClick={() => setPage(page + 1)}>
+                        {page + 1}
+                      </PaginationLink>
+                    </PaginationItem>
+                  )}
                   
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage(p => Math.min(data?.meta?.total_pages || 1, p + 1))} 
-                  disabled={page === (data?.meta?.total_pages || 1)}
-                >
-                  Next
-                </Button>
-              </div>
+                  {/* Ellipsis if needed */}
+                  {page < data.meta.total_pages - 3 && (
+                    <PaginationItem>
+                      <span className="px-4">...</span>
+                    </PaginationItem>
+                  )}
+                  
+                  {/* Last page if not close to current */}
+                  {page < data.meta.total_pages - 2 && (
+                    <PaginationItem>
+                      <PaginationLink onClick={() => setPage(data.meta.total_pages)}>
+                        {data.meta.total_pages}
+                      </PaginationLink>
+                    </PaginationItem>
+                  )}
+                  
+                  <PaginationItem>
+                    <PaginationNext 
+                      onClick={() => setPage(p => Math.min(data.meta.total_pages, p + 1))} 
+                      disabled={page === data.meta.total_pages}
+                      className={page === data.meta.total_pages ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
               
               <div className="text-center text-xs text-gray-400 mt-2">
-                Page {page} of {data?.meta?.total_pages || 1} • Showing {data?.items?.length || 0} of {data?.meta?.total || 0} items
+                Page {page} of {data.meta.total_pages} • Showing {data.items.length} of {data.meta.total} items
               </div>
             </div>
           )}

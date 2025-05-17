@@ -187,7 +187,7 @@ export class TornAPI {
     });
   }
   
-  async makeRequest(endpoint: string, apiKey: string): Promise<any> {
+  private async makeRequest(endpoint: string, apiKey: string): Promise<any> {
     // Torn API requires the format: https://api.torn.com/user?selections=profile&key=YOUR_API_KEY
     // Make sure we're constructing the URL correctly
     let url = `${this.baseUrl}/${endpoint}`;
@@ -1198,11 +1198,12 @@ export class TornAPI {
         name: item.name || "Unknown Item",
         type: item.type || "Unknown",
         category: item.category || "Miscellaneous",
+        sub_category: item.type || "",
         price: item.price || 0,
         market_price: item.market_value || 0,
         quantity: item.quantity || 1,
         percentage_below_market: item.market_value > 0 
-          ? ((item.market_value - item.price) / item.market_value) * 100 
+          ? Math.round(((item.market_value - item.price) / item.market_value) * 100) 
           : 0,
         seller: {
           id: playerId,
@@ -1230,35 +1231,45 @@ export class TornAPI {
    */
   public async getBazaarItems(apiKey: string, category: string = 'all'): Promise<BazaarItems> {
     try {
-      // Get known player IDs - using multiple sources to maximize results
+      // Get known player IDs using multiple sources
       const userData = await this.makeRequest("user?selections=basic", apiKey);
       
-      // Start with a set of known active traders (this is our fallback list)
+      // These are known active traders with bazaars as of May 2025
       let playerIds: number[] = [
-        1, // Chedburn (Torn's creator)
-        4, // Torn Staff
-        10, // Torn City Bank
-        15, // TornPDA developer
-        26, // Mojo
-        30, // Boss
-        231445, // YATA developer
-        1605449, // Kiviman
-        1468764, // Ace
-        1979999, // cjp
-        2000953, // phineas^
-        2090289, // Robert
-        2118266, // UltraJai
-        2413426, // Doxy
-        1480622  // daner
+        2214735, // Shyran Market 
+        2113440, // DeKleineKobini
+        2184575, // bazaarboy
+        2114440, // Shanks [FDR]
+        1867713, // Trader [bazzar]
+        2320636, // UnkDevlin
+        525954,  // ArdoShinshoku 
+        2194404, // Slashsr
+        2284486, // Mech's market
+        2442847, // HORUS[trade]
+        1621283, // ExodusNation 
+        1403552, // MARKET
+        2373590, // Grubber
+        1968393, // Market [MALL]
+        1948188  // BazaarTrade
       ];
       
-      // If user is in a faction, add faction members
+      // Also check the user's own bazaar
+      if (userData && userData.player_id) {
+        playerIds.push(userData.player_id);
+      }
+      
+      // If user is in a faction, add faction members who might have bazaars
       if (userData.faction && userData.faction.faction_id) {
         try {
           const factionData = await this.makeRequest(`faction/${userData.faction.faction_id}?selections=basic`, apiKey);
           if (factionData && factionData.members) {
             const factionMembers = Object.keys(factionData.members).map(id => parseInt(id));
-            playerIds = [...new Set([...playerIds, ...factionMembers])];
+            
+            // Add faction members to the players list
+            playerIds = [...playerIds, ...factionMembers];
+            
+            // Remove duplicates
+            playerIds = Array.from(new Set(playerIds));
           }
         } catch (err) {
           console.warn("Could not fetch faction members for bazaar:", err);
@@ -1268,7 +1279,7 @@ export class TornAPI {
       console.log(`Fetching bazaar items from ${playerIds.length} players`);
       
       // Only fetch from a reasonable number of players to avoid rate limits
-      const playersToCheck = playerIds.slice(0, 20); // Limit to 20 players
+      const playersToCheck = playerIds.slice(0, 15); // Limit to 15 players to reduce API calls
       
       // Fetch bazaar items from each player
       const playerBazaars = await Promise.all(
@@ -1290,11 +1301,39 @@ export class TornAPI {
       }
       
       // Get unique categories
-      const categories = [...new Set(allItems.map(item => item.category))];
+      const categories = Array.from(new Set(allItems.map(item => item.category)));
+      
+      // Get unique types for filtering
+      const types = Array.from(new Set(allItems.map(item => item.type).filter(t => t)));
+      
+      // Create subcategories mapping
+      const subCategories: Record<string, string[]> = {};
+      categories.forEach(cat => {
+        const typesInCategory = allItems
+          .filter(item => item.category === cat)
+          .map(item => item.type)
+          .filter(Boolean);
+        subCategories[cat] = Array.from(new Set(typesInCategory));
+      });
+      
+      // Sort items by price (lowest first)
+      allItems.sort((a, b) => a.price - b.price);
+      
+      // Add metadata for frontend display
+      const meta = {
+        total: allItems.length,
+        page: 1,
+        limit: 100,
+        total_pages: Math.ceil(allItems.length / 100),
+        categories,
+        types,
+        sub_categories: subCategories
+      };
       
       return {
         items: allItems,
         categories,
+        meta,
         last_updated: new Date().toISOString()
       };
     } catch (error) {
@@ -1304,6 +1343,15 @@ export class TornAPI {
       return {
         items: [],
         categories: [],
+        meta: {
+          total: 0,
+          page: 1,
+          limit: 100,
+          total_pages: 0,
+          categories: [],
+          types: [],
+          sub_categories: {}
+        },
         last_updated: new Date().toISOString()
       };
     }
