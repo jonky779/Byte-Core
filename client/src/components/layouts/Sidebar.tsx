@@ -24,15 +24,13 @@ interface NavItemProps {
 
 function NavItem({ href, icon, label, isActive }: NavItemProps) {
   return (
-    <Link href={href}>
-      <a className={cn(
-        "block px-4 py-2.5 text-sm font-medium flex items-center",
-        isActive 
-          ? "text-white bg-primary bg-opacity-20 border-l-2 border-primary" 
-          : "text-gray-300 hover:bg-game-panel"
-      )}>
-        <div className="w-5 text-center mr-2">{icon}</div> {label}
-      </a>
+    <Link href={href} className={cn(
+      "block px-4 py-2.5 text-sm font-medium flex items-center",
+      isActive 
+        ? "text-white bg-primary bg-opacity-20 border-l-2 border-primary" 
+        : "text-gray-300 hover:bg-game-panel"
+    )}>
+      <div className="w-5 text-center mr-2">{icon}</div> {label}
     </Link>
   );
 }
