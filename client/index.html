@@ -2,47 +2,30 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <title>Byte-Core Vault - Torn RPG Dashboard</title>
-    <meta name="description" content="A comprehensive dashboard for tracking Torn RPG player stats, companies, factions, and bazaar listings." />
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' viewBox='0 0 24 24' stroke='%236d28d9' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z' /%3E%3C/svg%3E">
+    <link rel="icon" type="image/png" href="/torn_default_avatar.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Byte-Core Vault | Torn RPG Dashboard</title>
+    <meta name="description" content="Byte-Core Vault - Advanced Dashboard for Torn RPG players - Track your Torn company and faction performance." />
+    <!-- Disable error overlays -->
     <script src="/disable-error-overlay.js"></script>
     <style>
-      /* Custom Scrollbar */
-      ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #1f2937;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #6d28d9;
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #8b5cf6;
-      }
-
-      /* Custom font settings */
-      .font-rajdhani {
-        font-family: 'Rajdhani', sans-serif;
-      }
-
-      body {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-      }
-
-      code, pre, .font-mono {
-        font-family: 'JetBrains Mono', monospace;
+      /* Ensure error overlays are hidden */
+      .vite-error-overlay, 
+      [data-plugin="runtime-error-modal"], 
+      [plugin="runtime-error-plugin"],
+      div#__vite-plugin-runtime-error-modal,
+      div[plugin*="error"],
+      div[style*="position: fixed"][style*="z-index: 9999"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        z-index: -9999 !important;
+        pointer-events: none !important;
       }
     </style>
   </head>
-  <body>
+  <body class="bg-gray-950 text-white">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
-    <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
   </body>
 </html>

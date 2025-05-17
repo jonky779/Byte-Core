@@ -67,20 +67,6 @@ import ItemDatabasePage from "@/pages/item-database-page";
 import SettingsPage from "@/pages/settings-page";
 import { ProtectedRoute } from "./lib/protected-route";
 
-// Hide the Vite error overlay by inserting CSS
-// This is a workaround since we can't modify vite.config.ts directly
-const hideErrorOverlay = document.createElement('style');
-hideErrorOverlay.textContent = `
-  .vite-error-overlay, [data-plugin="runtime-error-modal"], [plugin="runtime-error-plugin"] {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    z-index: -9999 !important;
-    pointer-events: none !important;
-  }
-`;
-document.head.appendChild(hideErrorOverlay);
-
 function Router() {
   return (
     <Switch>
