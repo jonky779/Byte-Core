@@ -759,20 +759,45 @@ export class TornAPI {
       if (factionData.rankedwars && factionData.rankedwars.length > 0) {
         // Sort wars by start time, newest first
         const recentWars = [...factionData.rankedwars]
-          .sort((a, b) => b.start - a.start)
-          .slice(0, 1);
-          
+          .sort((a, b) => b.start - a.start);
+        
+        // Get current time for calculations
+        const now = Math.floor(Date.now() / 1000);
+        
         if (recentWars.length > 0) {
-          const timeDiff = Math.floor((Date.now() / 1000 - recentWars[0].start) / 3600);
-          const timeLabel = timeDiff <= 24 ? `${timeDiff}h ago` : `${Math.floor(timeDiff / 24)}d ago`;
+          // Check if there's an active war (no end time or end time in future)
+          const activeWars = recentWars.filter(war => !war.end || war.end > now);
           
-          recentActivity.push({
-            type: 'war',
-            description: 'Faction war started',
-            time: timeLabel,
-            icon: 'fist-raised',
-            color: 'red'
-          });
+          if (activeWars.length > 0) {
+            // We have an active war - show when it started
+            const mostRecentActiveWar = activeWars[0];
+            const timeDiff = Math.floor((now - mostRecentActiveWar.start) / 3600);
+            const timeLabel = timeDiff <= 24 ? `${timeDiff}h ago` : `${Math.floor(timeDiff / 24)}d ago`;
+            
+            recentActivity.push({
+              type: 'war',
+              description: 'Faction war started',
+              time: timeLabel,
+              icon: 'swords',
+              color: 'red'
+            });
+          } else {
+            // No active wars - show time since last war ended
+            const lastWar = recentWars.find(war => war.end);
+            
+            if (lastWar && lastWar.end) {
+              const timeSinceEnd = Math.floor((now - lastWar.end) / 3600);
+              const timeLabel = timeSinceEnd <= 24 ? `${timeSinceEnd}h ago` : `${Math.floor(timeSinceEnd / 24)}d ago`;
+              
+              recentActivity.push({
+                type: 'info',
+                description: 'Days since last war',
+                time: timeLabel,
+                icon: 'clock',
+                color: 'blue'
+              });
+            }
+          }
         }
       }
       
