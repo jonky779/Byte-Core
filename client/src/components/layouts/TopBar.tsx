@@ -60,7 +60,7 @@ export default function TopBar({ title }: TopBarProps) {
   };
 
   return (
-    <header className="h-16 bg-game-dark border-b border-gray-700 px-4 flex items-center justify-between">
+    <header className="h-16 bg-background border-b border-border px-4 flex items-center justify-between">
       <div className="flex items-center">
         <h2 className="font-rajdhani font-semibold text-lg">{title}</h2>
       </div>
@@ -98,9 +98,9 @@ export default function TopBar({ title }: TopBarProps) {
           
           <div 
             id="user-menu" 
-            className="hidden absolute right-0 z-10 mt-2 w-56 rounded-md bg-black/90 backdrop-blur-sm border border-gray-700 shadow-lg"
+            className="hidden absolute right-0 z-10 mt-2 w-56 rounded-md bg-card backdrop-blur-sm border border-border shadow-lg"
           >
-            <div className="px-4 py-2 text-sm text-gray-300 font-semibold border-b border-gray-700">
+            <div className="px-4 py-2 text-sm text-foreground font-semibold border-b border-border">
               My Account
             </div>
             
