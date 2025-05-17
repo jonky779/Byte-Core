@@ -752,16 +752,22 @@ export class TornAPI {
       const recentActivity = [];
       
       // Check new members from applications (if available)
-      if (factionData.applications && factionData.applications.length > 0) {
-        // Sort applications by time, newest first
-        const recentApplications = [...factionData.applications]
-          .filter(app => app.status === 'accepted')
-          .sort((a, b) => b.time_created - a.time_created)
+      if (factionData.applications) {
+        // Sort applications by expiry time, newest first
+        // Applications in the v2 API come as an object, not an array
+        const applications = Object.values(factionData.applications);
+        
+        // Filter for accepted applications
+        const acceptedApplications = applications
+          .filter((app: any) => app.status === 'accepted')
+          .sort((a: any, b: any) => b.expires - a.expires) // Sort by expiry time (most recent first)
           .slice(0, 1);
           
-        if (recentApplications.length > 0) {
-          const timeDiff = Math.floor((Date.now() / 1000 - recentApplications[0].time_created) / 3600);
-          const timeLabel = timeDiff <= 24 ? `${timeDiff}h ago` : `${Math.floor(timeDiff / 24)}d ago`;
+        if (acceptedApplications.length > 0) {
+          // Calculate time difference from now in days
+          const now = Math.floor(Date.now() / 1000);
+          const timeDiff = Math.floor((now - (acceptedApplications[0].expires - 86400)) / 86400); // Expires is approx 24h after acceptance
+          const timeLabel = timeDiff === 0 ? 'today' : timeDiff === 1 ? 'yesterday' : `${timeDiff}d ago`;
           
           recentActivity.push({
             type: 'join',
@@ -825,6 +831,20 @@ export class TornAPI {
         warStatus = "WAR";
       }
       
+      // Extract faction respect
+      let factionRespect = 0;
+      if (factionData.stats && factionData.stats.respect) {
+        factionRespect = factionData.stats.respect;
+      } else if (basicFactionData && basicFactionData.respect) {
+        factionRespect = basicFactionData.respect;
+      }
+      
+      console.log(`Faction data for ${factionData.name || userData.faction.faction_name}:`, {
+        respect: factionRespect,
+        territories: factionData.territory ? Object.keys(factionData.territory).length : 0,
+        members: totalMembers
+      });
+      
       // Build the response object with real data
       return {
         id: factionData.ID || userData.faction.faction_id,
@@ -835,7 +855,7 @@ export class TornAPI {
           name: factionData.leader_name || "Unknown"
         },
         members_count: totalMembers || 1,
-        respect: factionData.respect || 0,
+        respect: factionRespect,
         territories: factionData.territory ? Object.keys(factionData.territory).length : 0,
         war_status: warStatus,
         capacity: {
