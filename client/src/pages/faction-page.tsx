@@ -119,10 +119,11 @@ export default function FactionPage() {
     enabled: !!user?.apiKey
   });
   
-  // Then fetch detailed faction data
+  // Then fetch detailed faction data - disabled for now until API supports it correctly
+  // Use the basic faction data for rendering
   const { data, isLoading, isError, refetch, isFetching } = useQuery<FactionDetailResponse>({
     queryKey: ["/api/faction/detail"],
-    enabled: !!user?.apiKey && !!factionBasic
+    enabled: false // Temporarily disabled until real details API is implemented
   });
   
   const getStatusBadge = (status: string) => {
@@ -196,10 +197,21 @@ export default function FactionPage() {
             member.position.toLowerCase().includes(searchQuery.toLowerCase()));
   });
   
-  const onlineCount = factionBasic?.member_status?.online || 0;
-  const idleCount = factionBasic?.member_status?.idle || 0;
-  const offlineCount = factionBasic?.member_status?.offline || 0;
-  const hospitalCount = factionBasic?.member_status?.hospital || 0;
+  // Extract member status counts from the API data
+  let onlineCount = 0;
+  let idleCount = 0;
+  let offlineCount = 0;
+  let hospitalCount = 0;
+  
+  // Check if member_status exists in faction data
+  if (factionBasic && typeof factionBasic === 'object') {
+    const memberStatus = (factionBasic as any).member_status || {};
+    onlineCount = memberStatus.online || 0;
+    idleCount = memberStatus.idle || 0; 
+    offlineCount = memberStatus.offline || 0;
+    hospitalCount = memberStatus.hospital || 0;
+  }
+  
   const totalMembers = (onlineCount + idleCount + offlineCount + hospitalCount) || 1;
   
   const onlinePercentage = (onlineCount / totalMembers) * 100;
@@ -282,10 +294,10 @@ export default function FactionPage() {
                 <div className="text-xs text-gray-400 mb-1">WAR STATUS</div>
                 <div className="text-xl font-rajdhani font-bold text-yellow-400 flex items-center">
                   <Shield className="h-5 w-5 mr-2" />
-                  {data.wars.active.length > 0 ? "At War" : "Peaceful"}
+                  {factionBasic?.war_status === "WAR" ? "At War" : "Peaceful"}
                 </div>
                 <div className="text-xs text-gray-400 mt-2">
-                  Active wars: {data.wars.active.length}
+                  Active wars: {data?.wars?.active?.length || 0}
                 </div>
               </div>
             </div>
