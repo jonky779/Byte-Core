@@ -17,10 +17,11 @@ export default defineConfig({
       : []),
   ],
   server: {
-  hmr: {
-    overlay: false
-  }
-},
+    hmr: {
+      overlay: false
+    },
+    middlewareMode: false
+  },
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),

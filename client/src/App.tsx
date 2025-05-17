@@ -1,4 +1,51 @@
 import { Switch, Route } from "wouter";
+
+// Hide the Vite error overlay by inserting CSS immediately
+const hideErrorOverlay = document.createElement('style');
+hideErrorOverlay.textContent = `
+  .vite-error-overlay, 
+  [data-plugin="runtime-error-modal"], 
+  [plugin="runtime-error-plugin"],
+  div#__vite-plugin-runtime-error-modal,
+  div[plugin*="error"],
+  div[style*="position: fixed"][style*="z-index: 9999"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    z-index: -9999 !important;
+    pointer-events: none !important;
+  }
+`;
+document.head.appendChild(hideErrorOverlay);
+
+// Add an observer to remove any error overlay that gets added
+const errorObserver = new MutationObserver((mutations) => {
+  for (const mutation of mutations) {
+    if (mutation.addedNodes.length) {
+      mutation.addedNodes.forEach(node => {
+        if (node.nodeType === 1) {
+          const el = node as HTMLElement;
+          if (
+            el.getAttribute('plugin') === 'runtime-error-plugin' ||
+            el.id === '__vite-plugin-runtime-error-modal' ||
+            (el.tagName === 'DIV' && el.style.position === 'fixed' && el.style.zIndex === '9999')
+          ) {
+            el.remove();
+          }
+        }
+      });
+    }
+  }
+});
+
+// Start observing the document
+if (typeof document !== 'undefined') {
+  errorObserver.observe(document.body || document.documentElement, {
+    childList: true,
+    subtree: true
+  });
+}
+
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
