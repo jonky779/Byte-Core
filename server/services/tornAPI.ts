@@ -682,7 +682,7 @@ export class TornAPI {
   
   public async getFactionData(apiKey: string): Promise<FactionData> {
     try {
-      // Get faction info through basic profile data first to determine if user is in a faction
+      // Get faction info through basic profile data
       const userData = await this.makeRequest("user?selections=basic,profile", apiKey);
       
       // If the user doesn't have a faction, return a "Not in a faction" response
@@ -714,31 +714,19 @@ export class TornAPI {
         };
       }
       
-      // User is in a faction - get detailed data from v2 API
+      // User is in a faction - get more detailed data
       const factionId = userData.faction.faction_id;
-      
-      // First try the v2 API
-      let factionData;
-      try {
-        factionData = await this.makeRequest(`v2/faction?selections=applications,chains,stats,territory`, apiKey);
-      } catch (error) {
-        // Fallback to v1 API if v2 fails
-        console.log("V2 API failed, falling back to V1:", error);
-        factionData = await this.makeRequest(`faction/${factionId}?selections=basic`, apiKey);
-      }
-      
-      // For member status, we still need the basic faction endpoint
-      const factionBasicData = await this.makeRequest(`faction/${factionId}?selections=basic`, apiKey);
+      const factionData = await this.makeRequest(`faction/${factionId}?selections=basic`, apiKey);
       
       // Parse member status
       const memberStatus = { online: 0, idle: 0, offline: 0, hospital: 0 };
       let totalMembers = 0;
       
-      if (factionBasicData && factionBasicData.members) {
-        totalMembers = Object.keys(factionBasicData.members).length;
+      if (factionData && factionData.members) {
+        totalMembers = Object.keys(factionData.members).length;
         
         // Count member statuses
-        Object.values(factionBasicData.members).forEach((member: any) => {
+        Object.values(factionData.members).forEach((member: any) => {
           const status = member.last_action.status;
           if (status === "Online") memberStatus.online++;
           else if (status === "Idle") memberStatus.idle++;
@@ -753,7 +741,7 @@ export class TornAPI {
         });
       }
       
-      // Create recent activity (using API data if available, otherwise mock data)
+      // Create recent activity (mock data since API doesn't provide this)
       const recentActivity = [
         {
           type: 'join',
@@ -778,34 +766,20 @@ export class TornAPI {
         }
       ];
       
-      // Extract data differently based on API version
-      let resp = 0;
-      let terr = 0;
-      
-      if (factionData.territory) {
-        // This is v2 API
-        terr = Object.keys(factionData.territory).length;
-        resp = factionData.stats?.respect || 0;
-      } else {
-        // This is v1 API
-        terr = factionData.territories ? Object.keys(factionData.territories).length : 0;
-        resp = factionData.respect || 0;
-      }
-      
       return {
-        id: factionBasicData.ID || userData.faction.faction_id,
-        name: factionBasicData.name || userData.faction.faction_name,
-        tag: factionBasicData.tag || userData.faction.faction_tag || "N/A",
+        id: factionData.ID || userData.faction.faction_id,
+        name: factionData.name || userData.faction.faction_name,
+        tag: factionData.tag || userData.faction.faction_tag || "N/A",
         leader: {
-          id: factionBasicData.leader || 0,
-          name: factionBasicData.leader_name || "Unknown"
+          id: factionData.leader || 0,
+          name: factionData.leader_name || "Unknown"
         },
         members_count: totalMembers || 1,
-        respect: resp,
-        territories: terr,
+        respect: factionData.respect || 0,
+        territories: factionData.territories ? Object.keys(factionData.territories).length : 0,
         war_status: "PEACE", // API doesn't directly provide war status
         capacity: {
-          current: totalMembers,
+          current: totalMembers || 1,
           maximum: totalMembers + 5 // Not directly available from API
         },
         member_status: memberStatus,
@@ -840,127 +814,68 @@ export class TornAPI {
   }
   
   public async getFactionDetailedData(apiKey: string): Promise<any> {
-    try {
-      // Get faction info through basic profile data
-      const userData = await this.makeRequest("user?selections=basic,profile", apiKey);
-      
-      // If the user doesn't have a faction, return a "Not in a faction" response
-      if (!userData.faction || !userData.faction.faction_id) {
-        return {
-          id: 0,
-          name: "Not in a Faction",
-          tag: "N/A",
-          territories: { count: 0, list: [] },
-          members: {},
-          capacity: { current: 0, maximum: 0 },
-          stats: {}
-        };
-      }
-      
-      const factionId = userData.faction.faction_id;
-      
-      // Try v2 API first for more detailed data
-      let factionData;
-      let useV2 = true;
-      
-      try {
-        factionData = await this.makeRequest(`v2/faction?selections=applications,chains,hof,rankedwars,stats,territory`, apiKey);
-      } catch (error) {
-        console.log("V2 API failed, falling back to V1:", error);
-        useV2 = false;
-        factionData = await this.makeRequest(`faction/${factionId}?selections=basic,stats,territory,crimes,donations,armoury,reports,stats`, apiKey);
-      }
-      
-      // Get basic faction data for member details
-      const basicFactionData = await this.makeRequest(`faction/${factionId}?selections=basic`, apiKey);
-      
-      let members = {};
-      let memberCount = 0;
-      let coLeader = null;
-      
-      // Process members if available
-      if (basicFactionData && basicFactionData.members) {
-        members = basicFactionData.members;
-        memberCount = Object.keys(basicFactionData.members).length;
-        
-        // Look for co-leader
-        for (const memberId in basicFactionData.members) {
-          if (basicFactionData.members[memberId].position === "Co-leader") {
-            coLeader = {
-              id: parseInt(memberId),
-              name: basicFactionData.members[memberId].name
-            };
-            break;
+    // Mock data for demonstration
+    return {
+      id: 12345,
+      name: "FactionName",
+      tag: "FCTN",
+      age_days: 1095,
+      leader: {
+        id: 9876543,
+        name: "LeaderName"
+      },
+      co_leaders: [],
+      members: [
+        {
+          id: 1234567,
+          name: "MemberName",
+          level: 50,
+          status: "Online",
+          last_action: "1 minute ago",
+          position: "Member",
+          days_in_faction: 365,
+          xanax_addiction: 0,
+          energy: {
+            current: 100,
+            maximum: 150
+          },
+          nerve: {
+            current: 25,
+            maximum: 50
+          },
+          stats: {
+            strength: 10000,
+            defense: 9500,
+            speed: 9000,
+            dexterity: 8500,
+            total: 37000
           }
         }
+      ],
+      territories: [
+        {
+          id: "ABC123",
+          name: "Territory1",
+          value: 150,
+          controlled_since: "2023-01-01T00:00:00.000Z"
+        }
+      ],
+      wars: {
+        active: [],
+        past: []
+      },
+      stats: {
+        respect: 500000,
+        territories: 5,
+        members_count: 25,
+        max_members: 30,
+        best_chain: 250,
+        attacks_won: 5000,
+        attacks_lost: 1000,
+        money_balance: 5000000000,
+        points_balance: 25000
       }
-      
-      // Extract territories
-      let territories = [];
-      let territoryCount = 0;
-      
-      if (useV2 && factionData.territory) {
-        territories = Object.keys(factionData.territory);
-        territoryCount = territories.length;
-      } else if (!useV2 && factionData.territories) {
-        territories = Object.keys(factionData.territories);
-        territoryCount = territories.length;
-      }
-      
-      // Get chain data
-      let chain = {
-        current: 0,
-        max: 0,
-        timeout: 0,
-        cooldown: false
-      };
-      
-      if (useV2 && factionData.chains) {
-        chain.current = factionData.chains.current || 0;
-        chain.max = factionData.chains.max || 0;
-      }
-      
-      // Process stats differently based on API version
-      let stats = {};
-      
-      if (useV2) {
-        stats = factionData.stats || {};
-      } else {
-        stats = factionData.stats || {};
-      }
-      
-      // Build the response
-      const result = {
-        id: basicFactionData.ID || userData.faction.faction_id,
-        name: basicFactionData.name || userData.faction.faction_name,
-        tag: basicFactionData.tag || userData.faction.faction_tag || "N/A",
-        leader: {
-          id: basicFactionData.leader || 0,
-          name: basicFactionData.leader_name || "Unknown"
-        },
-        co_leader: coLeader,
-        age_days: useV2 ? (factionData.age || 0) : (basicFactionData.age || 0),
-        respect: useV2 ? (factionData.stats?.respect || 0) : (basicFactionData.respect || 0),
-        capacity: {
-          current: memberCount,
-          maximum: memberCount + 5 // Not directly available from API
-        },
-        peace: true, // Default
-        territories: {
-          count: territoryCount,
-          list: territories
-        },
-        members: members,
-        chain: chain,
-        stats: stats,
-        last_updated: new Date().toISOString()
-      };
-      
-      return result;
-    } catch (error) {
-      console.error("Error fetching detailed faction data:", error);
-      throw error;
-    }
+    };
   }
   
   public async getBazaarItems(apiKey: string, category: string = 'all'): Promise<BazaarItems> {
