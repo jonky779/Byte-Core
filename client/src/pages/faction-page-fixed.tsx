@@ -580,13 +580,80 @@ export default function FactionPage() {
             
             {/* Wars Tab */}
             <TabsContent value="wars">
-              <div className="rounded-md border border-gray-700">
-                <div className="flex flex-col justify-center items-center py-16 text-gray-400">
-                  <AlertCircle className="h-12 w-12 mb-4 opacity-40" />
-                  <p>War history is not yet available from the API.</p>
-                  <p className="text-sm">This feature will be coming soon.</p>
+              {faction.recent_wars && faction.recent_wars.length > 0 ? (
+                <div className="rounded-md border border-gray-700 overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-gray-800 hover:bg-gray-800">
+                        <TableHead className="text-gray-300">War ID</TableHead>
+                        <TableHead className="text-gray-300">Opponent</TableHead>
+                        <TableHead className="text-gray-300">Start Date</TableHead>
+                        <TableHead className="text-gray-300">End Date</TableHead>
+                        <TableHead className="text-gray-300">Outcome</TableHead>
+                        <TableHead className="text-gray-300">Score</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {faction.recent_wars.map((war, index) => {
+                        const startDate = new Date(war.start * 1000);
+                        const endDate = war.end ? new Date(war.end * 1000) : null;
+                        const isWinner = war.winner === faction.id;
+                        const ourFaction = war.factions.find(f => f.id === faction.id);
+                        const opposingFaction = war.factions.find(f => f.id !== faction.id);
+                        
+                        return (
+                          <TableRow key={index} className="hover:bg-game-panel/40">
+                            <TableCell className="font-medium">#{war.id}</TableCell>
+                            <TableCell>
+                              {opposingFaction ? (
+                                <span className="text-primary">{opposingFaction.name}</span>
+                              ) : (
+                                <span className="text-gray-400">Unknown</span>
+                              )}
+                            </TableCell>
+                            <TableCell>{startDate.toLocaleDateString()}</TableCell>
+                            <TableCell>
+                              {endDate ? endDate.toLocaleDateString() : "Ongoing"}
+                            </TableCell>
+                            <TableCell>
+                              {endDate ? (
+                                isWinner ? (
+                                  <Badge className="bg-green-500/20 text-green-500">Victory</Badge>
+                                ) : (
+                                  <Badge className="bg-red-500/20 text-red-500">Defeat</Badge>
+                                )
+                              ) : (
+                                <Badge className="bg-yellow-500/20 text-yellow-500">In Progress</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <div className="font-bold">
+                                {ourFaction ? ourFaction.score.toLocaleString() : "0"} 
+                                <span className="text-gray-400 mx-1">vs</span> 
+                                {opposingFaction ? opposingFaction.score.toLocaleString() : "0"}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
                 </div>
-              </div>
+              ) : (
+                <div className="rounded-md border border-gray-700 bg-game-dark p-6">
+                  <div className="flex flex-col justify-center items-center py-8 text-gray-400">
+                    <Shield className="h-12 w-12 mb-4 opacity-40" />
+                    <p className="text-lg font-medium mb-1">No Recent Wars</p>
+                    <p className="text-sm text-gray-500">
+                      {faction.last_war ? (
+                        `Last war ended ${faction.last_war} ago`
+                      ) : (
+                        "This faction has not participated in any recent wars"
+                      )}
+                    </p>
+                  </div>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </CardContent>
