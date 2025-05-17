@@ -191,7 +191,7 @@ export default function FactionPage() {
                   {((faction.respect || 0) / 1000000).toFixed(1)}M
                 </div>
                 <div className="text-xs text-gray-400 mt-2">
-                  Best Chain: 250 hits
+                  Best Chain: {faction.best_chain || 0} hits
                 </div>
               </div>
               
