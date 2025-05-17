@@ -781,31 +781,28 @@ export class TornAPI {
               // Get the current time
               const now = Math.floor(Date.now() / 1000);
               
-              // In Torn API, the valid_until timestamp shows when the application would expire
-              // 1. For accepted applications, its meaning changes to "when membership becomes permanent"
-              // 2. Applications expire in 72 hours (3 days) if not accepted
-              // 3. From user input, we know this member joined on May 15 (2 days ago from May 17)
+              // In Torn API, applications have a valid_until timestamp that indicates when they expire
+              // When an application is accepted, this timestamp is set to 72 hours (3 days) after acceptance
               
-              // Get the application timestamp and valid_until timestamp
+              // Get the application valid_until timestamp
               const validUntilTime = mostRecentApp?.valid_until || now;
               
-              // Calculate how many full days have passed since May 15
-              // Since today is May 17, that's exactly 2 days
+              // The member was accepted 3 days (72 hours) before the valid_until time
+              // So calculate the acceptance time by subtracting 72 hours (259200 seconds) from valid_until
+              const acceptanceTime = validUntilTime - 259200;
               
-              // May 15 at 00:00 UTC would be:
-              const may15 = new Date('2025-05-15T00:00:00Z');
-              const may15Timestamp = Math.floor(may15.getTime() / 1000);
+              // Calculate time difference from acceptance to now in seconds
+              const secondsSinceAcceptance = now - acceptanceTime;
               
-              // Calculate time difference in seconds and days
-              const secondsSince = now - may15Timestamp;
-              const daysSinceAcceptance = Math.floor(secondsSince / 86400);
+              // Convert to days (86400 seconds = 1 day)
+              const daysSinceAcceptance = Math.floor(secondsSinceAcceptance / 86400);
               
               // Log details for debugging
               console.log("Current time:", new Date(now * 1000).toISOString());
-              console.log("Valid until:", new Date(validUntilTime * 1000).toISOString());
-              console.log("May 15 reference:", may15.toISOString());
-              console.log("Seconds since May 15:", secondsSince);
-              console.log("Days since May 15:", daysSinceAcceptance);
+              console.log("Valid until:", new Date(validUntilTime * 1000).toISOString()); 
+              console.log("Calculated acceptance time:", new Date(acceptanceTime * 1000).toISOString());
+              console.log("Seconds since acceptance:", secondsSinceAcceptance);
+              console.log("Days since acceptance:", daysSinceAcceptance);
               
               // Create the appropriate time label
               let timeLabel = '';
