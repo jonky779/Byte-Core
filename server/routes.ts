@@ -380,6 +380,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Data Refresh Endpoints - Requires authentication
+  app.post("/api/refresh/stats", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (!user.apiKey) {
+        return res.status(400).json({ message: "API key not configured. Please add your Torn API key in settings." });
+      }
+      
+      const playerStats = await tornAPI.getPlayerStats(user.apiKey);
+      res.json({ success: true, message: "Stats refreshed successfully" });
+    } catch (error) {
+      console.error("Error refreshing stats:", error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to refresh stats",
+      });
+    }
+  });
+  
+  app.post("/api/refresh/faction", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (!user.apiKey) {
+        return res.status(400).json({ message: "API key not configured. Please add your Torn API key in settings." });
+      }
+      
+      await tornAPI.getFactionData(user.apiKey);
+      await tornAPI.getFactionDetailedData(user.apiKey);
+      
+      res.json({ success: true, message: "Faction data refreshed successfully" });
+    } catch (error) {
+      console.error("Error refreshing faction data:", error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to refresh faction data",
+      });
+    }
+  });
+  
+  app.post("/api/refresh/company", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (!user.apiKey) {
+        return res.status(400).json({ message: "API key not configured. Please add your Torn API key in settings." });
+      }
+      
+      await tornAPI.getCompanyData(user.apiKey);
+      await tornAPI.getCompanyDetailedData(user.apiKey);
+      
+      res.json({ success: true, message: "Company data refreshed successfully" });
+    } catch (error) {
+      console.error("Error refreshing company data:", error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to refresh company data",
+      });
+    }
+  });
+  
+  app.post("/api/refresh/bazaar", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (!user.apiKey) {
+        return res.status(400).json({ message: "API key not configured. Please add your Torn API key in settings." });
+      }
+      
+      await tornAPI.getBazaarItems(user.apiKey);
+      
+      res.json({ success: true, message: "Bazaar data refreshed successfully" });
+    } catch (error) {
+      console.error("Error refreshing bazaar data:", error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to refresh bazaar data",
+      });
+    }
+  });
+  
   // API Key Management - Requires authentication
   app.get("/api/settings/apikey", isAuthenticated, async (req, res) => {
     try {

@@ -1,5 +1,5 @@
-import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
+import { useDataRefresh } from "@/hooks/use-data-refresh";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,9 +10,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { apiRequest } from "@/lib/queryClient";
-import { Loader2 } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { formatRelativeTime } from "@/lib/utils";
 
 interface TopBarProps {
   title: string;
