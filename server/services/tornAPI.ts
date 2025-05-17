@@ -714,19 +714,26 @@ export class TornAPI {
         };
       }
       
-      // User is in a faction - get more detailed data
+      // User is in a faction - get detailed data from v2 API
       const factionId = userData.faction.faction_id;
-      const factionData = await this.makeRequest(`faction/${factionId}?selections=basic`, apiKey);
+      console.log(`Fetching detailed faction data for faction ID: ${factionId}`);
       
-      // Parse member status
+      // Get detailed faction data using the v2 API with all needed selections
+      const factionData = await this.makeRequest(`v2/faction?selections=basic,applications,chains,rankedwars,stats,territory`, apiKey);
+      
+      // Parse member status - The v2 API doesn't provide member status in basic data
+      // We still need to fetch basic faction data for member status
+      const basicFactionData = await this.makeRequest(`faction/${factionId}?selections=basic`, apiKey);
+      
+      // Extract member status
       const memberStatus = { online: 0, idle: 0, offline: 0, hospital: 0 };
       let totalMembers = 0;
       
-      if (factionData && factionData.members) {
-        totalMembers = Object.keys(factionData.members).length;
+      if (basicFactionData && basicFactionData.members) {
+        totalMembers = Object.keys(basicFactionData.members).length;
         
         // Count member statuses
-        Object.values(factionData.members).forEach((member: any) => {
+        Object.values(basicFactionData.members).forEach((member: any) => {
           const status = member.last_action.status;
           if (status === "Online") memberStatus.online++;
           else if (status === "Idle") memberStatus.idle++;
@@ -741,31 +748,84 @@ export class TornAPI {
         });
       }
       
-      // Create recent activity (mock data since API doesn't provide this)
-      const recentActivity = [
-        {
-          type: 'join',
-          description: 'New member joined the faction',
-          time: '1h ago',
-          icon: 'user-plus',
-          color: 'green'
-        },
-        {
-          type: 'war',
-          description: 'Faction war started',
-          time: '5h ago',
-          icon: 'fist-raised',
-          color: 'red'
-        },
-        {
+      // Extract recent activities based on real data
+      const recentActivity = [];
+      
+      // Check new members from applications (if available)
+      if (factionData.applications && factionData.applications.length > 0) {
+        // Sort applications by time, newest first
+        const recentApplications = [...factionData.applications]
+          .filter(app => app.status === 'accepted')
+          .sort((a, b) => b.time_created - a.time_created)
+          .slice(0, 1);
+          
+        if (recentApplications.length > 0) {
+          const timeDiff = Math.floor((Date.now() / 1000 - recentApplications[0].time_created) / 3600);
+          const timeLabel = timeDiff <= 24 ? `${timeDiff}h ago` : `${Math.floor(timeDiff / 24)}d ago`;
+          
+          recentActivity.push({
+            type: 'join',
+            description: 'New member joined the faction',
+            time: timeLabel,
+            icon: 'user-plus',
+            color: 'green'
+          });
+        }
+      }
+      
+      // Check faction wars
+      if (factionData.rankedwars && factionData.rankedwars.length > 0) {
+        // Sort wars by start time, newest first
+        const recentWars = [...factionData.rankedwars]
+          .sort((a, b) => b.start - a.start)
+          .slice(0, 1);
+          
+        if (recentWars.length > 0) {
+          const timeDiff = Math.floor((Date.now() / 1000 - recentWars[0].start) / 3600);
+          const timeLabel = timeDiff <= 24 ? `${timeDiff}h ago` : `${Math.floor(timeDiff / 24)}d ago`;
+          
+          recentActivity.push({
+            type: 'war',
+            description: 'Faction war started',
+            time: timeLabel,
+            icon: 'fist-raised',
+            color: 'red'
+          });
+        }
+      }
+      
+      // Check territories (count gives us some indication of territory activity)
+      if (factionData.territory) {
+        const territoryCount = Object.keys(factionData.territory).length;
+        
+        // Use a placeholder time since we don't know when territories were actually captured
+        recentActivity.push({
           type: 'achievement',
-          description: 'Territory captured',
-          time: '1d ago',
+          description: `${territoryCount} territories controlled`,
+          time: 'current',
           icon: 'trophy',
           color: 'yellow'
-        }
-      ];
+        });
+      }
       
+      // If there are no real activities, add a placeholder
+      if (recentActivity.length === 0) {
+        recentActivity.push({
+          type: 'info',
+          description: 'No recent faction activity',
+          time: 'N/A',
+          icon: 'info',
+          color: 'gray'
+        });
+      }
+      
+      // Determine war status based on ranked wars
+      let warStatus = "PEACE";
+      if (factionData.rankedwars && factionData.rankedwars.some(war => war.status === 'active')) {
+        warStatus = "WAR";
+      }
+      
+      // Build the response object with real data
       return {
         id: factionData.ID || userData.faction.faction_id,
         name: factionData.name || userData.faction.faction_name,
@@ -776,8 +836,8 @@ export class TornAPI {
         },
         members_count: totalMembers || 1,
         respect: factionData.respect || 0,
-        territories: factionData.territories ? Object.keys(factionData.territories).length : 0,
-        war_status: "PEACE", // API doesn't directly provide war status
+        territories: factionData.territory ? Object.keys(factionData.territory).length : 0,
+        war_status: warStatus,
         capacity: {
           current: totalMembers || 1,
           maximum: totalMembers + 5 // Not directly available from API
