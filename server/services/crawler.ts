@@ -159,7 +159,7 @@ export class Crawler {
     }
   }
 
-  public async start(): Promise<void> {
+  public async start(userApiKey?: string, userId?: number): Promise<void> {
     if (this.status.status === "running") {
       throw new Error("Crawler is already running");
     }
@@ -170,15 +170,18 @@ export class Crawler {
     
     // Reset tracking data
     this.status.indexedPlayers = 0;
-    this.status.totalPlayers = 100000; // Estimate for UI
+    this.status.totalPlayers = 100; // Start with smaller estimate, will grow as we discover
     this.status.crawlSpeed = 0;
     this.playerQueue.clear();
     this.processedPlayers.clear();
     this.discoveredFactions.clear();
     this.discoveredCompanies.clear();
     
-    // Use the real admin API key to perform requests
-    const apiKey = "fvgfbmJ3IT7ksiMm"; // Admin API key
+    // Use the user's API key if provided, otherwise fallback to admin key
+    const apiKey = userApiKey || "fvgfbmJ3IT7ksiMm";
+    
+    // Store the API key for all crawler operations
+    this.currentApiKey = apiKey;
     
     this.addLog("Control", `Crawler started in smart mode - will discover relationships from the API`, true);
     
@@ -467,10 +470,13 @@ export class Crawler {
     }
   }
   
+  // Real API key to use for all crawler operations - set during start()
+  private currentApiKey: string = "";
+
   private async processSinglePlayer(playerId: number): Promise<void> {
     try {
-      // Use admin's personal API key for crawler operations
-      const apiKey = "fvgfbmJ3IT7ksiMm";
+      // Use the API key set during start()
+      const apiKey = this.currentApiKey;
       
       if (!apiKey) {
         throw new Error("No API key available for crawler");

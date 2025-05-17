@@ -32,19 +32,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize the crawler in demo mode
   await crawler.initialize();
   
-  // Hook into the login process to capture user data
+  // Modify the login route to auto-start crawler with user's data
+  setupAuth(app);
+  
+  // Custom login middleware that runs after authentication but before response
   app.use((req, res, next) => {
-    // Check if user just logged in and is an admin
+    // Check if this is a new login (user just became authenticated)
     if (req.isAuthenticated() && req.user && (req.user as any).role === "admin") {
-      // Get the user's API key from their session
       const apiKey = (req.user as any).apiKey;
+      const userId = req.user.id;
       
       if (apiKey) {
-        console.log("Found admin user with API key, updating crawler with latest data");
+        // Get the user's Torn ID (3255504) to start the crawler with that ID
+        const tornId = 3255504; // Use your actual Torn ID
         
-        // Update the crawler with the user's API key data (don't auto-start)
-        crawler.updateUserData(req.user!.id, apiKey).catch(error => {
-          console.error("Error updating crawler data:", error);
+        console.log(`Admin user logged in - starting crawler with user's ID: ${tornId}`);
+        // Auto-start crawler using the right player ID
+        crawler.autoStart(apiKey, tornId).catch(error => {
+          console.error("Error auto-starting crawler:", error);
         });
       }
     }
