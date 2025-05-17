@@ -872,17 +872,18 @@ export class TornAPI {
         members: totalMembers
       });
       
-      // For ODB faction, we know the correct best chain value
-      let bestChain = 906;
+      // Get best chain from the basic data
+      let bestChain = 0;
+      if (factionData.basic && factionData.basic.best_chain) {
+        bestChain = factionData.basic.best_chain;
+      }
       
       console.log("Best chain value:", bestChain);
 
-      // Get faction age in days
+      // Get faction age in days from the basic data
       let daysOld = 0;
-      if (factionData.age) {
-        daysOld = factionData.age;
-      } else if (basicFactionData && basicFactionData.age) {
-        daysOld = basicFactionData.age;
+      if (factionData.basic && factionData.basic.days_old) {
+        daysOld = factionData.basic.days_old;
       }
       
       // Build the response object with real data
