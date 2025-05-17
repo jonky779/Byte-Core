@@ -942,6 +942,10 @@ export class TornAPI {
       // Process recent wars data
       const recentWars = factionData.rankedwars || [];
       
+      // Make sure we log the war data for debugging
+      console.log("Recent wars data:", JSON.stringify(recentWars.slice(0, 2)));
+      console.log(`Total wars fetched from API: ${recentWars.length}`);
+      
       // Sort wars by start time, newest first
       const sortedWars = [...recentWars].sort((a, b) => b.start - a.start);
       

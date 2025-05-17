@@ -103,7 +103,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "API key not configured. Please add your Torn API key in settings." });
       }
       
-      const factionData = await tornAPI.getFactionData(user.apiKey);
+      // Include full war history parameter if requested
+      const includeFullWarHistory = req.query.fullWarHistory === 'true';
+      
+      const factionData = await tornAPI.getFactionData(user.apiKey, includeFullWarHistory);
       res.json(factionData);
     } catch (error) {
       res.status(500).json({
