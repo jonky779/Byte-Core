@@ -305,13 +305,50 @@ export default function FactionPage() {
                 </div>
               </div>
               
-              <div className="rounded-md border border-gray-700">
-                <div className="flex flex-col justify-center items-center py-16 text-gray-400">
+              {faction.members && Object.keys(faction.members).length > 0 ? (
+                <Table className="border-gray-700">
+                  <TableHeader className="bg-game-panel">
+                    <TableRow>
+                      <TableHead className="w-[200px]">Name</TableHead>
+                      <TableHead>Position</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Days in Faction</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {Object.values(faction.members || {})
+                      .filter(member => {
+                        if (statusFilter !== 'all' && member.last_action?.status !== statusFilter) return false;
+                        if (positionFilter !== 'all' && member.position !== positionFilter) return false;
+                        if (searchQuery && !member.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+                        return true;
+                      })
+                      .map(member => (
+                        <TableRow key={member.name} className="border-gray-700">
+                          <TableCell className="font-medium">{member.name}</TableCell>
+                          <TableCell>{member.position}</TableCell>
+                          <TableCell>
+                            <Badge className={
+                              member.last_action?.status === 'Online' ? 'bg-green-500/20 text-green-500' :
+                              member.last_action?.status === 'Idle' ? 'bg-yellow-500/20 text-yellow-500' :
+                              member.last_action?.status === 'Hospital' ? 'bg-blue-500/20 text-blue-500' :
+                              'bg-red-500/20 text-red-500'
+                            }>
+                              {member.last_action?.status || 'Offline'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">{member.days_in_faction}</TableCell>
+                        </TableRow>
+                      ))
+                    }
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="flex flex-col justify-center items-center py-16 text-gray-400 border border-gray-700 rounded-md">
                   <AlertCircle className="h-12 w-12 mb-4 opacity-40" />
-                  <p>Member list is not yet available from the API.</p>
-                  <p className="text-sm">This feature will be coming soon.</p>
+                  <p>No member data found. Please refresh.</p>
                 </div>
-              </div>
+              )}
             </TabsContent>
             
             {/* Territories Tab */}
