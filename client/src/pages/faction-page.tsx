@@ -113,18 +113,22 @@ export default function FactionPage() {
   const [positionFilter, setPositionFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   
-  // First fetch basic faction data
-  const { data: factionBasic, isLoading: isLoadingBasic, error: errorBasic } = useQuery({
+  // Fetch faction data
+  const { 
+    data: factionBasic, 
+    isLoading: isLoadingBasic, 
+    error: errorBasic,
+    refetch,
+    isFetching 
+  } = useQuery({
     queryKey: ["/api/faction"],
-    enabled: !!user?.apiKey
+    enabled: !!user?.apiKey,
+    retry: 1,
+    refetchOnWindowFocus: false
   });
   
-  // Then fetch detailed faction data - disabled for now until API supports it correctly
-  // Use the basic faction data for rendering
-  const { data, isLoading, isError, refetch, isFetching } = useQuery<FactionDetailResponse>({
-    queryKey: ["/api/faction/detail"],
-    enabled: false // Temporarily disabled until real details API is implemented
-  });
+  // Dummy placeholder for detailed data - not actually used currently
+  const data: FactionDetailResponse | undefined = undefined;
   
   // Function to format age in years, months, and days
   const formatFactionAge = (totalDays: number): string => {
@@ -158,7 +162,8 @@ export default function FactionPage() {
     }
   };
   
-  if (isLoading) {
+  // Show loading state when fetching faction data
+  if (isLoadingBasic) {
     return (
       <MainLayout title="Faction Tracking">
         <Helmet>
@@ -241,42 +246,16 @@ export default function FactionPage() {
     );
   }
   
-  // Use the actual faction data from the API
-  const factionData = {
-    name: factionBasic.name,
-    tag: factionBasic.tag,
-    id: factionBasic.id,
-    age_days: factionBasic.age_days || 0,
-    respect: factionBasic.respect || 0,
-    territories: factionBasic.territories || 0,
-    war_status: factionBasic.war_status || "PEACE",
-    members_count: factionBasic.members_count || 0,
-    capacity: {
-      maximum: factionBasic.capacity?.maximum || 100
-    },
-    member_status: {
-      online: factionBasic.member_status?.online || 0,
-      idle: factionBasic.member_status?.idle || 0,
-      offline: factionBasic.member_status?.offline || 0,
-      hospital: factionBasic.member_status?.hospital || 0
-    }
-  };
+  // Extract data from API response and handle it properly
+  const memberStatus = factionBasic?.member_status || {};
+  const onlineCount = memberStatus.online || 0;
+  const idleCount = memberStatus.idle || 0;
+  const offlineCount = memberStatus.offline || 0;
+  const hospitalCount = memberStatus.hospital || 0;
   
-  // Calculate member statistics based on the available data
-  const membersArray = (data?.members || []);
-  const filteredMembers = membersArray.filter(member => {
-    return (statusFilter === "all" || member.status === statusFilter) &&
-           (positionFilter === "all" || member.position === positionFilter) &&
-           (searchQuery === "" || 
-            member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            member.position.toLowerCase().includes(searchQuery.toLowerCase()));
-  });
-  
-  // Extract member status counts
-  const onlineCount = factionData.member_status.online;
-  const idleCount = factionData.member_status.idle;
-  const offlineCount = factionData.member_status.offline;
-  const hospitalCount = factionData.member_status.hospital;
+  // Setting placeholder empty array for members since we don't have members data
+  const membersArray = [];
+  const filteredMembers = [];
   
   const totalMembers = (onlineCount + idleCount + offlineCount + hospitalCount) || 1;
   
