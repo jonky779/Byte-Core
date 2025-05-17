@@ -146,18 +146,6 @@ export class MemStorage implements IStorage {
   }
   
   private async initializeSampleData(): Promise<void> {
-    // Create admin user with your API key
-    const hashedPassword = await this.hashPassword("password");
-    const adminUser = {
-      id: 1,
-      username: "Mr_Awaken",
-      email: "admin@bytecprevault.com",
-      password: hashedPassword,
-      apiKey: "fvgfbmJ3IT7ksiMm", // Your personal API key
-      role: "admin" // Give admin privileges
-    };
-    this.users.set(adminUser.id, adminUser);
-    
     // Add some sample items
     for (let i = 1; i <= 100; i++) {
       const categories = ["Weapon", "Armor", "Drug", "Booster", "Medical", "Enhancer", "Alcohol", "Candy", "Temporary", "Special"];

@@ -29,58 +29,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const tornAPI = new TornAPI();
   const crawler = new Crawler(tornAPI, storage);
   
-  // Initialize the crawler in demo mode
+  // Initialize the crawler with demo mode - we'll activate real mode for administrators
   await crawler.initialize();
-  
-  // Modify the login route to auto-start crawler with user's data
-  setupAuth(app);
-  
-  // This is the API route to automatically get player data directly from the Torn API
-  app.get("/api/system/crawler/real-data", isAuthenticated, isAdmin, async (req, res) => {
-    try {
-      // Use the admin's API key to get real data
-      const apiKey = (req.user as any).apiKey;
-      if (!apiKey) {
-        return res.status(401).json({ error: "API key not found" });
-      }
-      
-      const tornId = 3255504; // Mr_Awaken's Torn ID
-      console.log(`Admin accessing crawler with real player ID: ${tornId}`);
-      
-      // Manually start crawler with real player ID and real API key
-      await crawler.realStart(apiKey, tornId);
-      
-      return res.json({ success: true, message: "Crawler started with real player data" });
-    } catch (error) {
-      console.error("Error starting crawler with real data:", error);
-      return res.status(500).json({ error: "Failed to start crawler with real data" });
-    }
-  });
-  
-  // Auto-start crawler when user logs in
-  app.post("/api/login", async (req, res, next) => {
-    // Call to original handler
-    next();
-  }, (req, res) => {
-    // After login is successful
-    if (req.isAuthenticated() && req.user && (req.user as any).role === "admin") {
-      const apiKey = (req.user as any).apiKey;
-      
-      if (apiKey) {
-        // Get the user's Torn ID and auto-start crawler
-        const tornId = 3255504; // Mr_Awaken's actual Torn ID
-        
-        console.log(`Admin logged in - starting crawler with REAL torn ID: ${tornId}`);
-        // Call special version that only uses real data
-        crawler.realStart(apiKey, tornId).catch(error => {
-          console.error("Error starting crawler with real data:", error);
-        });
-      }
-    }
-    
-    // Send back user data
-    res.status(200).json(req.user);
-  });
 
   // Before initializing the crawler, let's make sure we setup the initialization later
   // This will only be accessible to admin users
@@ -377,13 +327,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/system/crawler/start", isAdmin, async (req, res) => {
     try {
-      // Start the crawler in the background without waiting for it to complete
-      // This prevents the request from timing out
-      crawler.start().catch(error => {
-        console.error("Background crawler error:", error);
-      });
-      
-      // Immediately return success response to the client
+      await crawler.start();
       res.json({ success: true, message: "Crawler started successfully" });
     } catch (error) {
       res.status(500).json({
