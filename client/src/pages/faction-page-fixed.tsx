@@ -33,6 +33,8 @@ export default function FactionPage() {
   const [positionFilter, setPositionFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   
+
+  
   // Fetch faction data from the API
   const { 
     data: faction, 
@@ -276,47 +278,143 @@ export default function FactionPage() {
                 </div>
                 
                 <div className="flex space-x-2">
-                  <div className="w-[150px]">
-                    <select 
-                      value={statusFilter} 
-                      onChange={(e) => setStatusFilter(e.target.value)}
-                      className="w-full p-2 bg-game-panel border border-gray-700 rounded-md text-sm"
+                  {/* Custom-styled Status filter */}
+                  <div className="w-[150px] relative">
+                    <div 
+                      className="w-full p-2 bg-game-panel border border-gray-700 rounded-md flex items-center justify-between text-sm cursor-pointer hover:bg-gray-800"
+                      onClick={() => {
+                        const dropdown = document.getElementById("status-dropdown");
+                        if (dropdown) {
+                          dropdown.classList.toggle("hidden");
+                        }
+                      }}
                     >
-                      <option value="all">All Statuses</option>
-                      <option value="Online">Online</option>
-                      <option value="Idle">Idle</option>
-                      <option value="Offline">Offline</option>
-                      <option value="Hospital">Hospital</option>
-                    </select>
+                      <span>
+                        {statusFilter === "all" ? "All Statuses" : 
+                         statusFilter === "Online" ? "Online" :
+                         statusFilter === "Idle" ? "Idle" :
+                         statusFilter === "Hospital" ? "Hospital" : "Offline"}
+                      </span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m6 9 6 6 6-6"/>
+                      </svg>
+                    </div>
+                    
+                    <div id="status-dropdown" className="absolute z-10 w-full mt-1 bg-gray-900 border border-gray-700 rounded-md shadow-lg hidden">
+                      <div 
+                        className="p-2 hover:bg-gray-800 cursor-pointer"
+                        onClick={() => {
+                          setStatusFilter("all");
+                          document.getElementById("status-dropdown")?.classList.add("hidden");
+                        }}
+                      >
+                        All Statuses
+                      </div>
+                      <div 
+                        className="p-2 hover:bg-gray-800 cursor-pointer"
+                        onClick={() => {
+                          setStatusFilter("Online");
+                          document.getElementById("status-dropdown")?.classList.add("hidden");
+                        }}
+                      >
+                        Online
+                      </div>
+                      <div 
+                        className="p-2 hover:bg-gray-800 cursor-pointer"
+                        onClick={() => {
+                          setStatusFilter("Idle");
+                          document.getElementById("status-dropdown")?.classList.add("hidden");
+                        }}
+                      >
+                        Idle
+                      </div>
+                      <div 
+                        className="p-2 hover:bg-gray-800 cursor-pointer"
+                        onClick={() => {
+                          setStatusFilter("Offline");
+                          document.getElementById("status-dropdown")?.classList.add("hidden");
+                        }}
+                      >
+                        Offline
+                      </div>
+                      <div 
+                        className="p-2 hover:bg-gray-800 cursor-pointer"
+                        onClick={() => {
+                          setStatusFilter("Hospital");
+                          document.getElementById("status-dropdown")?.classList.add("hidden");
+                        }}
+                      >
+                        Hospital
+                      </div>
+                    </div>
                   </div>
                   
-                  <div className="w-[150px]">
-                    <select 
-                      value={positionFilter} 
-                      onChange={(e) => setPositionFilter(e.target.value)}
-                      className="w-full p-2 bg-game-panel border border-gray-700 rounded-md text-sm"
-                    >
-                      <option value="all">All Positions</option>
-                      {faction.members && (() => {
-                        try {
-                          // Extract and sort unique positions from actual data
-                          const positions = new Set<string>();
-                          Object.values(faction.members).forEach((member: any) => {
-                            if (member && member.position) {
-                              positions.add(member.position);
-                            }
-                          });
+                  {/* Custom-styled Position filter with dynamic options */}
+                  <div className="w-[150px] relative">
+                    <div 
+                      className="w-full p-2 bg-game-panel border border-gray-700 rounded-md flex items-center justify-between text-sm cursor-pointer hover:bg-gray-800"
+                      onClick={() => {
+                        const dropdown = document.getElementById("position-dropdown");
+                        if (dropdown) {
+                          dropdown.classList.toggle("hidden");
                           
-                          // Return position options
-                          return Array.from(positions).sort().map(position => (
-                            <option key={position} value={position}>{position}</option>
-                          ));
-                        } catch (error) {
-                          console.error("Error rendering positions:", error);
-                          return null;
+                          // Generate position options dynamically when opening dropdown
+                          if (!dropdown.classList.contains("hidden") && faction.members) {
+                            try {
+                              // Clear existing options
+                              dropdown.innerHTML = '<div class="p-2 hover:bg-gray-800 cursor-pointer position-option" data-value="all">All Positions</div>';
+                              
+                              // Extract unique positions
+                              const positions = new Set<string>();
+                              Object.values(faction.members).forEach((member: any) => {
+                                if (member && member.position) {
+                                  positions.add(member.position);
+                                }
+                              });
+                              
+                              // Add position options
+                              Array.from(positions).sort().forEach(position => {
+                                const div = document.createElement("div");
+                                div.className = "p-2 hover:bg-gray-800 cursor-pointer position-option";
+                                div.setAttribute("data-value", position);
+                                div.textContent = position;
+                                div.onclick = () => {
+                                  setPositionFilter(position);
+                                  dropdown.classList.add("hidden");
+                                };
+                                dropdown.appendChild(div);
+                              });
+                              
+                              // Add click handler to "All Positions" option
+                              const allOption = dropdown.querySelector('[data-value="all"]');
+                              if (allOption) {
+                                allOption.addEventListener("click", () => {
+                                  setPositionFilter("all");
+                                  dropdown.classList.add("hidden");
+                                });
+                              }
+                            } catch (error) {
+                              console.error("Error generating position options:", error);
+                            }
+                          }
                         }
-                      })()}
-                    </select>
+                      }}
+                    >
+                      <span>{positionFilter === "all" ? "All Positions" : positionFilter}</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m6 9 6 6 6-6"/>
+                      </svg>
+                    </div>
+                    
+                    <div id="position-dropdown" className="absolute z-10 w-full mt-1 bg-gray-900 border border-gray-700 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
+                      <div 
+                        className="p-2 hover:bg-gray-800 cursor-pointer position-option"
+                        data-value="all"
+                      >
+                        All Positions
+                      </div>
+                      {/* Position options will be populated dynamically */}
+                    </div>
                   </div>
                 </div>
               </div>
