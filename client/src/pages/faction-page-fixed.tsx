@@ -319,16 +319,23 @@ export default function FactionPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {Object.values(faction.members)
+                    {Object.values(faction.members || {})
                       .filter((member: any) => {
-                        const memberStatus = member.last_action?.status || "Offline";
-                        const inHospital = member.status?.state === "Hospital";
-                        const displayStatus = inHospital ? "Hospital" : memberStatus;
+                        if (!member) return false;
                         
-                        if (statusFilter !== 'all' && displayStatus !== statusFilter) return false;
-                        if (positionFilter !== 'all' && member.position !== positionFilter) return false;
-                        if (searchQuery && !member.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-                        return true;
+                        try {
+                          const memberStatus = member.last_action?.status || "Offline";
+                          const inHospital = member.status?.state === "Hospital";
+                          const displayStatus = inHospital ? "Hospital" : memberStatus;
+                          
+                          if (statusFilter !== 'all' && displayStatus !== statusFilter) return false;
+                          if (positionFilter !== 'all' && member.position !== positionFilter) return false;
+                          if (searchQuery && !member.name?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+                          return true;
+                        } catch (error) {
+                          console.error("Error filtering member:", error);
+                          return false;
+                        }
                       })
                       .map((member: any) => {
                         const memberStatus = member.last_action?.status || "Offline";
