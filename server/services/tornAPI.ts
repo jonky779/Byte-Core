@@ -604,11 +604,19 @@ export class TornAPI {
             }
           }
           
+          // Determine the correct company type based on name and type ID
+          let companyTypeId = companyData.company_type || userData.job.company_type;
+          
+          // Special handling for company names with "Broker" to correctly identify property brokers (type 19)
+          if (companyData.name && companyData.name.toLowerCase().includes("broker")) {
+            companyTypeId = 19; // Property Broker
+          }
+          
           // Return the full company detail data
           return {
             id: companyData.ID || companyId,
             name: companyData.name || userData.job.company_name,
-            type: this.getCompanyTypeName(companyData.company_type || userData.job.company_type),
+            type: this.getCompanyTypeName(companyTypeId),
             rating: companyData.rating || 0,
             employees: {
               current: companyData.employees_hired || 0,
@@ -634,11 +642,17 @@ export class TornAPI {
         } catch (companyError) {
           console.error("Error fetching company data:", companyError);
           
+          // Determine company type, with special handling for brokers
+          let companyTypeId = userData.job.company_type;
+          if (userData.job.company_name && userData.job.company_name.toLowerCase().includes("broker")) {
+            companyTypeId = 19; // Set to Property Broker
+          }
+          
           // Fallback to basic company info from user profile
           return {
             id: userData.job.company_id,
             name: userData.job.company_name,
-            type: this.getCompanyTypeName(userData.job.company_type),
+            type: this.getCompanyTypeName(companyTypeId),
             rating: 0,
             employees: {
               current: 1,
