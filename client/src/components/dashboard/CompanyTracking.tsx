@@ -179,30 +179,30 @@ export default function CompanyTracking() {
             <Building className="text-primary h-6 w-6" />
           </div>
           <div>
-            <h4 className="font-medium">{companyData.name}</h4>
-            <div className="text-xs text-gray-400">ID: #{companyData.id} • {companyData.type}</div>
+            <h4 className="font-medium text-foreground">{companyData.name}</h4>
+            <div className="text-xs text-muted-foreground">ID: #{companyData.id} • {companyData.type}</div>
           </div>
         </div>
         
         {/* Company Stats */}
         <div className="grid grid-cols-2 gap-2 mb-4">
-          <div className="bg-game-panel rounded p-2 text-center">
-            <div className="text-2xl font-rajdhani font-bold">
+          <div className="bg-accent/10 rounded p-2 text-center">
+            <div className="text-2xl font-rajdhani font-bold text-foreground">
               {companyData.employees.list ? 
                 companyData.employees.list.filter(emp => !emp.position.toLowerCase().includes("director")).length : 0
-              }<span className="text-xs text-gray-400">/{companyData.employees.max}</span>
+              }<span className="text-xs text-muted-foreground">/{companyData.employees.max}</span>
             </div>
-            <div className="text-xs text-gray-400">EMPLOYEES</div>
+            <div className="text-xs text-muted-foreground">EMPLOYEES</div>
           </div>
-          <div className="bg-game-panel rounded p-2 text-center">
-            <div className="text-2xl font-rajdhani font-bold">{companyData.rating || 0}</div>
-            <div className="text-xs text-gray-400">STARS</div>
+          <div className="bg-accent/10 rounded p-2 text-center">
+            <div className="text-2xl font-rajdhani font-bold text-foreground">{companyData.rating || 0}</div>
+            <div className="text-xs text-muted-foreground">STARS</div>
           </div>
         </div>
         
         {/* Employee List */}
         <div className="mb-3">
-          <div className="text-xs text-gray-400 uppercase font-semibold mb-2">Top Employees</div>
+          <div className="text-xs text-muted-foreground uppercase font-semibold mb-2">Top Employees</div>
           <div className="space-y-2">
             {/* Component JSX should return ReactNode, not void */}
             <div style={{display: 'none'}}>
@@ -220,7 +220,7 @@ export default function CompanyTracking() {
               .sort((a, b) => (b.effectiveness || 0) - (a.effectiveness || 0))
               .slice(0, 3)
               .map((employee) => (
-              <div key={employee.id} className="bg-game-panel rounded p-2 flex items-center">
+              <div key={employee.id} className="bg-accent/10 rounded p-2 flex items-center">
                 <div className="w-8 h-8 rounded-full bg-primary bg-opacity-30 flex items-center justify-center mr-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary-light">
                     {employee.position.toLowerCase().includes("director") || employee.position.toLowerCase().includes("manager") ? (
@@ -232,9 +232,9 @@ export default function CompanyTracking() {
                   </svg>
                 </div>
                 <div className="flex-grow min-w-0">
-                  <div className="text-sm font-medium truncate">{employee.name}</div>
+                  <div className="text-sm font-medium truncate text-foreground">{employee.name}</div>
                   <div className="text-xs">
-                    <span className="text-gray-400">{employee.position}</span>
+                    <span className="text-muted-foreground">{employee.position}</span>
                     <span className={`ml-2 ${
                       (employee.effectiveness || 0) > 120 ? "text-green-400" : 
                       (employee.effectiveness || 0) > 90 ? "text-blue-400" : 
@@ -246,7 +246,7 @@ export default function CompanyTracking() {
                 </div>
                 <div className="text-right">
                   <div className={`text-xs font-medium ${getStatusColor(employee.status)}`}>{employee.status}</div>
-                  <div className="text-xs text-gray-400">{employee.last_action || 'N/A'}</div>
+                  <div className="text-xs text-muted-foreground">{employee.last_action || 'N/A'}</div>
                 </div>
               </div>
             ))}

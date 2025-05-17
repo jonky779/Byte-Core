@@ -75,7 +75,7 @@ export default function PlayerStats() {
       <CardContent className="p-0">
         <div className="p-4 pb-2 flex items-center justify-between">
           <h3 className="font-semibold font-game-title text-xl">Player Stats</h3>
-          <div className="text-xs font-medium bg-game-black bg-opacity-50 px-2 py-1 rounded-full">
+          <div className="text-xs font-medium bg-accent/20 px-2 py-1 rounded-full text-foreground">
             Level {stats.level || 0}
           </div>
         </div>
@@ -83,7 +83,7 @@ export default function PlayerStats() {
         <div className="px-4 py-2">
           <div className="bg-card rounded-lg p-4 pb-3">
             <div className="flex justify-between items-center text-sm mb-1">
-              <div className="font-medium uppercase text-gray-400">IDENTITY</div>
+              <div className="font-medium uppercase text-muted-foreground">IDENTITY</div>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect x="4" y="5" width="16" height="16" rx="2" stroke="currentColor" strokeWidth="1.5"/>
                 <path d="M16 3V7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -120,8 +120,8 @@ export default function PlayerStats() {
               </div>
               <div>
                 <h4 className="font-rajdhani font-semibold">{safeObj(playerStats, 'name', 'Player')}</h4>
-                <div className="text-xs text-gray-400 mt-1">Player #{safeObj(playerStats, 'player_id', '-')}</div>
-                <div className="text-xs font-medium bg-gray-800 bg-opacity-70 px-2 py-0.5 rounded text-white mt-1 max-w-full truncate">
+                <div className="text-xs text-muted-foreground mt-1">Player #{safeObj(playerStats, 'player_id', '-')}</div>
+                <div className="text-xs font-medium bg-accent/20 px-2 py-0.5 rounded text-foreground mt-1 max-w-full truncate">
                   {safeObj(playerStats, 'faction.position') === "None" ? "Not in a faction" : 
                    safeObj(playerStats, 'faction.position', "Civilian")}
                 </div>
@@ -130,12 +130,12 @@ export default function PlayerStats() {
             
             <div className="mt-auto grid grid-cols-2 gap-2 text-sm">
               <div className="bg-muted rounded p-2">
-                <div className="text-xs text-gray-400">RANK</div>
+                <div className="text-xs text-muted-foreground">RANK</div>
                 <div className="font-medium text-primary-focus">{safeObj(playerStats, 'rank', "Unknown")}</div>
               </div>
               
               <div className="bg-muted rounded p-2">
-                <div className="text-xs text-gray-400">STATUS</div>
+                <div className="text-xs text-muted-foreground">STATUS</div>
                 <div 
                   className={`font-medium ${
                     safeObj(playerStats, 'status') === "Okay" ? "text-green-400" :
