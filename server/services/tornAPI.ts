@@ -778,23 +778,33 @@ export class TornAPI {
                 (b.valid_until || 0) - (a.valid_until || 0)
               )[0];
               
-              // Simply show as days since the application is fairly recent
+              // Get the current time
               const now = Math.floor(Date.now() / 1000);
-              // Calculate days directly from when the application will expire
-              // If valid_until is in the future, this means the application was accepted recently
-              const daysUntilExpiry = Math.ceil((mostRecentApp.valid_until - now) / 86400);
-              let timeLabel = '';
               
-              // If it expires within 1 day, it was probably accepted today
-              if (daysUntilExpiry >= 1) {
+              // In the Torn API, applications are created with a 48-hour expiry
+              // So we need to calculate how long ago it was accepted based on that
+              const secondsPerDay = 86400;
+              
+              // Calculate days since acceptance
+              // The formula is:
+              // - Application accepted time: valid_until - 48 hours
+              // - Time since acceptance: now - (valid_until - 48 hours)
+              // - Days since acceptance: time_since_acceptance / seconds_per_day
+              const acceptedTime = mostRecentApp.valid_until - (secondsPerDay * 2); // 48 hours before expiry
+              const timeSinceAcceptance = now - acceptedTime;
+              const daysSinceAcceptance = Math.floor(timeSinceAcceptance / secondsPerDay);
+              
+              // Create the appropriate time label
+              let timeLabel = '';
+              if (daysSinceAcceptance <= 0) {
                 timeLabel = 'today';
+              } else if (daysSinceAcceptance === 1) {
+                timeLabel = 'yesterday';
               } else {
-                // It was accepted at least 1 day ago
-                // We use 1 because the application typically expires 24h after acceptance
-                timeLabel = '1d ago';
+                timeLabel = `${daysSinceAcceptance}d ago`;
               }
               
-              console.log(`Member join time calculation: valid until ${new Date((mostRecentApp?.valid_until || 0) * 1000).toISOString()}, days until expiry: ${daysUntilExpiry}, time label: ${timeLabel}`);
+              console.log(`Member join time calculation: valid until ${new Date((mostRecentApp?.valid_until || 0) * 1000).toISOString()}, days since acceptance: ${daysSinceAcceptance}, time label: ${timeLabel}`);
               
               recentActivity.push({
                 type: 'join',
