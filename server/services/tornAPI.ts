@@ -753,29 +753,37 @@ export class TornAPI {
       
       // Check new members from applications (if available)
       if (factionData.applications) {
-        // Sort applications by expiry time, newest first
-        // Applications in the v2 API come as an object, not an array
-        const applications = Object.values(factionData.applications);
+        // Log the structure to understand the applications format
+        console.log("Applications structure:", 
+                   JSON.stringify({ 
+                     hasApplications: !!factionData.applications, 
+                     sampleKeys: Object.keys(factionData.applications || {}).slice(0, 2)
+                   }));
         
-        // Filter for accepted applications
-        const acceptedApplications = applications
-          .filter((app: any) => app.status === 'accepted')
-          .sort((a: any, b: any) => b.expires - a.expires) // Sort by expiry time (most recent first)
-          .slice(0, 1);
+        try {
+          // Applications in the v2 API come as an object, not an array
+          const applications = Object.values(factionData.applications || {});
           
-        if (acceptedApplications.length > 0) {
-          // Calculate time difference from now in days
-          const now = Math.floor(Date.now() / 1000);
-          const timeDiff = Math.floor((now - (acceptedApplications[0].expires - 86400)) / 86400); // Expires is approx 24h after acceptance
-          const timeLabel = timeDiff === 0 ? 'today' : timeDiff === 1 ? 'yesterday' : `${timeDiff}d ago`;
-          
-          recentActivity.push({
-            type: 'join',
-            description: 'New member joined the faction',
-            time: timeLabel,
-            icon: 'user-plus',
-            color: 'green'
-          });
+          if (applications.length > 0) {
+            console.log("Sample application data:", JSON.stringify(applications[0]));
+            
+            // Filter for accepted applications
+            const acceptedApplications = applications
+              .filter((app: any) => app.status === 'accepted');
+            
+            if (acceptedApplications.length > 0) {
+              // Use a fixed time label for now since we can't reliably determine the exact acceptance time
+              recentActivity.push({
+                type: 'join',
+                description: 'New member joined the faction',
+                time: 'recently',
+                icon: 'user-plus',
+                color: 'green'
+              });
+            }
+          }
+        } catch (err) {
+          console.error("Error processing applications data:", err);
         }
       }
       
