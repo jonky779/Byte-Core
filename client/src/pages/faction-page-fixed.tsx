@@ -511,13 +511,72 @@ export default function FactionPage() {
             
             {/* Territories Tab */}
             <TabsContent value="territories">
-              <div className="rounded-md border border-gray-700">
-                <div className="flex flex-col justify-center items-center py-16 text-gray-400">
-                  <AlertCircle className="h-12 w-12 mb-4 opacity-40" />
-                  <p>Territory data is not yet available from the API.</p>
-                  <p className="text-sm">This feature will be coming soon.</p>
+              {faction && faction.territories && Object.keys(faction.territories).length > 0 ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">
+                      Territories: <span className="text-primary">{Object.keys(faction.territories).length}</span>
+                    </h3>
+                    <Badge variant="outline" className="bg-gray-800/50">
+                      {faction.territory_wars ? 
+                        `${faction.territory_wars} Territory Wars Active` : 
+                        'No Active Territory Wars'}
+                    </Badge>
+                  </div>
+                
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {Object.entries(faction.territories).map(([id, territory]: [string, any]) => (
+                      <Card key={id} className="bg-game-panel border-gray-700">
+                        <CardContent className="pt-6">
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <h4 className="font-bold text-lg">{territory.name || `Territory ${id}`}</h4>
+                              <p className="text-sm text-gray-400">Sector: {territory.sector || 'Unknown'}</p>
+                            </div>
+                            <Badge className={territory.racket ? 'bg-green-500/20 text-green-500' : 'bg-gray-500/20 text-gray-400'}>
+                              {territory.racket ? 'Racket Active' : 'No Racket'}
+                            </Badge>
+                          </div>
+                          
+                          {territory.racket && (
+                            <div className="mt-2 p-2 bg-gray-800/50 rounded-md">
+                              <p className="text-sm font-semibold">{territory.racket.name}</p>
+                              <p className="text-xs text-gray-400">
+                                Reward: {territory.racket.reward || 'Unknown'} 
+                                {territory.racket.level ? ` (Level ${territory.racket.level})` : ''}
+                              </p>
+                            </div>
+                          )}
+                          
+                          <div className="flex justify-between items-center mt-4">
+                            <span className="text-sm">
+                              {territory.war_score !== undefined ? 
+                                <Badge variant="outline" className={territory.war_score > 0 ? 'bg-green-500/20 text-green-500' : 'bg-gray-800/50'}>
+                                  War Score: {territory.war_score}
+                                </Badge>
+                                : null
+                              }
+                            </span>
+                            <span className="text-xs text-gray-400">
+                              {territory.acquired ? 
+                                `Acquired ${new Date(territory.acquired * 1000).toLocaleDateString()}` : 
+                                'Recently acquired'}
+                            </span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="rounded-md border border-gray-700">
+                  <div className="flex flex-col justify-center items-center py-16 text-gray-400">
+                    <AlertCircle className="h-12 w-12 mb-4 opacity-40" />
+                    <p>No territory data available.</p>
+                    <p className="text-sm">Your faction may not control any territories.</p>
+                  </div>
+                </div>
+              )}
             </TabsContent>
             
             {/* Wars Tab */}
