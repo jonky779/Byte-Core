@@ -767,21 +767,21 @@ export class TornAPI {
           .sort((a, b) => b.start - a.start);
         
         // Get current time for calculations
-        const now = Math.floor(Date.now() / 1000);
+        const currentTimestamp = Math.floor(Date.now() / 1000);
         
         if (recentWars.length > 0) {
           // Log the wars data for debugging
           console.log("Recent wars data:", JSON.stringify(recentWars.slice(0, 2), null, 2));
           
           // Check if there's an active war (no end time or end time in future)
-          const activeWars = recentWars.filter(war => !war.end || war.end > now);
+          const activeWars = recentWars.filter(war => !war.end || war.end > currentTimestamp);
           console.log("Active wars count:", activeWars.length);
           
           // First, always show information about the last completed war
           const lastCompletedWar = recentWars.find(war => war.end);
           
           if (lastCompletedWar && lastCompletedWar.end) {
-            const timeSinceEnd = Math.floor((now - lastCompletedWar.end) / 3600);
+            const timeSinceEnd = Math.floor((currentTimestamp - lastCompletedWar.end) / 3600);
             const timeLabel = timeSinceEnd <= 24 ? `${timeSinceEnd}h ago` : `${Math.floor(timeSinceEnd / 24)}d ago`;
             
             console.log("Last war ended:", timeLabel);
@@ -800,7 +800,7 @@ export class TornAPI {
           if (activeWars.length > 0) {
             // We have an active war - show when it started
             const mostRecentActiveWar = activeWars[0];
-            const timeDiff = Math.floor((now - mostRecentActiveWar.start) / 3600);
+            const timeDiff = Math.floor((currentTimestamp - mostRecentActiveWar.start) / 3600);
             const timeLabel = timeDiff <= 24 ? `${timeDiff}h ago` : `${Math.floor(timeDiff / 24)}d ago`;
             
             console.log("Active war detected, started:", timeLabel);
@@ -946,17 +946,16 @@ export class TornAPI {
       const sortedWars = [...recentWars].sort((a, b) => b.start - a.start);
       
       // Calculate days since last war
-      // Using the already defined 'now' variable from above
       const lastCompletedWar = sortedWars.find(war => war.end);
       let lastWarEnded = null;
       
       if (lastCompletedWar && lastCompletedWar.end) {
-        const daysSinceEnd = Math.floor((now - lastCompletedWar.end) / 86400);
+        const daysSinceEnd = Math.floor((currentTime - lastCompletedWar.end) / 86400);
         lastWarEnded = daysSinceEnd <= 1 ? "1d ago" : `${daysSinceEnd}d ago`;
       }
       
       // Get active wars
-      const activeWars = sortedWars.filter(war => !war.end || war.end > now);
+      const activeWars = sortedWars.filter(war => !war.end || war.end > currentTime);
       
       // Build the response object with real data
       return {
