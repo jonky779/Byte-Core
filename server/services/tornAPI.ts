@@ -187,7 +187,7 @@ export class TornAPI {
     });
   }
   
-  private async makeRequest(endpoint: string, apiKey: string): Promise<any> {
+  async makeRequest(endpoint: string, apiKey: string): Promise<any> {
     // Torn API requires the format: https://api.torn.com/user?selections=profile&key=YOUR_API_KEY
     // Make sure we're constructing the URL correctly
     let url = `${this.baseUrl}/${endpoint}`;

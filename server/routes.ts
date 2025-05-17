@@ -4,6 +4,8 @@ import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { TornAPI } from "./services/tornAPI";
 import { Crawler } from "./services/crawler";
+import fs from "fs";
+import path from "path";
 
 // Middleware to check if user is authenticated
 function isAuthenticated(req: Request, res: Response, next: NextFunction) {
@@ -131,6 +133,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create directory for data if it doesn't exist
+  if (!fs.existsSync(path.join(process.cwd(), "data"))) {
+    fs.mkdirSync(path.join(process.cwd(), "data"), { recursive: true });
+  }
+
+  // Create error log file if it doesn't exist
+  const errorLogPath = path.join(process.cwd(), "data", "errors.log");
+  if (!fs.existsSync(errorLogPath)) {
+    fs.writeFileSync(errorLogPath, "", "utf8");
+  }
+
+  // Function to log errors
+  const logError = (message: string) => {
+    try {
+      const timestamp = new Date().toISOString();
+      const logMessage = `[${timestamp}] ${message}\n`;
+      fs.appendFileSync(errorLogPath, logMessage);
+    } catch (err) {
+      console.error("Failed to write to error log:", err);
+    }
+  };
+
   // Bazaar - Requires authentication and API key
   app.get("/api/bazaar", isAuthenticated, async (req, res) => {
     try {
@@ -140,9 +164,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const category = req.query.category as string || 'all';
-      const bazaarItems = await tornAPI.getBazaarItems(user.apiKey, category);
-      res.json(bazaarItems);
+      const search = req.query.search as string || '';
+      
+      // First, ensure we have the latest item data
+      try {
+        // Get all items data from Torn API
+        const itemsResponse = await tornAPI.makeRequest("torn/?selections=items", user.apiKey);
+        
+        if (!itemsResponse || !itemsResponse.items) {
+          throw new Error("Failed to fetch items data from Torn API");
+        }
+        
+        // Process and format the items data
+        const items = Object.entries(itemsResponse.items).map(([id, item]: [string, any]) => ({
+          id: parseInt(id),
+          name: item.name || "Unknown Item",
+          type: item.type || "Unknown",
+          category: item.type || "Miscellaneous", // Using type as category for grouping
+          market_value: item.market_value || 0,
+          circulation: item.circulation || 0,
+          image: item.image || "",
+          description: item.description || ""
+        }));
+        
+        console.log(`Fetched ${items.length} items from Torn API`);
+        
+        // Get bazaar listings from players
+        const bazaarItems = await tornAPI.getBazaarItems(user.apiKey, category);
+        
+        // Merge item details with bazaar listings
+        const enhancedBazaarItems = bazaarItems.items.map((bazaarItem: any) => {
+          const itemDetails = items.find(item => item.id === bazaarItem.id);
+          return {
+            ...bazaarItem,
+            description: itemDetails?.description || "",
+            image: itemDetails?.image || "",
+            circulation: itemDetails?.circulation || 0
+          };
+        });
+        
+        // Filter by search if provided
+        const filteredItems = search 
+          ? enhancedBazaarItems.filter((item: any) => 
+              item.name.toLowerCase().includes(search.toLowerCase()) ||
+              (item.seller && item.seller.name && item.seller.name.toLowerCase().includes(search.toLowerCase()))
+            )
+          : enhancedBazaarItems;
+        
+        // Get unique categories for filtering
+        const categories = [...new Set(items.map(item => item.category))];
+        
+        res.json({
+          items: filteredItems,
+          categories,
+          last_updated: new Date().toISOString()
+        });
+      } catch (error) {
+        logError(`Error fetching items data: ${error}`);
+        
+        // Fallback to just bazaar data if item fetch fails
+        const bazaarItems = await tornAPI.getBazaarItems(user.apiKey, category);
+        res.json(bazaarItems);
+      }
     } catch (error) {
+      logError(`Error in bazaar endpoint: ${error}`);
       res.status(500).json({
         message: error instanceof Error ? error.message : "Failed to fetch bazaar data",
       });
