@@ -886,6 +886,26 @@ export class TornAPI {
         daysOld = factionData.basic.days_old;
       }
       
+      // Extract enlisted status and rank information
+      let isEnlisted = false;
+      let rankLevel = 0;
+      let rankName = "";
+      let rankDivision = 0;
+      let rankPosition = 0;
+      
+      if (factionData.basic) {
+        if (factionData.basic.is_enlisted !== undefined) {
+          isEnlisted = factionData.basic.is_enlisted;
+        }
+        
+        if (factionData.basic.rank) {
+          rankLevel = factionData.basic.rank.level || 0;
+          rankName = factionData.basic.rank.name || "";
+          rankDivision = factionData.basic.rank.division || 0;
+          rankPosition = factionData.basic.rank.position || 0;
+        }
+      }
+      
       // Build the response object with real data
       return {
         id: factionData.ID || userData.faction.faction_id,
@@ -903,11 +923,18 @@ export class TornAPI {
         days_old: daysOld,
         capacity: {
           current: totalMembers || 1,
-          maximum: totalMembers + 5 // Not directly available from API
+          maximum: factionData.basic && factionData.basic.capacity ? factionData.basic.capacity : (totalMembers + 5)
         },
         member_status: memberStatus,
         recent_activity: recentActivity,
-        last_updated: new Date().toISOString()
+        last_updated: new Date().toISOString(),
+        is_enlisted: isEnlisted,
+        rank: {
+          level: rankLevel,
+          name: rankName,
+          division: rankDivision,
+          position: rankPosition
+        }
       };
     } catch (error) {
       console.error("Error fetching faction data:", error);

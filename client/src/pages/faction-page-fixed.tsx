@@ -153,6 +153,18 @@ export default function FactionPage() {
                   <h2 className="font-rajdhani font-bold text-xl">{faction.name} [{faction.tag}]</h2>
                   <p className="text-sm text-gray-400">ID: #{faction.id}</p>
                   <p className="text-sm text-gray-400">{formatFactionAge(faction.days_old || 0)}</p>
+                  <div className="flex gap-2 mt-1">
+                    {faction.is_enlisted ? (
+                      <Badge className="bg-green-500/20 text-green-500 hover:bg-green-500/30">Enlisted</Badge>
+                    ) : (
+                      <Badge className="bg-gray-500/20 text-gray-400 hover:bg-gray-500/30">Not Enlisted</Badge>
+                    )}
+                    {faction.rank && faction.rank.name && (
+                      <Badge className="bg-purple-500/20 text-purple-500 hover:bg-purple-500/30">
+                        {faction.rank.name} {faction.rank.level} (#{faction.rank.position})
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </div>
               
@@ -177,7 +189,7 @@ export default function FactionPage() {
               <div className="bg-game-panel rounded p-3 border border-gray-700">
                 <div className="text-xs text-gray-400 mb-1">MEMBERS</div>
                 <div className="text-xl font-rajdhani font-bold">
-                  {faction.members_count || 0} / {faction.capacity?.maximum || 100}
+                  {(faction.members_count || 0).toLocaleString()} / {(faction.capacity?.maximum || 100).toLocaleString()}
                 </div>
                 <Progress 
                   value={((faction.members_count || 0) / (faction.capacity?.maximum || 100)) * 100} 
@@ -191,7 +203,7 @@ export default function FactionPage() {
                   {((faction.respect || 0) / 1000000).toFixed(1)}M
                 </div>
                 <div className="text-xs text-gray-400 mt-2">
-                  Best Chain: {faction.best_chain || 0} hits
+                  Best Chain: {(faction.best_chain || 0).toLocaleString()} hits
                 </div>
               </div>
               
