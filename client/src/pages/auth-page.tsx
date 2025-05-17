@@ -81,8 +81,8 @@ export default function AuthPage() {
               </div>
             </div>
             <h1 className="font-bold text-4xl mb-2 tracking-wide bg-gradient-to-r from-primary-light to-primary text-transparent bg-clip-text">BYTE-CORE VAULT</h1>
-            <h2 className="text-lg text-gray-300 mb-6">Your Ultimate Torn RPG Dashboard</h2>
-            <div className="space-y-4 mb-8 text-left text-gray-300">
+            <h2 className="text-lg text-foreground mb-6">Your Ultimate Torn RPG Dashboard</h2>
+            <div className="space-y-4 mb-8 text-left text-foreground">
               <div className="flex items-start">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-primary mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -118,7 +118,7 @@ export default function AuthPage() {
               {/* Mobile Logo */}
               <div className="md:hidden">
                 <h1 className="font-bold text-2xl tracking-wide bg-gradient-to-r from-primary-light to-primary text-transparent bg-clip-text">BYTE-CORE VAULT</h1>
-                <p className="text-sm text-gray-400">Your Ultimate Torn RPG Dashboard</p>
+                <p className="text-sm text-muted-foreground">Your Ultimate Torn RPG Dashboard</p>
               </div>
               
               {/* Theme Toggle Button */}
@@ -166,11 +166,11 @@ export default function AuthPage() {
                               placeholder="Enter your Torn API key" 
                               {...field} 
                               type="text"
-                              className="bg-gray-800 dark:bg-gray-700 border-gray-700"
+                              className="bg-muted border-input"
                             />
                           </FormControl>
                           <FormMessage />
-                          <p className="text-xs text-gray-400 mt-1">
+                          <p className="text-xs text-muted-foreground mt-1">
                             <a href="https://www.torn.com/preferences.php#tab=api&step=addNewKey&title=Byte-Core%20Vault&type=3" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Generate a Torn API key here</a>
                           </p>
                         </FormItem>
@@ -204,7 +204,7 @@ export default function AuthPage() {
                     </Button>
                   </form>
                 </Form>
-                <div className="mt-6 text-center text-sm text-gray-400">
+                <div className="mt-6 text-center text-sm text-muted-foreground">
                   <p>First time users: Your account will be created automatically when you sign in</p>
                 </div>
               </CardContent>

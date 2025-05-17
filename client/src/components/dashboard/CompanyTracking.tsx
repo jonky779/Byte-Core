@@ -104,17 +104,17 @@ export default function CompanyTracking() {
       : "Please add your Torn API key in settings to view your company data.";
     
     return (
-      <Card className="bg-game-dark border-gray-700 shadow-game h-full">
-        <div className="p-4 border-b border-gray-700">
+      <Card className="bg-card border-border shadow h-full">
+        <div className="p-4 border-b border-border">
           <div className="flex items-center justify-between">
-            <h3 className="font-rajdhani font-bold text-lg">Company Tracking</h3>
+            <h3 className="font-rajdhani font-bold text-lg text-foreground">Company Tracking</h3>
           </div>
         </div>
         
         <CardContent className="p-6 flex flex-col items-center justify-center text-center h-full">
-          <Building className="h-10 w-10 text-gray-500 mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No Company Data</h3>
-          <p className="text-gray-400 text-sm mb-4">
+          <Building className="h-10 w-10 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold mb-2 text-foreground">No Company Data</h3>
+          <p className="text-muted-foreground text-sm mb-4">
             {errorMessage}
           </p>
           <Link href="/settings">
@@ -130,17 +130,17 @@ export default function CompanyTracking() {
   // If the user isn't in a company (id is 0), show a nicer message
   if (companyData.id === 0 || companyData.name.includes("No Company")) {
     return (
-      <Card className="bg-game-dark border-gray-700 shadow-game h-full">
-        <div className="p-4 border-b border-gray-700">
+      <Card className="bg-card border-border shadow h-full">
+        <div className="p-4 border-b border-border">
           <div className="flex items-center justify-between">
-            <h3 className="font-rajdhani font-bold text-lg">Company Tracking</h3>
+            <h3 className="font-rajdhani font-bold text-lg text-foreground">Company Tracking</h3>
           </div>
         </div>
         
         <CardContent className="p-6 flex flex-col items-center justify-center text-center h-full">
-          <Building className="h-10 w-10 text-gray-500 mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Not in a Company</h3>
-          <p className="text-gray-400 text-sm mb-4">
+          <Building className="h-10 w-10 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold mb-2 text-foreground">Not in a Company</h3>
+          <p className="text-muted-foreground text-sm mb-4">
             You are currently not a member of any company.
           </p>
           <Link href="/settings">
