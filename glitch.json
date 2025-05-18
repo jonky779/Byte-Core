@@ -15,5 +15,8 @@
       ]
     },
     "throttle": 1000
+  },
+  "engines": {
+    "node": "16.x"
   }
 }
